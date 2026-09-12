@@ -1,0 +1,2096 @@
+{
+  "families": [
+    {
+      "id": "fam_sharma_01",
+      "name": "Sharma Family",
+      "photo_url": "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&auto=format&fit=crop&q=80",
+      "location": "Hyderabad, India",
+      "currency": "INR",
+      "language": "en",
+      "created_at": "2024-01-01T00:00:00.000Z",
+      "updated_at": "2026-09-09T16:50:36.615Z"
+    },
+    {
+      "id": "fam_1788973006547",
+      "name": "Ram's",
+      "photo_url": "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600",
+      "location": "Delhi",
+      "currency": "INR",
+      "language": "en",
+      "created_at": "2026-09-09T16:56:46.547Z",
+      "updated_at": "2026-09-09T16:56:46.547Z"
+    },
+    {
+      "id": "fam_1789058945699",
+      "name": "Ram's",
+      "photo_url": "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600",
+      "location": "Hyderabad, India",
+      "currency": "INR",
+      "language": "en",
+      "created_at": "2026-09-10T16:49:05.702Z",
+      "updated_at": "2026-09-10T16:49:05.702Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "usr_raj",
+      "family_id": "fam_sharma_01",
+      "email": "raj.sharma@example.com",
+      "phone": "+91 98765 43210",
+      "name": "Raj Sharma",
+      "password_hash": "demo_hash",
+      "pin_code": "1234",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+      "role": "FAMILY_HEAD",
+      "relationship": "Self / Father",
+      "birth_date": "1985-06-15",
+      "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "usr_priya",
+      "family_id": "fam_sharma_01",
+      "email": "priya.sharma@example.com",
+      "phone": "+91 98765 43211",
+      "name": "Priya Sharma",
+      "password_hash": "demo_hash",
+      "pin_code": "1234",
+      "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+      "role": "SPOUSE",
+      "relationship": "Spouse / Mother",
+      "birth_date": "1988-09-22",
+      "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "usr_aarav",
+      "family_id": "fam_sharma_01",
+      "email": "aarav.sharma@example.com",
+      "phone": "+91 98765 43212",
+      "name": "Aarav Sharma",
+      "password_hash": "demo_hash",
+      "pin_code": "1234",
+      "avatar_url": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop&q=80",
+      "role": "CHILD",
+      "relationship": "Son (14 yrs)",
+      "birth_date": "2012-04-10",
+      "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "usr_ananya",
+      "family_id": "fam_sharma_01",
+      "email": "ananya.sharma@example.com",
+      "phone": "+91 98765 43213",
+      "name": "Ananya Sharma",
+      "password_hash": "demo_hash",
+      "pin_code": "1234",
+      "avatar_url": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80",
+      "role": "CHILD",
+      "relationship": "Daughter (8 yrs)",
+      "birth_date": "2018-11-05",
+      "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "usr_kalyani",
+      "family_id": "fam_sharma_01",
+      "email": "kalyani.sharma@example.com",
+      "phone": "+91 98765 43214",
+      "name": "Kalyani Sharma",
+      "password_hash": "demo_hash",
+      "pin_code": "1234",
+      "avatar_url": "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=200&auto=format&fit=crop&q=80",
+      "role": "VIEWER",
+      "relationship": "Grandmother (68 yrs)",
+      "birth_date": "1958-02-28",
+      "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "usr_head_1788973006547",
+      "family_id": "fam_1788973006547",
+      "email": "rambabub789@gmail.com",
+      "name": "Rambabu",
+      "password_hash": "hash",
+      "pin_code": "1978",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+      "role": "FAMILY_HEAD",
+      "relationship": "Family Head",
+      "birth_date": "1985-01-01",
+      "created_at": "2026-09-09T16:56:46.547Z"
+    },
+    {
+      "id": "usr_head_1789058945702",
+      "family_id": "fam_1789058945699",
+      "email": "rambabub789@gmail.com",
+      "name": "Rambabu ",
+      "password_hash": "hash",
+      "pin_code": "1978",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+      "role": "FAMILY_HEAD",
+      "relationship": "Family Head",
+      "birth_date": "1985-01-01",
+      "created_at": "2026-09-10T16:49:05.702Z"
+    }
+  ],
+  "permissions": [
+    {
+      "id": "p1",
+      "code": "FINANCE_VIEW",
+      "name": "View Family Finances",
+      "category": "FINANCE"
+    },
+    {
+      "id": "p2",
+      "code": "FINANCE_EDIT",
+      "name": "Manage Family Finances",
+      "category": "FINANCE"
+    },
+    {
+      "id": "p3",
+      "code": "INVESTMENT_VIEW",
+      "name": "View Investments & Net Worth",
+      "category": "INVESTMENT"
+    },
+    {
+      "id": "p4",
+      "code": "INVESTMENT_EDIT",
+      "name": "Manage Investments",
+      "category": "INVESTMENT"
+    },
+    {
+      "id": "p5",
+      "code": "DOCUMENT_VIEW",
+      "name": "View Documents",
+      "category": "DOCUMENT"
+    },
+    {
+      "id": "p6",
+      "code": "DOCUMENT_UPLOAD",
+      "name": "Upload Documents",
+      "category": "DOCUMENT"
+    },
+    {
+      "id": "p7",
+      "code": "DOCUMENT_DELETE",
+      "name": "Delete Documents",
+      "category": "DOCUMENT"
+    },
+    {
+      "id": "p8",
+      "code": "EMERGENCY_VIEW",
+      "name": "View Emergency Vault",
+      "category": "EMERGENCY"
+    },
+    {
+      "id": "p9",
+      "code": "EMERGENCY_EDIT",
+      "name": "Manage Emergency Vault",
+      "category": "EMERGENCY"
+    },
+    {
+      "id": "p10",
+      "code": "MEMORY_VIEW",
+      "name": "View Memories & Albums",
+      "category": "MEMORY"
+    },
+    {
+      "id": "p11",
+      "code": "MEMORY_UPLOAD",
+      "name": "Upload Memories",
+      "category": "MEMORY"
+    },
+    {
+      "id": "p12",
+      "code": "CALENDAR_VIEW",
+      "name": "View Calendar",
+      "category": "CALENDAR"
+    },
+    {
+      "id": "p13",
+      "code": "CALENDAR_EDIT",
+      "name": "Manage Events",
+      "category": "CALENDAR"
+    },
+    {
+      "id": "p14",
+      "code": "TASK_VIEW",
+      "name": "View Tasks & Grocery",
+      "category": "TASK"
+    },
+    {
+      "id": "p15",
+      "code": "TASK_EDIT",
+      "name": "Manage Tasks",
+      "category": "TASK"
+    },
+    {
+      "id": "p16",
+      "code": "AI_USE",
+      "name": "Use Family AI Assistant",
+      "category": "AI"
+    },
+    {
+      "id": "p17",
+      "code": "FAMILY_MANAGE",
+      "name": "Manage Family & Members",
+      "category": "ADMIN"
+    }
+  ],
+  "member_permissions": [
+    {
+      "user_id": "usr_raj",
+      "permission_code": "FINANCE_VIEW"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "FINANCE_EDIT"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "INVESTMENT_VIEW"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "INVESTMENT_EDIT"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "DOCUMENT_VIEW"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "DOCUMENT_UPLOAD"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "DOCUMENT_DELETE"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "EMERGENCY_VIEW"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "EMERGENCY_EDIT"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "MEMORY_VIEW"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "MEMORY_UPLOAD"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "CALENDAR_VIEW"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "CALENDAR_EDIT"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "TASK_VIEW"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "TASK_EDIT"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "AI_USE"
+    },
+    {
+      "user_id": "usr_raj",
+      "permission_code": "FAMILY_MANAGE"
+    },
+    {
+      "user_id": "usr_aarav",
+      "permission_code": "CALENDAR_VIEW"
+    },
+    {
+      "user_id": "usr_ananya",
+      "permission_code": "CALENDAR_VIEW"
+    },
+    {
+      "user_id": "usr_aarav",
+      "permission_code": "CALENDAR_EDIT"
+    },
+    {
+      "user_id": "usr_ananya",
+      "permission_code": "CALENDAR_EDIT"
+    },
+    {
+      "user_id": "usr_aarav",
+      "permission_code": "TASK_VIEW"
+    },
+    {
+      "user_id": "usr_ananya",
+      "permission_code": "TASK_VIEW"
+    },
+    {
+      "user_id": "usr_aarav",
+      "permission_code": "TASK_EDIT"
+    },
+    {
+      "user_id": "usr_ananya",
+      "permission_code": "TASK_EDIT"
+    },
+    {
+      "user_id": "usr_aarav",
+      "permission_code": "MEMORY_VIEW"
+    },
+    {
+      "user_id": "usr_ananya",
+      "permission_code": "MEMORY_VIEW"
+    },
+    {
+      "user_id": "usr_aarav",
+      "permission_code": "MEMORY_UPLOAD"
+    },
+    {
+      "user_id": "usr_ananya",
+      "permission_code": "MEMORY_UPLOAD"
+    },
+    {
+      "user_id": "usr_aarav",
+      "permission_code": "AI_USE"
+    },
+    {
+      "user_id": "usr_ananya",
+      "permission_code": "AI_USE"
+    },
+    {
+      "user_id": "usr_kalyani",
+      "permission_code": "CALENDAR_VIEW"
+    },
+    {
+      "user_id": "usr_kalyani",
+      "permission_code": "MEMORY_VIEW"
+    },
+    {
+      "user_id": "usr_kalyani",
+      "permission_code": "MEMORY_UPLOAD"
+    },
+    {
+      "user_id": "usr_kalyani",
+      "permission_code": "EMERGENCY_VIEW"
+    },
+    {
+      "user_id": "usr_kalyani",
+      "permission_code": "AI_USE"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "FINANCE_VIEW"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "FINANCE_EDIT"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "INVESTMENT_VIEW"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "INVESTMENT_EDIT"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "DOCUMENT_VIEW"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "DOCUMENT_UPLOAD"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "DOCUMENT_DELETE"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "EMERGENCY_VIEW"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "EMERGENCY_EDIT"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "MEMORY_VIEW"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "MEMORY_UPLOAD"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "CALENDAR_VIEW"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "CALENDAR_EDIT"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "TASK_VIEW"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "TASK_EDIT"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "AI_USE"
+    },
+    {
+      "user_id": "usr_head_1788973006547",
+      "permission_code": "FAMILY_MANAGE"
+    },
+    {
+      "user_id": "usr_priya",
+      "permission_code": "INVESTMENT_VIEW"
+    },
+    {
+      "user_id": "usr_priya",
+      "permission_code": "DOCUMENT_VIEW"
+    },
+    {
+      "user_id": "usr_priya",
+      "permission_code": "DOCUMENT_UPLOAD"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "FINANCE_VIEW"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "FINANCE_EDIT"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "INVESTMENT_VIEW"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "INVESTMENT_EDIT"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "DOCUMENT_VIEW"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "DOCUMENT_UPLOAD"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "DOCUMENT_DELETE"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "EMERGENCY_VIEW"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "EMERGENCY_EDIT"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "MEMORY_VIEW"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "MEMORY_UPLOAD"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "CALENDAR_VIEW"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "CALENDAR_EDIT"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "TASK_VIEW"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "TASK_EDIT"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "AI_USE"
+    },
+    {
+      "user_id": "usr_head_1789058945702",
+      "permission_code": "FAMILY_MANAGE"
+    }
+  ],
+  "devices": [
+    {
+      "id": "dev_1",
+      "user_id": "usr_raj",
+      "device_name": "iPhone 15 Pro (Raj)",
+      "browser": "Safari Mobile",
+      "os": "iOS 18.1",
+      "ip_address": "49.205.112.44",
+      "last_active": "Active now",
+      "is_current": true
+    },
+    {
+      "id": "dev_2",
+      "user_id": "usr_priya",
+      "device_name": "Samsung Galaxy S24 (Priya)",
+      "browser": "Chrome Mobile",
+      "os": "Android 14",
+      "ip_address": "49.205.112.45",
+      "last_active": "2 hours ago",
+      "is_current": false
+    }
+  ],
+  "audit_logs": [
+    {
+      "id": "aud_1",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Family Operating System Initialized",
+      "category": "ADMIN",
+      "details": "Initial family structure and Sharma Family vault created.",
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "aud_2",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Added Monthly Grocery Expense",
+      "category": "FINANCE",
+      "details": "Logged ₹14,200 at Ratnadeep Supermarket via UPI.",
+      "created_at": "2026-09-04T11:20:00Z"
+    },
+    {
+      "id": "aud_3",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Viewed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Checked Grandmother Kalyani medication and allergy notes.",
+      "created_at": "2026-09-08T14:10:00Z"
+    },
+    {
+      "id": "aud_1788973007999_plg39",
+      "family_id": "fam_1788973006547",
+      "user_id": "usr_head_1788973006547",
+      "user_name": "Rambabu",
+      "action": "Family Created",
+      "category": "ADMIN",
+      "details": "Family \"Ram's\" registered successfully.",
+      "created_at": "2026-09-09T16:56:47.999Z"
+    },
+    {
+      "id": "aud_1788973198258_drgvk",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T16:59:58.259Z"
+    },
+    {
+      "id": "aud_1788973199229_8tjzd",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T16:59:59.229Z"
+    },
+    {
+      "id": "aud_1788973204383_roxzs",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Active Member Switched",
+      "category": "SECURITY",
+      "details": "Switched active session to Priya Sharma (SPOUSE)",
+      "created_at": "2026-09-09T17:00:04.383Z"
+    },
+    {
+      "id": "aud_1788973206190_jl4t0",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T17:00:06.190Z"
+    },
+    {
+      "id": "aud_1788973206800_lrl6y",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T17:00:06.800Z"
+    },
+    {
+      "id": "aud_1788973238728_nn7md",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Updated Permissions",
+      "category": "ADMIN",
+      "details": "Updated permissions for Priya Sharma (3 granted)",
+      "created_at": "2026-09-09T17:00:38.728Z"
+    },
+    {
+      "id": "aud_1788973332438_9ssh6",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Active Member Switched",
+      "category": "SECURITY",
+      "details": "Switched active session to Raj Sharma (FAMILY_HEAD)",
+      "created_at": "2026-09-09T17:02:12.438Z"
+    },
+    {
+      "id": "aud_1788973332897_ojjjr",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T17:02:12.897Z"
+    },
+    {
+      "id": "aud_1788973333074_1i8eu",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T17:02:13.075Z"
+    },
+    {
+      "id": "aud_1788973402827_nhn4p",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T17:03:22.827Z"
+    },
+    {
+      "id": "aud_1788973402967_52mto",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-09T17:03:22.967Z"
+    },
+    {
+      "id": "aud_1789058946731_txwmv",
+      "family_id": "fam_1789058945699",
+      "user_id": "usr_head_1789058945702",
+      "user_name": "Rambabu ",
+      "action": "Family Created",
+      "category": "ADMIN",
+      "details": "Family \"Ram's\" registered successfully.",
+      "created_at": "2026-09-10T16:49:06.732Z"
+    },
+    {
+      "id": "aud_1789058994245_81ki8",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-10T16:49:54.245Z"
+    },
+    {
+      "id": "aud_1789058994315_6k5v5",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-10T16:49:54.315Z"
+    },
+    {
+      "id": "aud_1789059149675_a7ll7",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-10T16:52:29.675Z"
+    },
+    {
+      "id": "aud_1789059150127_z9d6l",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-10T16:52:30.127Z"
+    },
+    {
+      "id": "aud_1789059223051_1wsqp",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Active Member Switched",
+      "category": "SECURITY",
+      "details": "Switched active session to Priya Sharma (SPOUSE)",
+      "created_at": "2026-09-10T16:53:43.051Z"
+    },
+    {
+      "id": "aud_1789059232833_qugjr",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Active Member Switched",
+      "category": "SECURITY",
+      "details": "Switched active session to Priya Sharma (SPOUSE)",
+      "created_at": "2026-09-10T16:53:52.833Z"
+    },
+    {
+      "id": "aud_1789059235928_ts089",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "user_name": "Priya Sharma",
+      "action": "Active Member Switched",
+      "category": "SECURITY",
+      "details": "Switched active session to Priya Sharma (SPOUSE)",
+      "created_at": "2026-09-10T16:53:55.928Z"
+    },
+    {
+      "id": "aud_1789060155447_jcvgm",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Active Member Switched",
+      "category": "SECURITY",
+      "details": "Switched active session to Raj Sharma (FAMILY_HEAD)",
+      "created_at": "2026-09-10T17:09:15.448Z"
+    },
+    {
+      "id": "aud_1789060158504_jqyy0",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Active Member Switched",
+      "category": "SECURITY",
+      "details": "Switched active session to Raj Sharma (FAMILY_HEAD)",
+      "created_at": "2026-09-10T17:09:18.504Z"
+    },
+    {
+      "id": "aud_1789087008232_3h1c6",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-11T00:36:48.234Z"
+    },
+    {
+      "id": "aud_1789087008330_5x95v",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-11T00:36:48.331Z"
+    },
+    {
+      "id": "aud_1789087265419_1hh0l",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Recorded Expense",
+      "category": "FINANCE",
+      "details": "Added ₹200 for Food & Dining (Mandi)",
+      "created_at": "2026-09-11T00:41:05.419Z"
+    }
+  ],
+  "expense_categories": [
+    {
+      "id": "cat_groceries",
+      "family_id": "fam_sharma_01",
+      "name": "Groceries",
+      "icon": "ShoppingCart",
+      "color": "#10B981"
+    },
+    {
+      "id": "cat_dining",
+      "family_id": "fam_sharma_01",
+      "name": "Food & Dining",
+      "icon": "Utensils",
+      "color": "#F59E0B"
+    },
+    {
+      "id": "cat_utilities",
+      "family_id": "fam_sharma_01",
+      "name": "Utilities & Bills",
+      "icon": "Zap",
+      "color": "#6366F1"
+    },
+    {
+      "id": "cat_rent",
+      "family_id": "fam_sharma_01",
+      "name": "Rent & Maintenance",
+      "icon": "Home",
+      "color": "#8B5CF6"
+    },
+    {
+      "id": "cat_education",
+      "family_id": "fam_sharma_01",
+      "name": "Education & School",
+      "icon": "GraduationCap",
+      "color": "#EC4899"
+    },
+    {
+      "id": "cat_transport",
+      "family_id": "fam_sharma_01",
+      "name": "Transport & Fuel",
+      "icon": "Car",
+      "color": "#3B82F6"
+    },
+    {
+      "id": "cat_healthcare",
+      "family_id": "fam_sharma_01",
+      "name": "Healthcare & Medicine",
+      "icon": "HeartPulse",
+      "color": "#EF4444"
+    },
+    {
+      "id": "cat_shopping",
+      "family_id": "fam_sharma_01",
+      "name": "Shopping",
+      "icon": "ShoppingBag",
+      "color": "#14B8A6"
+    },
+    {
+      "id": "cat_entertainment",
+      "family_id": "fam_sharma_01",
+      "name": "Entertainment",
+      "icon": "Film",
+      "color": "#F97316"
+    },
+    {
+      "id": "cat_travel",
+      "family_id": "fam_sharma_01",
+      "name": "Travel & Trips",
+      "icon": "Plane",
+      "color": "#06B6D4"
+    },
+    {
+      "id": "cat_insurance",
+      "family_id": "fam_sharma_01",
+      "name": "Insurance Premiums",
+      "icon": "ShieldCheck",
+      "color": "#059669"
+    },
+    {
+      "id": "cat_investments",
+      "family_id": "fam_sharma_01",
+      "name": "Investments / SIP",
+      "icon": "TrendingUp",
+      "color": "#4F46E5"
+    },
+    {
+      "id": "cat_emi",
+      "family_id": "fam_sharma_01",
+      "name": "Loan EMI",
+      "icon": "CreditCard",
+      "color": "#7C3AED"
+    },
+    {
+      "id": "cat_misc",
+      "family_id": "fam_sharma_01",
+      "name": "Miscellaneous",
+      "icon": "MoreHorizontal",
+      "color": "#64748B"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "exp_1",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "paid_by_name": "Priya",
+      "category_id": "cat_groceries",
+      "category_name": "Groceries",
+      "amount": 14200,
+      "currency": "INR",
+      "date": "2026-09-04",
+      "payment_method": "UPI",
+      "merchant": "Ratnadeep Supermarket",
+      "notes": "Monthly staples, dry fruits and cooking oils",
+      "location": "Gachibowli, Hyderabad",
+      "receipt_url": "https://images.unsplash.com/photo-1554415707-9e49666ceb24?w=400",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-04T11:20:00Z"
+    },
+    {
+      "id": "exp_2",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "paid_by_name": "Raj",
+      "category_id": "cat_rent",
+      "category_name": "Rent & Maintenance",
+      "amount": 25000,
+      "currency": "INR",
+      "date": "2026-09-01",
+      "payment_method": "BANK_TRANSFER",
+      "merchant": "Aparna CyberLife Society",
+      "notes": "Flat maintenance & monthly advance",
+      "location": "Nallagandla",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-01T09:00:00Z"
+    },
+    {
+      "id": "exp_3",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "paid_by_name": "Raj",
+      "category_id": "cat_education",
+      "category_name": "Education & School",
+      "amount": 18000,
+      "currency": "INR",
+      "date": "2026-09-02",
+      "payment_method": "CREDIT_CARD",
+      "merchant": "Oakridge International School",
+      "notes": "Term 2 activity and bus fee for Aarav & Ananya",
+      "location": "Gachibowli",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-02T14:30:00Z"
+    },
+    {
+      "id": "exp_4",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "paid_by_name": "Priya",
+      "category_id": "cat_dining",
+      "category_name": "Food & Dining",
+      "amount": 6800,
+      "currency": "INR",
+      "date": "2026-09-06",
+      "payment_method": "UPI",
+      "merchant": "Chutneys Restaurant & Swiggy",
+      "notes": "Weekend family dinner & delivery",
+      "location": "Hitec City",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-06T20:15:00Z"
+    },
+    {
+      "id": "exp_5",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "paid_by_name": "Raj",
+      "category_id": "cat_transport",
+      "category_name": "Transport & Fuel",
+      "amount": 4500,
+      "currency": "INR",
+      "date": "2026-09-05",
+      "payment_method": "CREDIT_CARD",
+      "merchant": "Indian Oil Petrol Pump",
+      "notes": "Full tank for Honda City + Fastag recharge",
+      "location": "Kondapur",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-05T18:00:00Z"
+    },
+    {
+      "id": "exp_6",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "paid_by_name": "Priya",
+      "category_id": "cat_healthcare",
+      "category_name": "Healthcare & Medicine",
+      "amount": 2100,
+      "currency": "INR",
+      "date": "2026-09-07",
+      "payment_method": "UPI",
+      "merchant": "Apollo Pharmacy",
+      "notes": "Grandmother blood pressure medicines and multivitamins",
+      "location": "Madhapur",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-07T10:00:00Z"
+    },
+    {
+      "id": "exp_7",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "paid_by_name": "Raj",
+      "category_id": "cat_shopping",
+      "category_name": "Shopping",
+      "amount": 5600,
+      "currency": "INR",
+      "date": "2026-09-08",
+      "payment_method": "UPI",
+      "merchant": "Amazon India",
+      "notes": "School stationery & kitchen organizer",
+      "location": "Online",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-08T16:45:00Z"
+    },
+    {
+      "id": "exp_8",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "paid_by_name": "Raj",
+      "category_id": "cat_utilities",
+      "category_name": "Utilities & Bills",
+      "amount": 2250,
+      "currency": "INR",
+      "date": "2026-09-03",
+      "payment_method": "UPI",
+      "merchant": "Airtel Fiber Broadband",
+      "notes": "Home fiber internet 3-month plan",
+      "location": "Hyderabad",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-03T09:30:00Z"
+    },
+    {
+      "id": "exp_1789087265413",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "paid_by_name": "Raj",
+      "category_id": "cat_dining",
+      "category_name": "Food & Dining",
+      "amount": 200,
+      "currency": "INR",
+      "date": "2026-09-11",
+      "payment_method": "UPI",
+      "merchant": "Mandi",
+      "notes": "fruits",
+      "location": "",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-11T00:41:05.413Z"
+    }
+  ],
+  "budgets": [
+    {
+      "id": "b_1",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_groceries",
+      "category_name": "Groceries",
+      "monthly_limit": 15000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    },
+    {
+      "id": "b_2",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_dining",
+      "category_name": "Food & Dining",
+      "monthly_limit": 8000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    },
+    {
+      "id": "b_3",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_utilities",
+      "category_name": "Utilities & Bills",
+      "monthly_limit": 5000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    },
+    {
+      "id": "b_4",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_rent",
+      "category_name": "Rent & Maintenance",
+      "monthly_limit": 25000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    },
+    {
+      "id": "b_5",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_education",
+      "category_name": "Education & School",
+      "monthly_limit": 20000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    },
+    {
+      "id": "b_6",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_transport",
+      "category_name": "Transport & Fuel",
+      "monthly_limit": 6000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    },
+    {
+      "id": "b_7",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_healthcare",
+      "category_name": "Healthcare & Medicine",
+      "monthly_limit": 4000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    },
+    {
+      "id": "b_8",
+      "family_id": "fam_sharma_01",
+      "category_id": "cat_shopping",
+      "category_name": "Shopping",
+      "monthly_limit": 10000,
+      "month_year": "2026-09",
+      "created_at": "2026-09-09T16:50:36.617Z"
+    }
+  ],
+  "investments": [
+    {
+      "id": "inv_1",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "owner_name": "Raj Sharma",
+      "type": "MUTUAL_FUND",
+      "title": "Parag Parikh Flexi Cap Fund",
+      "institution": "PPFAS Mutual Fund",
+      "invested_amount": 800000,
+      "current_value": 1250000,
+      "gain_loss": 450000,
+      "folio_number": "10928374/2",
+      "nominee": "Priya Sharma (100%)",
+      "notes": "Monthly SIP ₹15,000 active",
+      "updated_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "inv_2",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "owner_name": "Priya Sharma",
+      "type": "MUTUAL_FUND",
+      "title": "Mirae Asset Large Cap Fund",
+      "institution": "Mirae Asset AMC",
+      "invested_amount": 450000,
+      "current_value": 600000,
+      "gain_loss": 150000,
+      "folio_number": "99281726/1",
+      "nominee": "Raj Sharma (100%)",
+      "notes": "Monthly SIP ₹10,000 active",
+      "updated_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "inv_3",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "owner_name": "Raj Sharma",
+      "type": "STOCK",
+      "title": "Direct Equity Portfolio (TCS, Infosys, Reliance)",
+      "institution": "Zerodha Kite",
+      "invested_amount": 650000,
+      "current_value": 920000,
+      "gain_loss": 270000,
+      "folio_number": "120816000293847",
+      "nominee": "Priya Sharma",
+      "notes": "Blue chip long term dividend stocks",
+      "updated_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "inv_4",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "owner_name": "Raj & Priya",
+      "type": "FIXED_DEPOSIT",
+      "title": "SBI Cumulative Fixed Deposit",
+      "institution": "State Bank of India",
+      "invested_amount": 450000,
+      "current_value": 500000,
+      "gain_loss": 50000,
+      "maturity_date": "2026-09-24",
+      "folio_number": "SBI-FD-482910",
+      "nominee": "Aarav Sharma",
+      "notes": "Maturing in 15 days! Rate 7.2% p.a.",
+      "updated_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "inv_5",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "owner_name": "Priya Sharma",
+      "type": "GOLD",
+      "title": "Sovereign Gold Bonds (SGB 2021-22)",
+      "institution": "RBI / HDFC Sec",
+      "invested_amount": 320000,
+      "current_value": 480000,
+      "gain_loss": 160000,
+      "folio_number": "SGB-2021-HYD",
+      "nominee": "Ananya Sharma",
+      "notes": "60 grams gold equivalence + 2.5% semi-annual interest",
+      "updated_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "inv_6",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "owner_name": "Raj Sharma",
+      "type": "PPF",
+      "title": "Public Provident Fund (PPF)",
+      "institution": "ICICI Bank",
+      "invested_amount": 400000,
+      "current_value": 530000,
+      "gain_loss": 130000,
+      "folio_number": "PPF-0029182",
+      "nominee": "Priya Sharma",
+      "notes": "Tax-free compound interest, 7.1%",
+      "updated_at": "2026-09-01T00:00:00Z"
+    }
+  ],
+  "insurance_policies": [
+    {
+      "id": "ins_1",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "insured_person": "Entire Family (Floater)",
+      "policy_type": "HEALTH",
+      "provider": "HDFC ERGO Optima Secure",
+      "policy_number": "HDFC-HLT-2024-9182",
+      "sum_insured": 1500000,
+      "premium_amount": 28400,
+      "renewal_date": "2027-03-15",
+      "nominee": "Priya Sharma",
+      "status": "ACTIVE",
+      "created_at": "2024-03-15T00:00:00Z"
+    },
+    {
+      "id": "ins_2",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "insured_person": "Honda City (TS09FA4021)",
+      "policy_type": "VEHICLE",
+      "provider": "ICICI Lombard Comprehensive",
+      "policy_number": "ICICI-MOT-882910",
+      "sum_insured": 750000,
+      "premium_amount": 14200,
+      "renewal_date": "2026-09-21",
+      "nominee": "Raj Sharma",
+      "status": "EXPIRING_SOON",
+      "created_at": "2025-09-21T00:00:00Z"
+    },
+    {
+      "id": "ins_3",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "insured_person": "Raj Sharma",
+      "policy_type": "LIFE",
+      "provider": "Max Life Smart Term Plan",
+      "policy_number": "MAX-TRM-771920",
+      "sum_insured": 15000000,
+      "premium_amount": 18500,
+      "renewal_date": "2026-11-10",
+      "nominee": "Priya Sharma (100%)",
+      "status": "ACTIVE",
+      "created_at": "2023-11-10T00:00:00Z"
+    }
+  ],
+  "liabilities": [
+    {
+      "id": "lia_1",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "owner_name": "Raj & Priya",
+      "type": "HOME_LOAN",
+      "title": "Aparna CyberLife Apartment Loan",
+      "lender": "State Bank of India",
+      "total_loan": 4500000,
+      "outstanding_amount": 1850000,
+      "monthly_emi": 42000,
+      "interest_rate": 8.5,
+      "end_date": "2031-08-01",
+      "created_at": "2021-08-01T00:00:00Z"
+    },
+    {
+      "id": "lia_2",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "owner_name": "Raj Sharma",
+      "type": "VEHICLE_LOAN",
+      "title": "Honda City Auto Loan",
+      "lender": "HDFC Bank",
+      "total_loan": 800000,
+      "outstanding_amount": 150000,
+      "monthly_emi": 16500,
+      "interest_rate": 7.9,
+      "end_date": "2027-02-01",
+      "created_at": "2023-02-01T00:00:00Z"
+    }
+  ],
+  "goals": [
+    {
+      "id": "goal_1",
+      "family_id": "fam_sharma_01",
+      "title": "Emergency Reserve Fund (6 Months Expenses)",
+      "category": "EMERGENCY_FUND",
+      "target_amount": 500000,
+      "current_amount": 320000,
+      "monthly_contribution": 15000,
+      "target_date": "2026-12-31",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "contributors": "[\"Raj\",\"Priya\"]",
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "goal_2",
+      "family_id": "fam_sharma_01",
+      "title": "Aarav Higher Education Corpus",
+      "category": "EDUCATION",
+      "target_amount": 1500000,
+      "current_amount": 850000,
+      "monthly_contribution": 25000,
+      "target_date": "2029-06-01",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "contributors": "[\"Raj\",\"Priya\"]",
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "goal_3",
+      "family_id": "fam_sharma_01",
+      "title": "Family Summer Vacation (Switzerland / Goa)",
+      "category": "VACATION",
+      "target_amount": 100000,
+      "current_amount": 65000,
+      "monthly_contribution": 10000,
+      "target_date": "2027-05-15",
+      "priority": "MEDIUM",
+      "status": "IN_PROGRESS",
+      "contributors": "[\"Raj\",\"Priya\",\"Aarav\"]",
+      "created_at": "2024-06-01T00:00:00Z"
+    }
+  ],
+  "calendar_events": [
+    {
+      "id": "evt_1",
+      "family_id": "fam_sharma_01",
+      "created_by_id": "usr_raj",
+      "title": "Car Insurance Renewal Deadline 🚗",
+      "type": "INSURANCE",
+      "start_date": "2026-09-21",
+      "is_all_day": true,
+      "assigned_member_id": "usr_raj",
+      "assigned_member_name": "Raj",
+      "is_recurring": false,
+      "visibility": "FAMILY",
+      "notes": "ICICI Lombard Policy TS09FA4021 due for renewal",
+      "created_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "evt_2",
+      "family_id": "fam_sharma_01",
+      "created_by_id": "usr_raj",
+      "title": "TSSPDCL Electricity Bill Due Tomorrow ⚡",
+      "type": "BILL",
+      "start_date": "2026-09-10",
+      "is_all_day": true,
+      "assigned_member_id": "usr_raj",
+      "assigned_member_name": "Raj",
+      "is_recurring": false,
+      "visibility": "FAMILY",
+      "notes": "Amount ₹3,840 via UPI",
+      "created_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "evt_3",
+      "family_id": "fam_sharma_01",
+      "created_by_id": "usr_priya",
+      "title": "Mom's Birthday & Family Dinner 🎂",
+      "type": "BIRTHDAY",
+      "start_date": "2026-09-22",
+      "is_all_day": true,
+      "assigned_member_name": "All Family",
+      "is_recurring": true,
+      "visibility": "FAMILY",
+      "notes": "Table booked at Feast, Sheraton Hotel at 7:30 PM",
+      "created_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "evt_4",
+      "family_id": "fam_sharma_01",
+      "created_by_id": "usr_aarav",
+      "title": "Aarav Science Olympiad & Project Submission 🔬",
+      "type": "SCHOOL",
+      "start_date": "2026-09-12",
+      "is_all_day": false,
+      "assigned_member_id": "usr_aarav",
+      "assigned_member_name": "Aarav",
+      "is_recurring": false,
+      "visibility": "FAMILY",
+      "notes": "Solar cell circuit model submission",
+      "created_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "evt_5",
+      "family_id": "fam_sharma_01",
+      "created_by_id": "usr_raj",
+      "title": "SBI Fixed Deposit Maturity (₹5,00,000) 🏦",
+      "type": "SIP",
+      "start_date": "2026-09-24",
+      "is_all_day": true,
+      "assigned_member_id": "usr_raj",
+      "assigned_member_name": "Raj",
+      "is_recurring": false,
+      "visibility": "FAMILY",
+      "notes": "Review reinvestment in higher yield instrument",
+      "created_at": "2026-09-01T00:00:00Z"
+    }
+  ],
+  "reminders": [
+    {
+      "id": "rem_1",
+      "family_id": "fam_sharma_01",
+      "title": "ICICI Lombard Car Insurance expires in 12 days",
+      "due_date": "2026-09-21",
+      "category": "INSURANCE",
+      "lead_days": 12,
+      "is_dismissed": false,
+      "created_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "rem_2",
+      "family_id": "fam_sharma_01",
+      "title": "Electricity Bill due tomorrow (₹3,840)",
+      "due_date": "2026-09-10",
+      "category": "BILL",
+      "lead_days": 1,
+      "is_dismissed": false,
+      "created_at": "2026-09-08T00:00:00Z"
+    },
+    {
+      "id": "rem_3",
+      "family_id": "fam_sharma_01",
+      "title": "Raj Passport renewal in 45 days (Passport Office Gachibowli)",
+      "due_date": "2026-10-24",
+      "category": "DOCUMENT",
+      "lead_days": 45,
+      "is_dismissed": false,
+      "created_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "rem_4",
+      "family_id": "fam_sharma_01",
+      "title": "SIP Auto-debit scheduled for 10th Sep (₹25,000)",
+      "due_date": "2026-09-10",
+      "category": "SIP",
+      "lead_days": 1,
+      "is_dismissed": false,
+      "created_at": "2026-09-01T00:00:00Z"
+    }
+  ],
+  "document_categories": [
+    {
+      "id": "doc_identity",
+      "name": "Identity & Govt IDs",
+      "icon": "Fingerprint",
+      "is_sensitive": true
+    },
+    {
+      "id": "doc_passport",
+      "name": "Passports & Visas",
+      "icon": "Globe",
+      "is_sensitive": true
+    },
+    {
+      "id": "doc_insurance",
+      "name": "Insurance Policies",
+      "icon": "Shield",
+      "is_sensitive": false
+    },
+    {
+      "id": "doc_property",
+      "name": "Property & Housing",
+      "icon": "Home",
+      "is_sensitive": true
+    },
+    {
+      "id": "doc_vehicle",
+      "name": "Vehicle & RC",
+      "icon": "Car",
+      "is_sensitive": false
+    },
+    {
+      "id": "doc_medical",
+      "name": "Medical & Prescriptions",
+      "icon": "Activity",
+      "is_sensitive": false
+    },
+    {
+      "id": "doc_education",
+      "name": "School & Certificates",
+      "icon": "Award",
+      "is_sensitive": false
+    },
+    {
+      "id": "doc_financial",
+      "name": "Tax & Financial Records",
+      "icon": "FileText",
+      "is_sensitive": true
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc_1",
+      "family_id": "fam_sharma_01",
+      "uploaded_by_id": "usr_raj",
+      "owner_name": "Raj Sharma",
+      "title": "Indian Passport — Raj",
+      "category_id": "doc_passport",
+      "document_number": "Z4928104",
+      "issue_date": "2016-10-25",
+      "expiry_date": "2026-10-24",
+      "issuer": "Ministry of External Affairs, India",
+      "file_url": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=600",
+      "file_type": "PDF",
+      "file_size_kb": 1420,
+      "tags": "passport, travel, identity, raj",
+      "notes": "Renewal required before international trip",
+      "ocr_extracted_text": "REPUBLIC OF INDIA PASSPORT Z4928104 RAJ SHARMA EXPIRY 24/10/2026",
+      "is_verified": true,
+      "created_at": "2024-01-10T00:00:00Z"
+    },
+    {
+      "id": "doc_2",
+      "family_id": "fam_sharma_01",
+      "uploaded_by_id": "usr_raj",
+      "owner_name": "Raj Sharma",
+      "title": "Aadhaar Card — Raj",
+      "category_id": "doc_identity",
+      "document_number": "•••• •••• 8492",
+      "issue_date": "2018-02-10",
+      "expiry_date": "",
+      "issuer": "UIDAI",
+      "file_url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600",
+      "file_type": "PDF",
+      "file_size_kb": 890,
+      "tags": "aadhaar, identity, govt, kyc",
+      "notes": "Linked with mobile and PAN",
+      "ocr_extracted_text": "GOVERNMENT OF INDIA UNIQUE IDENTIFICATION AUTHORITY OF INDIA RAJ SHARMA",
+      "is_verified": true,
+      "created_at": "2024-01-10T00:00:00Z"
+    },
+    {
+      "id": "doc_3",
+      "family_id": "fam_sharma_01",
+      "uploaded_by_id": "usr_priya",
+      "owner_name": "Priya Sharma",
+      "title": "PAN Card — Priya",
+      "category_id": "doc_identity",
+      "document_number": "ABCPS••••K",
+      "issue_date": "2019-07-14",
+      "expiry_date": "",
+      "issuer": "Income Tax Department",
+      "file_url": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600",
+      "file_type": "PDF",
+      "file_size_kb": 750,
+      "tags": "pan, tax, kyc, priya",
+      "notes": "Verified KYC",
+      "ocr_extracted_text": "INCOME TAX DEPARTMENT GOVT OF INDIA PRIYA SHARMA",
+      "is_verified": true,
+      "created_at": "2024-01-10T00:00:00Z"
+    },
+    {
+      "id": "doc_4",
+      "family_id": "fam_sharma_01",
+      "uploaded_by_id": "usr_raj",
+      "owner_name": "Family",
+      "title": "HDFC ERGO Health Insurance Policy Schedule",
+      "category_id": "doc_insurance",
+      "document_number": "HDFC-HLT-2024-9182",
+      "issue_date": "2024-03-15",
+      "expiry_date": "2027-03-15",
+      "issuer": "HDFC ERGO General Insurance",
+      "file_url": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600",
+      "file_type": "PDF",
+      "file_size_kb": 2300,
+      "tags": "health, insurance, medical, family, hospital",
+      "notes": "Sum insured ₹15L with Restore Benefit. Cashless at Apollo & Care hospitals.",
+      "ocr_extracted_text": "HDFC ERGO OPTIMA SECURE FAMILY FLOATER COVERAGE INR 15,00,000 EXPIRY 15/03/2027",
+      "is_verified": true,
+      "created_at": "2024-03-16T00:00:00Z"
+    },
+    {
+      "id": "doc_5",
+      "family_id": "fam_sharma_01",
+      "uploaded_by_id": "usr_raj",
+      "owner_name": "Raj & Priya",
+      "title": "Apartment Sale Deed & Registered Conveyance",
+      "category_id": "doc_property",
+      "document_number": "HYD-REG-2021-492",
+      "issue_date": "2021-08-10",
+      "expiry_date": "",
+      "issuer": "Sub-Registrar Office, Serilingampally",
+      "file_url": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600",
+      "file_type": "PDF",
+      "file_size_kb": 4500,
+      "tags": "property, house, deed, flat, aparna",
+      "notes": "Original in SBI Bank Locker",
+      "ocr_extracted_text": "DEED OF SALE APARNA CYBERLIFE FLAT 402 HYDERABAD",
+      "is_verified": true,
+      "created_at": "2024-01-15T00:00:00Z"
+    }
+  ],
+  "emergency_contacts": [
+    {
+      "id": "emg_1",
+      "family_id": "fam_sharma_01",
+      "name": "Dr. K. Srinivas Rao (Family Doctor)",
+      "relationship": "Consultant Physician / Pediatrician",
+      "phone": "+91 94401 23456",
+      "secondary_phone": "+91 40 2345 6789",
+      "email": "dr.srinivas@apolloclinic.com",
+      "type": "DOCTOR",
+      "address": "Apollo Clinic, Plot 14, Gachibowli",
+      "is_primary": true,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "emg_2",
+      "family_id": "fam_sharma_01",
+      "name": "Apollo Hospital Emergency ER",
+      "relationship": "Emergency Medical Hospital",
+      "phone": "1066",
+      "secondary_phone": "+91 40 2360 7777",
+      "type": "HOSPITAL",
+      "address": "Road No 72, Jubilee Hills, Hyderabad",
+      "is_primary": true,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "emg_3",
+      "family_id": "fam_sharma_01",
+      "name": "Suresh Sharma (Brother / Uncle)",
+      "relationship": "Raj's Brother",
+      "phone": "+91 98490 88776",
+      "secondary_phone": "",
+      "email": "suresh.sharma@example.com",
+      "type": "PERSONAL",
+      "address": "Banjara Hills, Hyderabad",
+      "is_primary": false,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "emg_4",
+      "family_id": "fam_sharma_01",
+      "name": "HDFC ERGO Cashless TPA Desk",
+      "relationship": "Health Insurance Claims",
+      "phone": "1800 2666",
+      "secondary_phone": "022 6234 6234",
+      "type": "INSURANCE",
+      "address": "Policy: HDFC-HLT-2024-9182",
+      "is_primary": false,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "emergency_profiles": [
+    {
+      "id": "ep_raj",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "full_name": "Raj Sharma",
+      "blood_group": "O+",
+      "allergies": "None",
+      "chronic_conditions": "Mild astigmatism",
+      "medications": "None",
+      "primary_doctor": "Dr. K. Srinivas Rao",
+      "insurance_summary": "HDFC ERGO Floater 15L, Max Life Term 1.5Cr",
+      "special_instructions": "Contact Priya Sharma immediately.",
+      "updated_at": "2026-09-09T16:50:36.618Z"
+    },
+    {
+      "id": "ep_priya",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_priya",
+      "full_name": "Priya Sharma",
+      "blood_group": "B+",
+      "allergies": "Dust & Sulfa drugs",
+      "chronic_conditions": "None",
+      "medications": "Daily Vitamin D3",
+      "primary_doctor": "Dr. K. Srinivas Rao",
+      "insurance_summary": "HDFC ERGO Floater 15L",
+      "special_instructions": "Sulfa allergy caution for any prescription.",
+      "updated_at": "2026-09-09T16:50:36.618Z"
+    },
+    {
+      "id": "ep_kalyani",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_kalyani",
+      "full_name": "Kalyani Sharma (Grandmother)",
+      "blood_group": "B+",
+      "allergies": "Penicillin (Severe)",
+      "chronic_conditions": "Hypertension, Osteoarthritis in left knee",
+      "medications": "Telmisartan 40mg (Morning), Shelcal 500 (Afternoon)",
+      "primary_doctor": "Dr. P. V. Raman (Cardiologist, Care Hospital)",
+      "insurance_summary": "Star Senior Citizens Red Carpet (5L)",
+      "special_instructions": "CRITICAL: DO NOT ADMINISTER PENICILLIN. Keep BP medication handy.",
+      "updated_at": "2026-09-09T16:50:36.618Z"
+    },
+    {
+      "id": "ep_aarav",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_aarav",
+      "full_name": "Aarav Sharma",
+      "blood_group": "O+",
+      "allergies": "Peanuts (Mild hives)",
+      "chronic_conditions": "None",
+      "medications": "Cetirizine when needed",
+      "primary_doctor": "Dr. K. Srinivas Rao",
+      "insurance_summary": "HDFC ERGO Floater 15L",
+      "special_instructions": "Oakridge School Emergency Contact: Raj Sharma (+91 98765 43210)",
+      "updated_at": "2026-09-09T16:50:36.618Z"
+    },
+    {
+      "id": "ep_ananya",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_ananya",
+      "full_name": "Ananya Sharma",
+      "blood_group": "A+",
+      "allergies": "None",
+      "chronic_conditions": "None",
+      "medications": "None",
+      "primary_doctor": "Dr. K. Srinivas Rao",
+      "insurance_summary": "HDFC ERGO Floater 15L",
+      "special_instructions": "Oakridge School Student ID: OAK-2024-88",
+      "updated_at": "2026-09-09T16:50:36.618Z"
+    }
+  ],
+  "memories": [
+    {
+      "id": "mem_1",
+      "family_id": "fam_sharma_01",
+      "title": "Goa Summer Road Trip & Sunset at Palolem Beach 🏖️",
+      "date": "2026-05-18",
+      "location": "South Goa, India",
+      "album": "Goa 2026",
+      "description": "Day 2 of our memorable family road trip. The kids loved the dolphin tour and building sand castles together while Dadi enjoyed the sea breeze.",
+      "photos": "[\"https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&auto=format&fit=crop&q=80\",\"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80\",\"https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=80\"]",
+      "tagged_members": "[\"Raj\",\"Priya\",\"Aarav\",\"Ananya\",\"Kalyani\"]",
+      "created_at": "2026-05-20T00:00:00Z"
+    },
+    {
+      "id": "mem_2",
+      "family_id": "fam_sharma_01",
+      "title": "Ananya's 8th Birthday & Magic Show Party 🎈",
+      "date": "2025-11-05",
+      "location": "Home, Hyderabad",
+      "album": "Birthdays",
+      "description": "Ananya turned 8! All her school friends came over for a homemade chocolate truffle cake and puppet magic show.",
+      "photos": "[\"https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop&q=80\",\"https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&auto=format&fit=crop&q=80\"]",
+      "tagged_members": "[\"Ananya\",\"Aarav\",\"Priya\",\"Raj\",\"Kalyani\"]",
+      "created_at": "2025-11-06T00:00:00Z"
+    },
+    {
+      "id": "mem_3",
+      "family_id": "fam_sharma_01",
+      "title": "Diwali Lakshmi Puja & Family Diyas 🪔",
+      "date": "2025-10-31",
+      "location": "Hyderabad",
+      "album": "Festivals",
+      "description": "Decorated the house with 50 traditional earthen diyas and marigold garlands with Dadi leading the evening Aarti.",
+      "photos": "[\"https://images.unsplash.com/photo-1605379399642-870262d3d051?w=800&auto=format&fit=crop&q=80\"]",
+      "tagged_members": "[\"Raj\",\"Priya\",\"Aarav\",\"Ananya\",\"Kalyani\"]",
+      "created_at": "2025-11-01T00:00:00Z"
+    }
+  ],
+  "voice_memories": [
+    {
+      "id": "vm_1",
+      "family_id": "fam_sharma_01",
+      "speaker_name": "Kalyani Sharma",
+      "speaker_relationship": "Grandmother",
+      "title": "How We Moved to Hyderabad in 1982",
+      "date": "2026-02-14",
+      "audio_url": "https://actions.google.com/sounds/v1/ambiences/outdoor_park.ogg",
+      "duration_seconds": 145,
+      "transcript": "When your grandfather and I first came to Hyderabad in 1982, Hitec city was just rocks and lakes. We started with two steel trunks and a dream for our children. Never forget where your roots come from, work hard and stay honest.",
+      "translation_hindi": "जब आपके दादाजी और मैं 1982 में पहली बार हैदराबाद आए, तब हाई-टेक सिटी सिर्फ चट्टानें और झीलें थीं। हमने दो स्टील के बक्सों और अपने बच्चों के सपने के साथ शुरुआत की। अपनी जड़ों को कभी मत भूलना।",
+      "translation_telugu": "1982 లో మీ తాతగారు మరియు నేను మొదటిసారి హైదరాబాద్ వచ్చినప్పుడు, హైటెక్ సిటీ కేవలం రాళ్ళు మరియు సరస్సులు మాత్రమే. మేము రెండు స్టీల్ ట్రంకులతో ప్రారంభించాము.",
+      "created_at": "2026-02-14T10:00:00Z"
+    },
+    {
+      "id": "vm_2",
+      "family_id": "fam_sharma_01",
+      "speaker_name": "Kalyani Sharma",
+      "speaker_relationship": "Grandmother",
+      "title": "Special Advice on Kindness and Family Unity",
+      "date": "2026-07-20",
+      "audio_url": "https://actions.google.com/sounds/v1/ambiences/outdoor_park.ogg",
+      "duration_seconds": 98,
+      "transcript": "To Aarav and Ananya: Money will come and go, but the love and respect you have for your siblings and parents is your true wealth. Always support each other when times get tough.",
+      "translation_hindi": "आरव और अनन्या के लिए: पैसा आएगा और जाएगा, लेकिन अपने भाई-बहनों और माता-पिता के प्रति जो प्यार और सम्मान है, वही आपकी असली दौलत है।",
+      "translation_telugu": "ఆరవ్ మరియు అనన్యకు: డబ్బు వస్తుంది పోతుంది, కానీ మీ తోబుట్టువులు మరియు తల్లిదండ్రుల పట్ల మీకు ఉండే ప్రేమ మరియు గౌరవమే మీ నిజమైన సంపద.",
+      "created_at": "2026-07-20T11:00:00Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "tsk_1",
+      "family_id": "fam_sharma_01",
+      "title": "Pay TSSPDCL Electricity Bill (₹3,840) ⚡",
+      "category": "BILL",
+      "priority": "HIGH",
+      "status": "PENDING",
+      "assigned_to_id": "usr_raj",
+      "assigned_to_name": "Raj",
+      "due_date": "2026-09-10",
+      "is_recurring": true,
+      "created_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "tsk_2",
+      "family_id": "fam_sharma_01",
+      "title": "Book Daikin AC Pre-servicing before festival season ❄️",
+      "category": "MAINTENANCE",
+      "priority": "MEDIUM",
+      "status": "PENDING",
+      "assigned_to_id": "usr_raj",
+      "assigned_to_name": "Raj",
+      "due_date": "2026-09-15",
+      "is_recurring": false,
+      "created_at": "2026-09-02T00:00:00Z"
+    },
+    {
+      "id": "tsk_3",
+      "family_id": "fam_sharma_01",
+      "title": "Complete 9th Grade Science Journal & Circuit Model 📚",
+      "category": "SCHOOL",
+      "priority": "HIGH",
+      "status": "PENDING",
+      "assigned_to_id": "usr_aarav",
+      "assigned_to_name": "Aarav",
+      "due_date": "2026-09-12",
+      "is_recurring": false,
+      "created_at": "2026-09-05T00:00:00Z",
+      "completed_at": null
+    },
+    {
+      "id": "tsk_4",
+      "family_id": "fam_sharma_01",
+      "title": "Pick up Dadi Monthly Blood Pressure Medicines from Apollo 💊",
+      "category": "CHORE",
+      "priority": "HIGH",
+      "status": "PENDING",
+      "assigned_to_id": "usr_priya",
+      "assigned_to_name": "Priya",
+      "due_date": "2026-09-07",
+      "is_recurring": true,
+      "completed_at": null,
+      "created_at": "2026-09-01T00:00:00Z"
+    }
+  ],
+  "grocery_items": [
+    {
+      "id": "g_1",
+      "family_id": "fam_sharma_01",
+      "item_name": "Aashirvaad Shudh Chakki Atta (10kg)",
+      "quantity": "1 pack",
+      "category": "STAPLES",
+      "is_purchased": true,
+      "added_by_name": "Priya",
+      "created_at": "2026-09-09T16:50:36.618Z"
+    },
+    {
+      "id": "g_2",
+      "family_id": "fam_sharma_01",
+      "item_name": "Heritage / Nandini Toned Milk",
+      "quantity": "2 Litres",
+      "category": "DAIRY",
+      "is_purchased": false,
+      "added_by_name": "Raj",
+      "created_at": "2026-09-09T16:50:36.618Z"
+    },
+    {
+      "id": "g_3",
+      "family_id": "fam_sharma_01",
+      "item_name": "Organic Tomatoes & Baby Spinach",
+      "quantity": "1.5 kg",
+      "category": "PRODUCE",
+      "is_purchased": false,
+      "added_by_name": "Priya",
+      "created_at": "2026-09-09T16:50:36.619Z"
+    },
+    {
+      "id": "g_4",
+      "family_id": "fam_sharma_01",
+      "item_name": "California Almonds & Walnuts",
+      "quantity": "500g each",
+      "category": "SNACKS",
+      "is_purchased": false,
+      "added_by_name": "Kalyani",
+      "created_at": "2026-09-09T16:50:36.619Z"
+    },
+    {
+      "id": "g_5",
+      "family_id": "fam_sharma_01",
+      "item_name": "Vim Dishwasher Gel & Sponge Scrubbers",
+      "quantity": "1 bottle",
+      "category": "HOUSEHOLD",
+      "is_purchased": false,
+      "added_by_name": "Priya",
+      "created_at": "2026-09-09T16:50:36.619Z"
+    }
+  ],
+  "maintenance_items": [
+    {
+      "id": "maint_1",
+      "family_id": "fam_sharma_01",
+      "item_name": "Living Room Daikin 1.5T Inverter AC",
+      "service_type": "AC",
+      "last_service_date": "2026-03-15",
+      "next_service_due": "2026-09-15",
+      "service_provider": "Urban Company Daikin Specialist",
+      "contact_phone": "+91 98480 11223",
+      "recurring_interval_months": 6,
+      "notes": "Deep jet clean & filter check"
+    },
+    {
+      "id": "maint_2",
+      "family_id": "fam_sharma_01",
+      "item_name": "Honda City TS09FA4021 (20k km service)",
+      "service_type": "CAR",
+      "last_service_date": "2026-01-20",
+      "next_service_due": "2026-10-10",
+      "service_provider": "Sundaram Honda, Kondapur",
+      "contact_phone": "+91 40 4455 6677",
+      "recurring_interval_months": 9,
+      "notes": "Engine oil change, wheel alignment and brake pads"
+    },
+    {
+      "id": "maint_3",
+      "family_id": "fam_sharma_01",
+      "item_name": "Kent Grand Plus RO Water Purifier",
+      "service_type": "RO_FILTER",
+      "last_service_date": "2026-04-10",
+      "next_service_due": "2026-10-15",
+      "service_provider": "Kent Authorized Care",
+      "contact_phone": "1800 100 1001",
+      "recurring_interval_months": 6,
+      "notes": "Sediment and carbon filter replacement"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_1",
+      "family_id": "fam_sharma_01",
+      "title": "🔴 Insurance Renewal Alert",
+      "message": "ICICI Lombard Vehicle Insurance for Honda City expires in 12 days (21 Sep). Renew to prevent policy lapse.",
+      "type": "URGENT",
+      "link_tab": "vault",
+      "is_read": false,
+      "created_at": "2026-09-09T08:00:00Z"
+    },
+    {
+      "id": "notif_2",
+      "family_id": "fam_sharma_01",
+      "title": "🟠 Electricity Bill Due Tomorrow",
+      "message": "TSSPDCL electricity bill of ₹3,840 is due on 10 Sep. Avoid late surcharge.",
+      "type": "WARNING",
+      "link_tab": "money",
+      "is_read": false,
+      "created_at": "2026-09-09T09:30:00Z"
+    },
+    {
+      "id": "notif_3",
+      "family_id": "fam_sharma_01",
+      "title": "🟢 SIP Investment Processed",
+      "message": "₹25,000 monthly SIP has been credited into Parag Parikh and Mirae Asset funds.",
+      "type": "SUCCESS",
+      "link_tab": "money",
+      "is_read": true,
+      "created_at": "2026-09-08T10:00:00Z"
+    },
+    {
+      "id": "notif_4",
+      "family_id": "fam_sharma_01",
+      "title": "🤖 FamilyAI Insight",
+      "message": "Your grocery spending is 18% higher than your 3-month average. You could save approx ₹2,300 by trimming non-essentials.",
+      "type": "INFO",
+      "link_tab": "ai",
+      "is_read": false,
+      "created_at": "2026-09-09T06:00:00Z"
+    }
+  ],
+  "ai_conversations": [
+    {
+      "id": "conv_1788973351295",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "role_at_time": "FAMILY_HEAD",
+      "user_query": "How much did we spend on groceries this month?",
+      "ai_response": "This month, your family has spent **₹14,200** on groceries out of the planned budget of **₹15,000** (95% utilized). You are currently ₹800 away from your monthly limit.",
+      "tools_called": "[\"Expenses DB\",\"Budgets DB\"]",
+      "created_at": "2026-09-09T17:02:31.308Z"
+    },
+    {
+      "id": "conv_1789087413689",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "role_at_time": "FAMILY_HEAD",
+      "user_query": "what is due ",
+      "ai_response": "Hello Raj Sharma! I am your **One Family AI Assistant**. I can help you with:\n\n• **Family Finances:** \"How much did we spend on groceries?\"\n• **Upcoming Deadlines:** \"When is our next insurance renewal?\"\n• **Goals:** \"Are we on track for our emergency fund?\"\n• **Travel & Occasions:** \"Create a packing list for our trip\" or \"Suggest a gift for Mom\"\n• **Family Chores:** \"What tasks are pending today?\"\n\nHow can I help your family today?",
+      "tools_called": "[]",
+      "created_at": "2026-09-11T00:43:33.689Z"
+    },
+    {
+      "id": "conv_1789087446283",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "role_at_time": "FAMILY_HEAD",
+      "user_query": "how much spent for fruits",
+      "ai_response": "Hello Raj Sharma! I am your **One Family AI Assistant**. I can help you with:\n\n• **Family Finances:** \"How much did we spend on groceries?\"\n• **Upcoming Deadlines:** \"When is our next insurance renewal?\"\n• **Goals:** \"Are we on track for our emergency fund?\"\n• **Travel & Occasions:** \"Create a packing list for our trip\" or \"Suggest a gift for Mom\"\n• **Family Chores:** \"What tasks are pending today?\"\n\nHow can I help your family today?",
+      "tools_called": "[]",
+      "created_at": "2026-09-11T00:44:06.283Z"
+    },
+    {
+      "id": "conv_1789087468206",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "role_at_time": "FAMILY_HEAD",
+      "user_query": "What is our family net worth?",
+      "ai_response": "Your family's current net worth is **₹22.8 Lakhs** (₹22,80,000).\n\n• **Total Assets:** ₹42.8 Lakhs (Mutual Funds, Stocks, Gold, FDs, PPF)\n• **Total Liabilities:** ₹20.0 Lakhs (Home & Car Loans)\n\n*Note: Projections are estimates based on your logged records.*",
+      "tools_called": "[\"Investments DB\",\"Liabilities DB\"]",
+      "created_at": "2026-09-11T00:44:28.206Z"
+    },
+    {
+      "id": "conv_1789087487635",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "role_at_time": "FAMILY_HEAD",
+      "user_query": "What tasks are pending today?",
+      "ai_response": "Here are the active family tasks:\n\n• [HIGH] **Pay TSSPDCL Electricity Bill (₹3,840) ⚡** (Assigned: Raj)\n• [MEDIUM] **Book Daikin AC Pre-servicing before festival season ❄️** (Assigned: Raj)\n• [HIGH] **Complete 9th Grade Science Journal & Circuit Model 📚** (Assigned: Aarav)\n• [HIGH] **Pick up Dadi Monthly Blood Pressure Medicines from Apollo 💊** (Assigned: Priya)\n\nWould you like to assign a new task to any family member?",
+      "tools_called": "[\"Tasks DB\"]",
+      "created_at": "2026-09-11T00:44:47.635Z"
+    }
+  ]
+}
