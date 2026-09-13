@@ -539,20 +539,56 @@ export const FamilyView: React.FC = () => {
   ];
 
   return (
-    <div className="p-4 space-y-5 animate-fade-in text-slate-100 pb-12">
-      {/* Title */}
+    <div className="p-4 space-y-4 animate-fade-in text-slate-100 pb-12">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-extrabold text-white tracking-tight">Family Hub</h2>
-          <p className="text-xs text-slate-400">Members, tree, chores, wish list & emergency</p>
+          <h2 className="text-xl font-extrabold text-white tracking-tight">Family</h2>
+          <p className="text-xs text-slate-400">Together Always • {family?.name || 'One Family'}</p>
         </div>
-        <button
-          onClick={() => setActiveSubTab('EMERGENCY')}
-          className="flex items-center gap-1.5 bg-rose-600/90 hover:bg-rose-600 text-white font-bold text-xs px-3 py-1.5 rounded-xl shadow-md shadow-rose-900/40 active:scale-95 transition-transform"
-        >
-          <ShieldAlert className="w-4 h-4" />
-          <span>Emergency Vault</span>
-        </button>
+        {canManageFamily && (
+          <button
+            onClick={() => setShowAddMember(true)}
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-white active:scale-95 transition-all shadow-sm"
+            title="Add Family Member"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Horizontal Story-style Member Avatars (Mockup Screen 2) */}
+      <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none pt-1">
+        {familyMembers.map((member) => (
+          <div
+            key={member.id}
+            onClick={() => openEditMember(member)}
+            className="flex flex-col items-center min-w-[64px] cursor-pointer group active:scale-95 transition-transform"
+          >
+            <div className="relative mb-1">
+              <img
+                src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                alt={member.name}
+                className={`w-12 h-12 rounded-full object-cover p-0.5 border-2 transition-all ${
+                  member.role === 'FAMILY_HEAD'
+                    ? 'border-amber-400 ring-2 ring-amber-400/30'
+                    : 'border-indigo-500/80 group-hover:border-amber-400'
+                }`}
+              />
+              {member.role === 'FAMILY_HEAD' && (
+                <span className="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 text-[8px] font-black px-1 rounded-full shadow-sm">
+                  👑
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-bold text-white group-hover:text-amber-300 truncate max-w-[64px]">
+              {member.name.split(' ')[0]}
+            </span>
+            <span className="text-[10px] text-slate-400 truncate max-w-[64px]">
+              {member.role === 'FAMILY_HEAD' ? 'Family Head' : member.relationship || 'Member'}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Sub Tabs */}

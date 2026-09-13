@@ -4756,6 +4756,46 @@
       "category": "EMERGENCY",
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-12T23:36:05.658Z"
+    },
+    {
+      "id": "aud_1789316501484_5or3z",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T16:21:41.484Z"
+    },
+    {
+      "id": "aud_1789316501792_gzvwy",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T16:21:41.792Z"
+    },
+    {
+      "id": "aud_1789316593684_ptc4t",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T16:23:13.684Z"
+    },
+    {
+      "id": "aud_1789316593942_8ja0c",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T16:23:13.942Z"
     }
   ],
   "expense_categories": [

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
 import { translations } from '../../i18n/index.js';
-import { Bell, Search, Eye, EyeOff, Lock, Users, ShieldAlert, Sparkles, ChevronDown } from 'lucide-react';
+import { Bell, Search, Eye, EyeOff, Lock, Users, ShieldAlert, ChevronDown, Globe, LogOut, Check } from 'lucide-react';
 
 interface HeaderProps {
   onOpenSearch: () => void;
@@ -11,107 +11,195 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotifications, onOpenEmergency }) => {
-  const { currentUser, familyMembers, switchActiveMember, activeLanguage, setLanguage, logout } = useAuth();
+  const { currentUser, family, familyMembers, switchActiveMember, activeLanguage, setLanguage, logout } = useAuth();
   const { isPrivacyMode, togglePrivacyMode, lockApp } = useSecurity();
-  const [showMemberDropdown, setShowMemberDropdown] = useState(false);
-  const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
   const t = translations[activeLanguage];
 
-  const getRoleBadge = (role?: string) => {
+  const getRoleLabel = (role?: string) => {
     switch (role) {
       case 'FAMILY_HEAD':
-        return <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded-full">HEAD</span>;
+        return 'Head';
       case 'SPOUSE':
-        return <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded-full">CO-ADMIN</span>;
+        return 'Spouse';
       case 'CHILD':
-        return <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded-full">CHILD</span>;
+        return 'Child';
       case 'VIEWER':
-        return <span className="bg-slate-500/20 text-slate-300 border border-slate-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded-full">VIEWER</span>;
+        return 'Viewer';
       default:
-        return <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded-full">ADULT</span>;
+        return 'Member';
     }
   };
 
+  const displayName = family?.name || `${currentUser?.name?.split(' ')[0] || 'My'} Family`;
+
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3">
-      {/* Top utility row: Member Switcher & Emergency Pill */}
-      <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800/50">
-        {/* Active Member Switcher */}
+    <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/60 px-4 py-3">
+      <div className="flex items-center justify-between">
+        {/* Left: Family Profile Pill */}
         <div className="relative">
           <button
-            onClick={() => setShowMemberDropdown(!showMemberDropdown)}
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700/80 transition-colors px-2.5 py-1.5 rounded-full border border-slate-700 text-xs text-slate-200"
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-2.5 text-left group active:scale-98 transition-all"
           >
-            <img
-              src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-              alt={currentUser?.name}
-              className="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/60"
-            />
-            <span className="font-semibold max-w-[90px] truncate">{currentUser?.name?.split(' ')[0]}</span>
-            {getRoleBadge(currentUser?.role)}
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <div className="relative">
+              <img
+                src={currentUser?.avatar_url || family?.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                alt={currentUser?.name}
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-amber-400/40 group-hover:ring-amber-400 shadow-md"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-slate-950"></span>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-sm font-bold text-white tracking-tight group-hover:text-amber-300 transition-colors">
+                  {displayName}
+                </h1>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+              </div>
+              <p className="text-[10px] text-slate-400 font-medium tracking-wide">
+                One Home • One Family • One Future
+              </p>
+            </div>
           </button>
 
-          {/* Switcher Dropdown */}
-          {showMemberDropdown && (
-            <div className="absolute top-full left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-2 z-50 text-slate-200">
-              <div className="text-[11px] font-semibold text-slate-400 px-2.5 py-1 uppercase tracking-wider">
-                {currentUser?.role === 'FAMILY_HEAD' ? 'Switch Active Profile (Head Only)' : 'My Profile'}
-              </div>
-              
-              {currentUser?.role === 'FAMILY_HEAD' ? (
-                <div className="space-y-1 mt-1">
-                  {familyMembers.map((member) => (
-                    <button
-                      key={member.id}
-                      onClick={() => {
-                        switchActiveMember(member.id);
-                        setShowMemberDropdown(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left text-xs transition-colors ${
-                        currentUser?.id === member.id ? 'bg-indigo-600/30 text-white font-bold border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <img src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'} alt={member.name} className="w-6 h-6 rounded-full object-cover" />
-                        <div>
-                          <div className="font-medium text-slate-100">{member.name}</div>
-                          <div className="text-[10px] text-slate-400">{member.relationship}</div>
-                        </div>
-                      </div>
-                      {getRoleBadge(member.role)}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-3 bg-slate-800/80 rounded-xl space-y-2 mt-1 border border-slate-700/80">
-                  <div className="flex items-center gap-2.5">
-                    <img
-                      src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-                      alt={currentUser?.name}
-                      className="w-10 h-10 rounded-xl object-cover ring-1 ring-amber-400/40"
-                    />
-                    <div>
-                      <div className="font-bold text-white text-xs">{currentUser?.name}</div>
-                      <div className="text-[10px] text-slate-400">{currentUser?.relationship || 'Family Member'}</div>
+          {/* Profile & Family Settings Dropdown */}
+          {showProfileMenu && (
+            <div className="absolute top-full left-0 mt-2 w-72 bg-slate-900/98 backdrop-blur-2xl border border-slate-700/80 rounded-3xl shadow-2xl p-3 z-50 text-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
+              {/* User Profile Header */}
+              <div className="p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60 mb-2">
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                    alt={currentUser?.name}
+                    className="w-10 h-10 rounded-xl object-cover ring-1 ring-amber-400/40"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-xs text-white truncate">{currentUser?.name}</span>
+                      <span className="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded-full border border-amber-500/30 shrink-0">
+                        {getRoleLabel(currentUser?.role)}
+                      </span>
                     </div>
+                    <div className="text-[10px] text-slate-400 truncate">{currentUser?.email || currentUser?.phone || family?.name}</div>
                   </div>
-                  <div className="text-[10px] text-indigo-400 pt-1.5 border-t border-slate-700/50">
-                    🔒 {currentUser?.permissions?.length || 0} permissions authorized by Family Head
+                </div>
+              </div>
+
+              {/* Quick Utility Tools Grid */}
+              <div className="grid grid-cols-3 gap-1.5 mb-2">
+                <button
+                  onClick={() => { togglePrivacyMode(); setShowProfileMenu(false); }}
+                  className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 text-slate-300 hover:text-amber-400 transition-colors"
+                >
+                  {isPrivacyMode ? <EyeOff className="w-4 h-4 text-amber-400 mb-1" /> : <Eye className="w-4 h-4 mb-1" />}
+                  <span className="text-[10px] font-medium">{isPrivacyMode ? 'Masked' : 'Privacy'}</span>
+                </button>
+
+                <button
+                  onClick={() => { lockApp(); setShowProfileMenu(false); }}
+                  className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 text-slate-300 hover:text-indigo-400 transition-colors"
+                >
+                  <Lock className="w-4 h-4 mb-1" />
+                  <span className="text-[10px] font-medium">Lock</span>
+                </button>
+
+                <button
+                  onClick={() => { onOpenEmergency(); setShowProfileMenu(false); }}
+                  className="flex flex-col items-center justify-center p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 transition-colors"
+                >
+                  <ShieldAlert className="w-4 h-4 mb-1 animate-pulse" />
+                  <span className="text-[10px] font-bold">SOS</span>
+                </button>
+              </div>
+
+              {/* Language Selector Option */}
+              <div className="mb-2">
+                <button
+                  onClick={() => setShowLangMenu(!showLangMenu)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-xs text-slate-300 transition-colors border border-slate-700/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Language</span>
+                  </div>
+                  <span className="text-[11px] font-bold text-amber-400">
+                    {activeLanguage === 'en' ? 'English' : activeLanguage === 'te' ? 'తెలుగు' : 'हिन्दी'}
+                  </span>
+                </button>
+
+                {showLangMenu && (
+                  <div className="mt-1 space-y-1 p-1 bg-slate-950/80 rounded-xl border border-slate-800">
+                    {[
+                      { code: 'en' as const, label: 'English (EN)' },
+                      { code: 'te' as const, label: 'తెలుగు (TE)' },
+                      { code: 'hi' as const, label: 'हिन्दी (HI)' },
+                    ].map((l) => (
+                      <button
+                        key={l.code}
+                        onClick={() => { setLanguage(l.code); setShowLangMenu(false); }}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs ${
+                          activeLanguage === l.code ? 'bg-indigo-600/30 text-white font-bold' : 'text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{l.label}</span>
+                        {activeLanguage === l.code && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Family Members Switcher (For Head) */}
+              {currentUser?.role === 'FAMILY_HEAD' && (
+                <div className="mb-2">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
+                    Family Profiles
+                  </div>
+                  <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                    {familyMembers.map((member) => (
+                      <button
+                        key={member.id}
+                        onClick={() => {
+                          switchActiveMember(member.id);
+                          setShowProfileMenu(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs transition-colors ${
+                          currentUser?.id === member.id
+                            ? 'bg-indigo-600/30 text-white font-bold border border-indigo-500/40'
+                            : 'hover:bg-slate-800 text-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                            alt={member.name}
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                          <span className="truncate">{member.name}</span>
+                        </div>
+                        <span className="text-[9px] text-slate-400">{getRoleLabel(member.role)}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
 
-              <div className="pt-2 mt-2 border-t border-slate-800 space-y-1">
+              {/* Sign Out */}
+              <div className="pt-2 border-t border-slate-800/80">
                 <button
                   onClick={() => {
-                    setShowMemberDropdown(false);
+                    setShowProfileMenu(false);
                     logout();
                   }}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 font-semibold transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 font-semibold transition-colors"
                 >
-                  <span>Sign Out</span>
+                  <div className="flex items-center gap-2">
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </div>
                   <span>➔</span>
                 </button>
               </div>
@@ -119,104 +207,23 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
           )}
         </div>
 
-        {/* Right side utilities: Language, Privacy Eye, Emergency Button */}
-        <div className="flex items-center gap-1.5">
-          {/* Language Switcher */}
-          <div className="relative">
-            <button
-              onClick={() => setShowLangDropdown(!showLangDropdown)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium px-2 py-1 rounded-lg border border-slate-700"
-            >
-              {activeLanguage === 'en' ? '🇬🇧 EN' : activeLanguage === 'te' ? '🇮🇳 తెలుగు' : '🇮🇳 हिन्दी'}
-            </button>
-            {showLangDropdown && (
-              <div className="absolute top-full right-0 mt-1 w-28 bg-slate-900 border border-slate-700 rounded-xl shadow-xl p-1 z-50 text-xs">
-                <button
-                  onClick={() => { setLanguage('en'); setShowLangDropdown(false); }}
-                  className="w-full text-left px-2.5 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200"
-                >
-                  English (EN)
-                </button>
-                <button
-                  onClick={() => { setLanguage('te'); setShowLangDropdown(false); }}
-                  className="w-full text-left px-2.5 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200"
-                >
-                  తెలుగు (TE)
-                </button>
-                <button
-                  onClick={() => { setLanguage('hi'); setShowLangDropdown(false); }}
-                  className="w-full text-left px-2.5 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200"
-                >
-                  हिन्दी (HI)
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Privacy Toggle */}
-          <button
-            onClick={togglePrivacyMode}
-            title="Privacy Mask (Hide Amounts)"
-            className="p-1.5 text-slate-400 hover:text-amber-400 bg-slate-800/80 rounded-lg border border-slate-700/80"
-          >
-            {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-400" /> : <Eye className="w-3.5 h-3.5" />}
-          </button>
-
-          {/* Lock App */}
-          <button
-            onClick={lockApp}
-            title="Lock App"
-            className="p-1.5 text-slate-400 hover:text-indigo-400 bg-slate-800/80 rounded-lg border border-slate-700/80"
-          >
-            <Lock className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Emergency 1-Tap Trigger */}
-          <button
-            onClick={onOpenEmergency}
-            className="flex items-center gap-1 bg-rose-600/90 hover:bg-rose-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm shadow-rose-900/50 active:scale-95 transition-transform"
-          >
-            <ShieldAlert className="w-3.5 h-3.5 animate-pulse" />
-            <span>SOS</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Header Row: Logo & Search/Notifs */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-400 flex items-center justify-center shadow-md shadow-indigo-600/30">
-            <span className="text-white font-extrabold text-sm tracking-tight">1F</span>
-          </div>
-          <div>
-            <h1 className="text-base font-extrabold text-white tracking-tight leading-none flex items-center gap-1.5">
-              ONE FAMILY
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-            </h1>
-            <p className="text-[10px] text-slate-400 font-medium tracking-wide">
-              {translations[activeLanguage].tagline}
-            </p>
-          </div>
-        </div>
-
+        {/* Right: Search & Notifications Glass Circles */}
         <div className="flex items-center gap-2">
-          {/* Universal Search Button */}
           <button
             onClick={onOpenSearch}
-            className="p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors"
-            title="Universal Search"
+            className="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-white transition-all shadow-sm"
+            title="Search transactions, docs, goals"
           >
             <Search className="w-4 h-4" />
           </button>
 
-          {/* Notification Bell */}
           <button
             onClick={onOpenNotifications}
-            className="relative p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors"
-            title="Notifications & Alerts"
+            className="relative w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 border border-slate-700/60 flex items-center justify-center text-slate-300 hover:text-white transition-all shadow-sm"
+            title="Notifications & Smart Reminders"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-slate-900 animate-pulse"></span>
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-slate-950 animate-pulse"></span>
           </button>
         </div>
       </div>
