@@ -267,16 +267,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       </div>
 
-      {/* 2. Family Wealth Hero Card */}
+      {/* 2. Family Wealth Hero Card (Compact + Colorful Sparkline Graph) */}
       <div
         onClick={() => onNavigateTab('money')}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#121c3d] via-[#0f1730] to-[#0a1024] border border-indigo-500/30 p-5 shadow-2xl shadow-indigo-950/40 cursor-pointer group hover:border-indigo-400/60 transition-all"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#131d3b] via-[#0f1730] to-[#0a1024] border border-indigo-500/30 p-4 shadow-xl shadow-indigo-950/40 cursor-pointer group hover:border-indigo-400/60 transition-all"
       >
-        {/* Decorative Wave Glow */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-indigo-500/20 to-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-600/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="p-1 rounded-lg bg-amber-400/20 text-amber-400">
               <Sun className="w-3.5 h-3.5" />
@@ -295,72 +291,103 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             </button>
           </div>
 
-          <div className="w-7 h-7 rounded-full bg-slate-800/80 group-hover:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-all">
-            <ChevronRight className="w-4 h-4" />
+          <div className="w-6 h-6 rounded-full bg-slate-800/80 group-hover:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-all">
+            <ChevronRight className="w-3.5 h-3.5" />
           </div>
         </div>
 
-        {/* Amount */}
-        <div className="relative z-10 space-y-2">
-          <div className="text-3xl sm:text-4xl font-black text-white tracking-tight font-sans">
-            {isPrivacyMode ? '••••••••' : formatCurrency(netWorthDisplay, false)}
+        <div className="flex items-end justify-between">
+          <div className="space-y-1.5 z-10">
+            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-sans">
+              {isPrivacyMode ? '••••••••' : formatCurrency(netWorthDisplay, false)}
+            </div>
+
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+              <ArrowUpRight className="w-3 h-3" />
+              <span>12% this month</span>
+            </div>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>12% this month</span>
+          {/* Embedded Colorful Wave Sparkline Graph */}
+          <div className="w-36 h-14 -mr-1">
+            <svg viewBox="0 0 120 50" className="w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="wealthGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#818cf8" stopOpacity="0.0" />
+                </linearGradient>
+                <linearGradient id="wealthLine" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#38bdf8" />
+                  <stop offset="50%" stopColor="#818cf8" />
+                  <stop offset="100%" stopColor="#34d399" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M 0 38 Q 20 42, 40 26 T 80 18 T 120 6 L 120 50 L 0 50 Z"
+                fill="url(#wealthGrad)"
+              />
+              <path
+                d="M 0 38 Q 20 42, 40 26 T 80 18 T 120 6"
+                fill="none"
+                stroke="url(#wealthLine)"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <circle cx="120" cy="6" r="3" fill="#34d399" className="animate-ping" />
+              <circle cx="120" cy="6" r="2.5" fill="#34d399" />
+            </svg>
           </div>
         </div>
       </div>
 
-      {/* 3. 4 Quick Actions Bar (Mockup Style) */}
+      {/* 3. 4 Quick Actions in Distinct Colorful Boxes (Mockup Style) */}
       <div className="grid grid-cols-4 gap-2 pt-1">
-        {/* Action 1: Add Expense */}
+        {/* Action 1: Add Expense (Rose Box) */}
         <button
           onClick={() => setShowAddExpenseModal(true)}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl active:scale-95 transition-all group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-rose-950/40 to-slate-900 border border-rose-500/30 hover:border-rose-400 active:scale-95 transition-all shadow-md shadow-rose-950/30 group"
         >
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-rose-500/30 group-hover:scale-105 transition-transform">
-            <Receipt className="w-6 h-6 stroke-[2.2]" />
+          <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all mb-1 shadow-sm">
+            <Receipt className="w-5 h-5 stroke-[2.2]" />
           </div>
           <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Add Expense</span>
         </button>
 
-        {/* Action 2: Wish List (Replaces Transfer) */}
+        {/* Action 2: Wish List (Cyan Box - Replaces Transfer) */}
         <button
           onClick={() => setShowWishListModal(true)}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl active:scale-95 transition-all group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-cyan-950/40 to-slate-900 border border-cyan-500/30 hover:border-cyan-400 active:scale-95 transition-all shadow-md shadow-cyan-950/30 group"
         >
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-sky-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30 group-hover:scale-105 transition-transform">
-            <Gift className="w-6 h-6 stroke-[2.2]" />
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all mb-1 shadow-sm">
+            <Gift className="w-5 h-5 stroke-[2.2]" />
           </div>
           <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Wish List</span>
         </button>
 
-        {/* Action 3: Set Goal */}
+        {/* Action 3: Set Goal (Emerald Box) */}
         <button
           onClick={() => setShowSetGoalModal(true)}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl active:scale-95 transition-all group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-emerald-950/40 to-slate-900 border border-emerald-500/30 hover:border-emerald-400 active:scale-95 transition-all shadow-md shadow-emerald-950/30 group"
         >
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-105 transition-transform">
-            <Target className="w-6 h-6 stroke-[2.2]" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all mb-1 shadow-sm">
+            <Target className="w-5 h-5 stroke-[2.2]" />
           </div>
           <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Set Goal</span>
         </button>
 
-        {/* Action 4: Add Income (Replaces Add Money) */}
+        {/* Action 4: Add Income (Purple Box - Replaces Add Money) */}
         <button
           onClick={() => setShowAddIncomeModal(true)}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl active:scale-95 transition-all group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-purple-950/40 to-slate-900 border border-purple-500/30 hover:border-purple-400 active:scale-95 transition-all shadow-md shadow-purple-950/30 group"
         >
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform">
-            <Wallet className="w-6 h-6 stroke-[2.2]" />
+          <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all mb-1 shadow-sm">
+            <Wallet className="w-5 h-5 stroke-[2.2]" />
           </div>
           <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Add Income</span>
         </button>
       </div>
 
-      {/* 4. Quick Overview (3-Column Layout from Mock) */}
+      {/* 4. Quick Overview (3 Distinctly Colored Themed Boxes from Mock) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-white tracking-tight">Quick Overview</h3>
@@ -374,48 +401,48 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
 
         <div className="grid grid-cols-3 gap-2.5">
-          {/* Card 1: Monthly Spending */}
+          {/* Box 1: Monthly Spending (Rose Themed Box) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex flex-col justify-between hover:border-slate-700 transition-all cursor-pointer"
+            className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-950/50 via-slate-900 to-slate-900 border border-rose-500/30 shadow-lg shadow-rose-950/20 flex flex-col justify-between hover:border-rose-400/60 transition-all cursor-pointer group"
           >
             <div>
-              <div className="text-[10px] font-bold text-slate-400 leading-tight">Monthly Spending</div>
-              <div className="text-sm sm:text-base font-black text-white mt-1">
+              <div className="text-[10px] font-bold text-rose-300/90 leading-tight">Monthly Spending</div>
+              <div className="text-sm sm:text-base font-black text-rose-100 mt-1">
                 {isPrivacyMode ? '••••' : formatCurrency(snapshot.monthlySpending || 25850, false)}
               </div>
             </div>
             <div className="text-[10px] font-bold text-rose-400 mt-2 flex items-center gap-0.5">
               <span>↓ 8%</span>
-              <span className="text-slate-500 text-[9px] font-normal">vs last mo</span>
+              <span className="text-slate-400 text-[9px] font-normal">vs last mo</span>
             </div>
           </div>
 
-          {/* Card 2: Savings */}
+          {/* Box 2: Savings (Emerald Themed Box) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex flex-col justify-between hover:border-slate-700 transition-all cursor-pointer"
+            className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-950/50 via-slate-900 to-slate-900 border border-emerald-500/30 shadow-lg shadow-emerald-950/20 flex flex-col justify-between hover:border-emerald-400/60 transition-all cursor-pointer group"
           >
             <div>
-              <div className="text-[10px] font-bold text-slate-400 leading-tight">Savings</div>
-              <div className="text-sm sm:text-base font-black text-white mt-1">
+              <div className="text-[10px] font-bold text-emerald-300/90 leading-tight">Savings</div>
+              <div className="text-sm sm:text-base font-black text-emerald-100 mt-1">
                 {isPrivacyMode ? '••••' : formatCurrency(240000, true)}
               </div>
             </div>
             <div className="text-[10px] font-bold text-emerald-400 mt-2 flex items-center gap-0.5">
               <span>↑ 15%</span>
-              <span className="text-slate-500 text-[9px] font-normal">this year</span>
+              <span className="text-slate-400 text-[9px] font-normal">this year</span>
             </div>
           </div>
 
-          {/* Card 3: Goals */}
+          {/* Box 3: Goals (Sky/Indigo Themed Box) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex flex-col justify-between hover:border-slate-700 transition-all cursor-pointer"
+            className="p-3.5 rounded-2xl bg-gradient-to-br from-sky-950/50 via-slate-900 to-slate-900 border border-sky-500/30 shadow-lg shadow-sky-950/20 flex flex-col justify-between hover:border-sky-400/60 transition-all cursor-pointer group"
           >
             <div>
-              <div className="text-[10px] font-bold text-slate-400 leading-tight">Goals</div>
-              <div className="text-sm sm:text-base font-black text-white mt-1">
+              <div className="text-[10px] font-bold text-sky-300/90 leading-tight">Goals</div>
+              <div className="text-sm sm:text-base font-black text-sky-100 mt-1">
                 {goals.length > 0 ? `${goals.filter(g => g.current_amount >= g.target_amount).length}/${goals.length}` : '2/5'}
               </div>
             </div>
