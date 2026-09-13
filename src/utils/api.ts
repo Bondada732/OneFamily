@@ -1,4 +1,10 @@
 const getApiBase = (): string => {
+  // If deployed on Vercel with a custom backend URL
+  const envUrl = (import.meta as any).env?.VITE_API_URL;
+  if (envUrl) {
+    return `${envUrl.replace(/\/$/, '')}/api`;
+  }
+
   if (typeof window !== 'undefined') {
     // If accessed via Vite dev server port (e.g. mobile browser at 192.168.1.5:5173 or localhost:5173)
     if (window.location.port === '5173') {

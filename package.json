@@ -8,6 +8,7 @@
     "dev:backend": "tsx watch server/index.ts",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "vite build",
+    "start": "tsx server/index.ts",
     "server": "tsx server/index.ts",
     "seed": "tsx server/db/seed.ts",
     "supabase:sync": "tsx server/scripts/syncToSupabase.ts",
