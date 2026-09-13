@@ -47,7 +47,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [showSetGoalModal, setShowSetGoalModal] = useState(false);
   const [showAddIncomeModal, setShowAddIncomeModal] = useState(false);
 
-  // Form states
+  // Form states (matching MoneyView and FamilyView schema)
   const [expenseForm, setExpenseForm] = useState({
     amount: '',
     merchant: '',
@@ -68,38 +68,35 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
   const [goalForm, setGoalForm] = useState({
     title: '',
+    category: 'PROPERTY',
     target_amount: '',
     current_amount: '0',
-    category: 'FAMILY',
-    target_date: '',
+    monthly_contribution: '10000',
+    target_date: '2028-12-31',
+    priority: 'HIGH' as 'HIGH' | 'MEDIUM' | 'LOW',
   });
 
-  // Local Wishlist items state (persisted to localStorage & synced with tasks)
-  const [wishlistItems, setWishlistItems] = useState<Array<{
-    id: string;
-    title: string;
-    estimatedCost: number;
-    requestedBy: string;
-    isFulfilled: boolean;
-    date: string;
-  }>>(() => {
-    try {
-      const saved = localStorage.getItem('onefamily_wishlist');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [
-      { id: 'w1', title: 'New Study Table for Aarav', estimatedCost: 4500, requestedBy: 'Sailaja', isFulfilled: false, date: '2026-09-10' },
-      { id: 'w2', title: 'Smart TV for Living Room', estimatedCost: 32000, requestedBy: 'Rambabu', isFulfilled: false, date: '2026-09-08' },
-      { id: 'w3', title: 'Badminton Racket Set', estimatedCost: 1800, requestedBy: 'Hitesh', isFulfilled: true, date: '2026-09-02' },
-    ];
-  });
-
+  // Shared Wishlist items state (fetched directly from backend tasks/grocery API)
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [newWishTitle, setNewWishTitle] = useState('');
   const [newWishAmount, setNewWishAmount] = useState('');
+  const [newWishCategory, setNewWishCategory] = useState('WISH');
+
+  // Load shared wishlist items from backend database
+  const loadWishlist = async () => {
+    if (!family?.id) return;
+    try {
+      const data = await apiRequest(`/tasks/${family.id}/tasks`);
+      setWishlistItems(data.groceryItems || []);
+    } catch (err) {
+      console.error('Failed to load wishlist:', err);
+    }
+  };
 
   useEffect(() => {
     refreshDashboard();
-  }, [refreshDashboard]);
+    loadWishlist();
+  }, [family?.id, refreshDashboard]);
 
   // Dynamic greeting by time of day
   const getGreeting = () => {
@@ -111,7 +108,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
   const handleCreateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!family?.id) return;
+    if (!family?.id || !expenseForm.amount) return;
     try {
       await apiRequest(`/expenses/${family.id}/expenses`, {
         method: 'POST',
@@ -135,7 +132,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
   const handleAddIncome = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!family?.id) return;
+    if (!family?.id || !incomeForm.amount) return;
     try {
       await apiRequest(`/investments/${family.id}/investments`, {
         method: 'POST',
@@ -164,25 +161,29 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
   const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!family?.id) return;
+    if (!family?.id || !goalForm.title.trim()) return;
     try {
       await apiRequest(`/goals/${family.id}/goals`, {
         method: 'POST',
         body: JSON.stringify({
-          title: goalForm.title,
+          title: goalForm.title.trim(),
+          category: goalForm.category,
           target_amount: Number(goalForm.target_amount) || 0,
           current_amount: Number(goalForm.current_amount) || 0,
-          category: goalForm.category,
-          target_date: goalForm.target_date,
+          monthly_contribution: Number(goalForm.monthly_contribution) || 10000,
+          target_date: goalForm.target_date || '2028-12-31',
+          priority: goalForm.priority,
         }),
       });
       setShowSetGoalModal(false);
       setGoalForm({
         title: '',
+        category: 'PROPERTY',
         target_amount: '',
         current_amount: '0',
-        category: 'FAMILY',
-        target_date: '',
+        monthly_contribution: '10000',
+        target_date: '2028-12-31',
+        priority: 'HIGH',
       });
       refreshDashboard();
     } catch (err) {
@@ -190,34 +191,50 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     }
   };
 
-  const handleAddWish = (e: React.FormEvent) => {
+  const handleAddWish = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newWishTitle.trim()) return;
-    const item = {
-      id: `wish_${Date.now()}`,
-      title: newWishTitle.trim(),
-      estimatedCost: Number(newWishAmount) || 0,
-      requestedBy: currentUser?.name?.split(' ')[0] || 'Family',
-      isFulfilled: false,
-      date: getLocalDateString(),
-    };
-    const updated = [item, ...wishlistItems];
-    setWishlistItems(updated);
-    localStorage.setItem('onefamily_wishlist', JSON.stringify(updated));
-    setNewWishTitle('');
-    setNewWishAmount('');
+    if (!newWishTitle.trim() || !family?.id) return;
+    try {
+      const created = await apiRequest(`/tasks/${family.id}/grocery`, {
+        method: 'POST',
+        body: JSON.stringify({
+          item_name: newWishTitle.trim(),
+          quantity: newWishAmount ? `₹${Number(newWishAmount).toLocaleString('en-IN')}` : '1 unit',
+          category: newWishCategory || 'WISH',
+          estimated_cost: Number(newWishAmount) || 0,
+        }),
+      });
+      setWishlistItems((prev) => [...prev, created]);
+      setNewWishTitle('');
+      setNewWishAmount('');
+      setNewWishCategory('WISH');
+    } catch (err) {
+      console.error('Failed to add wish item:', err);
+    }
   };
 
-  const toggleWishFulfilled = (id: string) => {
-    const updated = wishlistItems.map((w) => (w.id === id ? { ...w, isFulfilled: !w.isFulfilled } : w));
-    setWishlistItems(updated);
-    localStorage.setItem('onefamily_wishlist', JSON.stringify(updated));
+  const toggleWishFulfilled = async (id: string) => {
+    if (!family?.id) return;
+    try {
+      const updated = await apiRequest(`/tasks/${family.id}/grocery/${id}/toggle`, {
+        method: 'PATCH',
+      });
+      setWishlistItems((prev) => prev.map((w) => (w.id === id ? updated : w)));
+    } catch (err) {
+      console.error('Failed to toggle wish status:', err);
+    }
   };
 
-  const deleteWishItem = (id: string) => {
-    const updated = wishlistItems.filter((w) => w.id !== id);
-    setWishlistItems(updated);
-    localStorage.setItem('onefamily_wishlist', JSON.stringify(updated));
+  const deleteWishItem = async (id: string) => {
+    if (!family?.id) return;
+    setWishlistItems((prev) => prev.filter((w) => w.id !== id));
+    try {
+      await apiRequest(`/tasks/${family.id}/grocery/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      console.error('Failed to delete wish item:', err);
+    }
   };
 
   if (isLoading || !dashboard) {
@@ -538,9 +555,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       </div>
 
-      {/* ================= MODALS ================= */}
+      {/* ================= MODALS (UNIFIED WITH MONEY & FAMILY SECTIONS) ================= */}
 
-      {/* 1. Add Expense Modal */}
+      {/* 1. Add Expense Modal (Exact same functionality as Money Section) */}
       {showAddExpenseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
@@ -551,7 +568,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Record Family Expense</h3>
-                  <p className="text-[10px] text-slate-400">Track kirana, bills, or shopping</p>
+                  <p className="text-[10px] text-slate-400">Synced with Family Wealth & Budget</p>
                 </div>
               </div>
               <button onClick={() => setShowAddExpenseModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
@@ -575,7 +592,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Ratnadeep Supermarket"
+                  placeholder="e.g. Ratnadeep Supermarket / Swiggy"
                   value={expenseForm.merchant}
                   onChange={(e) => setExpenseForm({ ...expenseForm, merchant: e.target.value })}
                   className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
@@ -587,15 +604,28 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                   <label className="text-xs text-slate-300 font-semibold mb-1 block">Category</label>
                   <select
                     value={expenseForm.category_name}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, category_name: e.target.value })}
+                    onChange={(e) => {
+                      const selectedName = e.target.value;
+                      setExpenseForm({
+                        ...expenseForm,
+                        category_name: selectedName,
+                      });
+                    }}
                     className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
                   >
                     <option value="Groceries & Kirana">Groceries & Kirana</option>
-                    <option value="Food & Dining">Food & Dining</option>
+                    <option value="Food & Dining / Swiggy">Food & Dining / Swiggy</option>
                     <option value="Utilities & Bills">Utilities & Bills</option>
+                    <option value="Rent & Maintenance">Rent & Maintenance</option>
                     <option value="Education & School">Education & School</option>
+                    <option value="Transport & Fuel">Transport & Fuel</option>
                     <option value="Healthcare & Pharmacy">Healthcare & Pharmacy</option>
                     <option value="Shopping & Apparel">Shopping & Apparel</option>
+                    <option value="Entertainment & OTT">Entertainment & OTT</option>
+                    <option value="Travel & Trips">Travel & Trips</option>
+                    <option value="Investments / SIP">Investments / SIP</option>
+                    <option value="Loan EMI & Debts">Loan EMI & Debts</option>
+                    <option value="Miscellaneous & Pooja">Miscellaneous & Pooja</option>
                   </select>
                 </div>
 
@@ -603,13 +633,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                   <label className="text-xs text-slate-300 font-semibold mb-1 block">Payment Mode</label>
                   <select
                     value={expenseForm.payment_method}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, payment_method: e.target.value })}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, payment_method: e.target.value as any })}
                     className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
                   >
                     <option value="UPI">UPI (GPay / PhonePe)</option>
                     <option value="CREDIT_CARD">Credit Card</option>
                     <option value="DEBIT_CARD">Debit Card</option>
                     <option value="CASH">Cash</option>
+                    <option value="BANK_TRANSFER">Bank NetBanking</option>
                   </select>
                 </div>
               </div>
@@ -625,6 +656,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 />
               </div>
 
+              <div>
+                <label className="text-xs text-slate-300 font-semibold mb-1 block">Notes / Items (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Monthly ration & snacks"
+                  value={expenseForm.notes}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                />
+              </div>
+
               <button
                 type="submit"
                 className="w-full py-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white font-bold rounded-xl shadow-lg shadow-rose-500/30 text-xs transition-all active:scale-98 mt-2"
@@ -636,7 +678,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       )}
 
-      {/* 2. Wish List Modal (User requested: Replaces Transfer) */}
+      {/* 2. Wish List Modal (Unified directly with Family Hub's Wish List backend) */}
       {showWishListModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
@@ -647,7 +689,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Family Wish List</h3>
-                  <p className="text-[10px] text-slate-400">Things our family wants to buy or achieve</p>
+                  <p className="text-[10px] text-slate-400">Stored in Family Hub • Shared with all members</p>
                 </div>
               </div>
               <button onClick={() => setShowWishListModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
@@ -656,18 +698,33 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             {/* Add Wish Item Form */}
             <form onSubmit={handleAddWish} className="p-3.5 bg-slate-800/70 border border-slate-700/60 rounded-2xl space-y-2.5">
               <div className="text-xs font-bold text-amber-400">+ Add New Wish</div>
-              <div className="grid grid-cols-3 gap-2">
+              <div>
                 <input
                   type="text"
                   required
-                  placeholder="Wish item (e.g. Sony Headphones)"
+                  placeholder="Wish item (e.g. Sony Wireless Headphones)"
                   value={newWishTitle}
                   onChange={(e) => setNewWishTitle(e.target.value)}
-                  className="col-span-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={newWishCategory}
+                  onChange={(e) => setNewWishCategory(e.target.value)}
+                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                >
+                  <option value="WISH">🎁 Wish / Gift</option>
+                  <option value="GADGET">📱 Gadget / Tech</option>
+                  <option value="SHOPPING">🛍️ Shopping / Clothes</option>
+                  <option value="BOOK">📚 Books / Study</option>
+                  <option value="GROCERY">🛒 Grocery / Food</option>
+                  <option value="HOME">🏡 Home & Living</option>
+                  <option value="OTHER">✨ Other</option>
+                </select>
                 <input
                   type="number"
-                  placeholder="₹ Cost"
+                  placeholder="₹ Est. Cost (Optional)"
                   value={newWishAmount}
                   onChange={(e) => setNewWishAmount(e.target.value)}
                   className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
@@ -675,15 +732,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               </div>
               <button
                 type="submit"
-                className="w-full py-2 bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-white font-bold rounded-xl text-xs shadow-md shadow-cyan-500/20 active:scale-98 transition-all"
+                className="w-full py-2.5 bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-white font-bold rounded-xl text-xs shadow-md shadow-cyan-500/20 active:scale-98 transition-all"
               >
-                Add to Wish List
+                Add to Family Wish List
               </button>
             </form>
 
             {/* Wish List items */}
             <div className="space-y-2">
-              <div className="text-xs font-bold text-slate-300">Active Wishes ({wishlistItems.length})</div>
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                <span>Shared Wish List ({wishlistItems.length})</span>
+                <span className="text-[10px] text-slate-400 font-normal">Tap check to mark fulfilled</span>
+              </div>
               {wishlistItems.length === 0 ? (
                 <div className="p-6 text-center text-xs text-slate-400">No wishes added yet. Make a wish above! ✨</div>
               ) : (
@@ -692,40 +752,51 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                     <div
                       key={wish.id}
                       className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                        wish.isFulfilled
+                        wish.is_purchased
                           ? 'bg-slate-900/50 border-slate-800 opacity-60'
                           : 'bg-slate-800/90 border-slate-700/80 shadow-sm'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0 mr-2">
                         <button
                           type="button"
                           onClick={() => toggleWishFulfilled(wish.id)}
-                          className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
-                            wish.isFulfilled
+                          className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
+                            wish.is_purchased
                               ? 'bg-emerald-500 border-emerald-400 text-slate-950'
                               : 'border-slate-600 hover:border-cyan-400'
                           }`}
                         >
-                          {wish.isFulfilled && <CheckCircle2 className="w-3.5 h-3.5" />}
+                          {wish.is_purchased && <CheckCircle2 className="w-3.5 h-3.5" />}
                         </button>
-                        <div>
-                          <div className={`text-xs font-bold ${wish.isFulfilled ? 'line-through text-slate-400' : 'text-white'}`}>
-                            {wish.title}
+                        <div className="min-w-0">
+                          <div className={`text-xs font-bold truncate ${wish.is_purchased ? 'line-through text-slate-400' : 'text-white'}`}>
+                            {wish.item_name}
                           </div>
-                          <div className="text-[10px] text-slate-400">
-                            By {wish.requestedBy} • {wish.estimatedCost > 0 ? `₹${wish.estimatedCost.toLocaleString('en-IN')}` : 'Price TBD'}
+                          <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                            Added by <span className="text-amber-300 font-semibold">{wish.added_by_name || 'Family'}</span>
+                            {wish.estimated_cost ? (
+                              <span className="text-emerald-400 font-bold ml-1.5">• ₹{Number(wish.estimated_cost).toLocaleString('en-IN')}</span>
+                            ) : wish.quantity && wish.quantity !== '1 unit' && (
+                              <span className="text-slate-300 ml-1.5">• {wish.quantity}</span>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => deleteWishItem(wish.id)}
-                        className="p-1 text-slate-500 hover:text-rose-400 transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[9px] bg-slate-700/80 text-slate-300 px-2 py-0.5 rounded-full font-semibold">
+                          {wish.category || 'WISH'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => deleteWishItem(wish.id)}
+                          className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                          title="Delete wish"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -735,7 +806,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       )}
 
-      {/* 3. Set Goal Modal */}
+      {/* 3. Set Goal Modal (Exact same functionality as Money Section Goals) */}
       {showSetGoalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
@@ -746,7 +817,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Set Family Financial Goal</h3>
-                  <p className="text-[10px] text-slate-400">House, education, car, or dream trip</p>
+                  <p className="text-[10px] text-slate-400">Synced with Money & Wealth Tracker</p>
                 </div>
               </div>
               <button onClick={() => setShowSetGoalModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
@@ -758,7 +829,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Buy Dream House / Europe Trip"
+                  placeholder="e.g. Buy Dream House / Europe Trip / Child MBA"
                   value={goalForm.title}
                   onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })}
                   className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
@@ -767,7 +838,40 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Target (₹) *</label>
+                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Goal Category</label>
+                  <select
+                    value={goalForm.category}
+                    onChange={(e) => setGoalForm({ ...goalForm, category: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                  >
+                    <option value="PROPERTY">🏡 Property / Real Estate</option>
+                    <option value="EDUCATION">🎓 Children Education</option>
+                    <option value="EMERGENCY">🛡️ Emergency Fund</option>
+                    <option value="TRAVEL">✈️ Family Vacation / Travel</option>
+                    <option value="VEHICLE">🚗 Vehicle / Car / EV</option>
+                    <option value="RETIREMENT">👴 Retirement Corpus</option>
+                    <option value="FAMILY">👨‍👩‍👧‍👦 Family Dream / General</option>
+                    <option value="OTHER">✨ Other Milestone</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Priority</label>
+                  <select
+                    value={goalForm.priority}
+                    onChange={(e) => setGoalForm({ ...goalForm, priority: e.target.value as any })}
+                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                  >
+                    <option value="HIGH">🔥 High Priority</option>
+                    <option value="MEDIUM">⚡ Medium Priority</option>
+                    <option value="LOW">🌱 Low Priority</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Target Amount (₹) *</label>
                   <input
                     type="number"
                     required
@@ -790,14 +894,28 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs text-slate-300 font-semibold mb-1 block">Target Completion Date</label>
-                <input
-                  type="date"
-                  value={goalForm.target_date}
-                  onChange={(e) => setGoalForm({ ...goalForm, target_date: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                />
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Monthly SIP / Save (₹)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 10000"
+                    value={goalForm.monthly_contribution}
+                    onChange={(e) => setGoalForm({ ...goalForm, monthly_contribution: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Target Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={goalForm.target_date}
+                    onChange={(e) => setGoalForm({ ...goalForm, target_date: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                  />
+                </div>
               </div>
 
               <button
@@ -811,7 +929,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       )}
 
-      {/* 4. Add Income Modal (User requested: Replaces Add Money) */}
+      {/* 4. Add Income Modal (Synced with Wealth / Investments) */}
       {showAddIncomeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
@@ -822,7 +940,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Add Family Income / Deposit</h3>
-                  <p className="text-[10px] text-slate-400">Credit salary, business earnings, or returns</p>
+                  <p className="text-[10px] text-slate-400">Credits directly to Family Wealth balance</p>
                 </div>
               </div>
               <button onClick={() => setShowAddIncomeModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
@@ -877,8 +995,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                     value={incomeForm.date}
                     onChange={(e) => setIncomeForm({ ...incomeForm, date: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                  </input>
+                  />
                 </div>
               </div>
 

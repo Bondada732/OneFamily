@@ -61,17 +61,19 @@ router.patch('/:id/tasks/:taskId/toggle', requirePermission('TASK_EDIT'), (req: 
   res.json(updated);
 });
 
-// Grocery List: Add Item
+// Grocery / Wishlist: Add Item
 router.post('/:id/grocery', requirePermission('TASK_EDIT'), (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
-  const { item_name, quantity, category } = req.body;
+  const { item_name, quantity, category, estimated_cost, notes } = req.body;
 
   const newItem = {
     id: `g_${Date.now()}`,
     family_id: familyId,
     item_name,
     quantity: quantity || '1 unit',
-    category: category || 'STAPLES',
+    category: category || 'WISH',
+    estimated_cost: Number(estimated_cost) || 0,
+    notes: notes || '',
     is_purchased: false,
     added_by_name: req.user!.name.split(' ')[0],
     created_at: new Date().toISOString(),

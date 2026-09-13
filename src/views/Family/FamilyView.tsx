@@ -60,6 +60,7 @@ export const FamilyView: React.FC = () => {
   const [newGroceryName, setNewGroceryName] = useState('');
   const [newGroceryCategory, setNewGroceryCategory] = useState('WISH');
   const [newGroceryQty, setNewGroceryQty] = useState('1 unit');
+  const [newGroceryPrice, setNewGroceryPrice] = useState('');
 
   // Emergency Contacts & Medical Profiles Form States
   const [showAddContact, setShowAddContact] = useState(false);
@@ -213,20 +214,22 @@ export const FamilyView: React.FC = () => {
 
   const handleAddGrocery = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGroceryName.trim()) return;
+    if (!newGroceryName.trim() || !family?.id) return;
 
     try {
-      const created = await apiRequest(`/tasks/${family?.id}/grocery`, {
+      const created = await apiRequest(`/tasks/${family.id}/grocery`, {
         method: 'POST',
         body: JSON.stringify({
-          item_name: newGroceryName,
-          quantity: newGroceryQty || '1 unit',
+          item_name: newGroceryName.trim(),
+          quantity: newGroceryPrice ? `₹${Number(newGroceryPrice).toLocaleString('en-IN')}` : (newGroceryQty || '1 unit'),
           category: newGroceryCategory || 'WISH',
+          estimated_cost: Number(newGroceryPrice) || 0,
         }),
       });
       setGroceryItems([...groceryItems, created]);
       setNewGroceryName('');
       setNewGroceryQty('1 unit');
+      setNewGroceryPrice('');
       setNewGroceryCategory('WISH');
       setShowAddGrocery(false);
     } catch (err) {
@@ -1042,8 +1045,12 @@ export const FamilyView: React.FC = () => {
                         {item.item_name}
                       </div>
                       <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                        Added by <span className="text-amber-300 font-semibold">{item.added_by_name}</span> • {item.created_at ? formatDate(item.created_at) : '12 Sep 2026'}
-                        {item.quantity && item.quantity !== '1 unit' && item.quantity !== '1 pack' && ` (${item.quantity})`}
+                        Added by <span className="text-amber-300 font-semibold">{item.added_by_name}</span>
+                        {item.estimated_cost ? (
+                          <span className="text-emerald-400 font-bold ml-1.5">• ₹{Number(item.estimated_cost).toLocaleString('en-IN')}</span>
+                        ) : item.quantity && item.quantity !== '1 unit' && item.quantity !== '1 pack' ? (
+                          <span className="text-slate-300 ml-1.5">• {item.quantity}</span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -2211,15 +2218,26 @@ export const FamilyView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Note / Detail</label>
+                  <label className="text-xs text-slate-300 font-semibold">Estimated Price (₹)</label>
                   <input
-                    type="text"
-                    placeholder="e.g. 1 unit / Birthday wish"
-                    value={newGroceryQty}
-                    onChange={(e) => setNewGroceryQty(e.target.value)}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    type="number"
+                    placeholder="e.g. 3500"
+                    value={newGroceryPrice}
+                    onChange={(e) => setNewGroceryPrice(e.target.value)}
+                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-emerald-400 font-bold outline-none focus:border-amber-400"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Note / Detail (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 1 unit / Birthday wish"
+                  value={newGroceryQty}
+                  onChange={(e) => setNewGroceryQty(e.target.value)}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                />
               </div>
 
               <div className="flex gap-2 pt-2 border-t border-slate-800">

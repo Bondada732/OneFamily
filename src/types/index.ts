@@ -187,6 +187,8 @@ export interface GroceryItem {
   item_name: string;
   quantity: string;
   category: string;
+  estimated_cost?: number;
+  notes?: string;
   is_purchased: boolean;
   added_by_name: string;
   created_at?: string;
