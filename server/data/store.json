@@ -4876,6 +4876,46 @@
       "category": "EMERGENCY",
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-13T17:00:58.091Z"
+    },
+    {
+      "id": "aud_1789319449761_grgum",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T17:10:49.761Z"
+    },
+    {
+      "id": "aud_1789319449990_htu88",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T17:10:49.990Z"
+    },
+    {
+      "id": "aud_1789319500622_rxhmb",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T17:11:40.622Z"
+    },
+    {
+      "id": "aud_1789319500833_uckuq",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T17:11:40.833Z"
     }
   ],
   "expense_categories": [
@@ -7405,16 +7445,6 @@
       "is_purchased": false,
       "added_by_name": "Priya",
       "created_at": "2026-09-09T16:50:36.619Z"
-    },
-    {
-      "id": "g_1789231487252",
-      "family_id": "fam_1789193802598",
-      "item_name": "Ganesh Vigraham",
-      "quantity": "1 unit",
-      "category": "OTHER",
-      "is_purchased": false,
-      "added_by_name": "Rambabu",
-      "created_at": "2026-09-12T16:44:47.252Z"
     },
     {
       "id": "g_1789232119173",

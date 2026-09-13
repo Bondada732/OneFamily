@@ -37,7 +37,7 @@ interface HomeViewProps {
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const { dashboard, isLoading, refreshDashboard } = useFamily();
-  const { activeLanguage, currentUser, family, hasPermission } = useAuth();
+  const { activeLanguage, currentUser, family, hasPermission, familyMembers } = useAuth();
   const { isPrivacyMode, togglePrivacyMode } = useSecurity();
   const t = translations[activeLanguage];
 
@@ -483,30 +483,91 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </button>
         </div>
 
-        <div
-          onClick={() => onNavigateTab('family')}
-          className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0">
-              <Cake className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-white group-hover:text-pink-300 transition-colors">
-                Sailaja's Birthday 🎂
-              </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">
-                In 5 days • 18 Sep 2026
-              </div>
-            </div>
-          </div>
+        {(() => {
+          // Dynamic calculation of nearest family birthday or event
+          const calendarEvents = dashboard?.today?.events || [];
+          if (calendarEvents.length > 0) {
+            const ev = calendarEvents[0];
+            return (
+              <div
+                onClick={() => onNavigateTab('calendar')}
+                className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-sky-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+                    <Calendar className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors">
+                      {ev.title} 📅
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      {ev.start_date ? formatDate(ev.start_date) : 'Upcoming Event'}
+                    </div>
+                  </div>
+                </div>
 
-          <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
-            alt="Sailaja"
-            className="w-9 h-9 rounded-full object-cover ring-2 ring-pink-500/40 shadow-sm"
-          />
-        </div>
+                <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300 text-xs font-bold">
+                  ➔
+                </div>
+              </div>
+            );
+          }
+
+          // Check real family member birthdays
+          const today = new Date();
+          const currentYear = today.getFullYear();
+
+          const memberBirthdays = (familyMembers || [])
+            .filter((m) => m.birth_date)
+            .map((m) => {
+              const bDate = new Date(m.birth_date!);
+              let nextBday = new Date(currentYear, bDate.getMonth(), bDate.getDate());
+              if (nextBday < today && nextBday.getDate() !== today.getDate()) {
+                nextBday = new Date(currentYear + 1, bDate.getMonth(), bDate.getDate());
+              }
+              const diffDays = Math.ceil((nextBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+              return {
+                member: m,
+                diffDays: diffDays < 0 ? 0 : diffDays,
+                bDateStr: formatDate(nextBday.toISOString().split('T')[0]),
+              };
+            })
+            .sort((a, b) => a.diffDays - b.diffDays);
+
+          const nearest = memberBirthdays.length > 0 ? memberBirthdays[0] : null;
+
+          return (
+            <div
+              onClick={() => onNavigateTab('family')}
+              className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0">
+                  <Cake className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white group-hover:text-pink-300 transition-colors">
+                    {nearest ? `${nearest.member.name.split(' ')[0]}'s Birthday 🎂` : "Family Birthday 🎂"}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    {nearest
+                      ? nearest.diffDays === 0
+                        ? 'Today! Celebrate together 🎉'
+                        : `In ${nearest.diffDays} day${nearest.diffDays > 1 ? 's' : ''} • ${nearest.bDateStr}`
+                      : 'Add birth dates in Family Hub'}
+                  </div>
+                </div>
+              </div>
+
+              <img
+                src={nearest?.member?.avatar_url || currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                alt={nearest?.member?.name || 'Member'}
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-pink-500/40 shadow-sm"
+              />
+            </div>
+          );
+        })()}
       </div>
 
       {/* 6. Family Moments (Horizontal Carousel) */}
