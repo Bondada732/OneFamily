@@ -48,6 +48,7 @@ export const FamilyView: React.FC = () => {
     avatar_url: '',
     relationship: '',
     phone: '',
+    birth_date: '1990-01-01',
   });
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddGrocery, setShowAddGrocery] = useState(false);
@@ -329,6 +330,7 @@ export const FamilyView: React.FC = () => {
       avatar_url: member.avatar_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
       relationship: member.relationship || '',
       phone: member.phone || '',
+      birth_date: member.birth_date || '1990-01-01',
     });
   };
 
@@ -861,7 +863,15 @@ export const FamilyView: React.FC = () => {
                           {member.role}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{member.relationship}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                        <span>{member.relationship}</span>
+                        {member.birth_date && (
+                          <span className="text-amber-300 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 text-[10px] inline-flex items-center gap-1">
+                            <span>🎂</span>
+                            <span>{formatDate(member.birth_date)}</span>
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[10px] text-indigo-400 mt-0.5 font-medium">
                         {member.role === 'FAMILY_HEAD'
                           ? '👑 Family Head (Master Access)'
@@ -1995,15 +2005,26 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Phone Number</label>
+                  <label className="text-xs text-slate-300 font-semibold">Date of Birth 🎂 *</label>
                   <input
-                    type="tel"
-                    placeholder="+91 98765 43210"
-                    value={memberProfileForm.phone}
-                    onChange={(e) => setMemberProfileForm({ ...memberProfileForm, phone: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    type="date"
+                    required
+                    value={memberProfileForm.birth_date}
+                    onChange={(e) => setMemberProfileForm({ ...memberProfileForm, birth_date: e.target.value })}
+                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-amber-300 font-semibold outline-none focus:border-amber-400"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="+91 98765 43210"
+                  value={memberProfileForm.phone}
+                  onChange={(e) => setMemberProfileForm({ ...memberProfileForm, phone: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                />
               </div>
 
               <div className="flex gap-2 pt-2 border-t border-slate-800">

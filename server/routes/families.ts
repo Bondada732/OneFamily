@@ -124,10 +124,10 @@ router.put('/:id/members/:userId/permissions', requirePermission('FAMILY_MANAGE'
   res.json({ success: true, userId, permissions });
 });
 
-// Update Member Profile (Avatar photo, name, phone, relationship)
+// Update Member Profile (Avatar photo, name, phone, birth_date, relationship)
 router.patch('/:id/members/:userId', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
   const { userId } = req.params;
-  const { name, avatar_url, phone, pin_code, relationship, role } = req.body;
+  const { name, avatar_url, phone, pin_code, birth_date, relationship, role } = req.body;
 
   const member = db.findOne('users', (u) => u.id === userId);
   if (!member) {
@@ -139,6 +139,7 @@ router.patch('/:id/members/:userId', requirePermission('FAMILY_MANAGE'), (req: A
     ...(avatar_url && { avatar_url }),
     ...(phone && { phone }),
     ...(pin_code && { pin_code }),
+    ...(birth_date && { birth_date }),
     ...(relationship && { relationship }),
     ...(role && { role }),
   });
