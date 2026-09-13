@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { CalendarEvent, Reminder } from '../../types/index.js';
-import { formatDate, formatRelativeDays } from '../../utils/formatters.js';
+import { formatDate, formatRelativeDays, getLocalDateString } from '../../utils/formatters.js';
 import { Calendar as CalendarIcon, Clock, Bell, Plus, Share2, ShieldAlert, CheckCircle2, ChevronRight } from 'lucide-react';
 import { WhatsAppShareModal } from '../../components/common/WhatsAppShareModal.js';
 
@@ -26,7 +26,7 @@ export const CalendarView: React.FC = () => {
   const [newEvent, setNewEvent] = useState({
     title: '',
     type: 'FUNCTION',
-    start_date: new Date().toISOString().split('T')[0],
+    start_date: getLocalDateString(),
     assigned_member_name: currentUser?.name || 'All Family',
     notes: '',
   });
@@ -62,7 +62,7 @@ export const CalendarView: React.FC = () => {
       setNewEvent({
         title: '',
         type: 'FUNCTION',
-        start_date: new Date().toISOString().split('T')[0],
+        start_date: getLocalDateString(),
         assigned_member_name: currentUser?.name || 'All Family',
         notes: '',
       });

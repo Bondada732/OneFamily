@@ -21,11 +21,19 @@ router.get('/:id/dashboard', (req: AuthRequest, res) => {
   // 2. Financial Metrics (only calculated if user has finance access)
   let netWorth = 0;
   let monthlySpending = 0;
+  let monthlyBudget = 0;
   let savingsGoalPct = 0;
 
   if (hasFinance) {
     const expenses = db.find('expenses', (e) => e.family_id === familyId);
     monthlySpending = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    const budgets = db.find('budgets', (b) => b.family_id === familyId && b.month_year === '2026-09');
+    monthlyBudget = budgets.reduce((sum, b) => sum + (Number(b.monthly_limit) || 0), 0);
+    // If no custom budget rows yet, default to standard family budget base
+    if (monthlyBudget === 0) {
+      monthlyBudget = 93000;
+    }
 
     const goals = db.find('goals', (g) => g.family_id === familyId);
     if (goals.length > 0) {
@@ -35,6 +43,7 @@ router.get('/:id/dashboard', (req: AuthRequest, res) => {
     }
   }
 
+
   if (hasInvestments) {
     const investments = db.find('investments', (i) => i.family_id === familyId);
     const totalAssets = investments.reduce((sum, i) => sum + i.current_value, 0);
@@ -43,58 +52,79 @@ router.get('/:id/dashboard', (req: AuthRequest, res) => {
     netWorth = totalAssets - totalLiabilities;
   }
 
-  // 3. Needs Your Attention Cards
-  const attentionItems = [
-    {
-      id: 'att_1',
-      severity: 'HIGH',
-      badgeColor: 'bg-rose-500',
-      icon: 'ShieldAlert',
-      title: 'Vehicle Insurance Renewal',
-      description: 'ICICI Lombard Insurance expires in 12 days (21 Sep)',
-      actionTab: 'vault',
-    },
-    {
-      id: 'att_2',
+  // 3. Dynamic Attention Cards
+  const attentionItems: any[] = [];
+
+  // Check documents expiring soon (within 45 days)
+  if (hasDocuments) {
+    const documents = db.find('documents', (d) => d.family_id === familyId);
+    const today = new Date();
+    documents.forEach((doc) => {
+      if (doc.expiry_date) {
+        const expDate = new Date(doc.expiry_date);
+        const diffDays = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 45 && diffDays >= 0) {
+          attentionItems.push({
+            id: `att_doc_${doc.id}`,
+            severity: diffDays <= 15 ? 'HIGH' : 'MEDIUM',
+            badgeColor: diffDays <= 15 ? 'bg-rose-500' : 'bg-amber-500',
+            icon: 'FileText',
+            title: `${doc.title} Expiry Notice`,
+            description: `${doc.owner_name}'s ${doc.title} expires in ${diffDays} days (${doc.expiry_date})`,
+            actionTab: 'vault',
+          });
+        }
+      }
+    });
+  }
+
+  // Check active reminders
+  const reminders = db.find('reminders', (r) => r.family_id === familyId && !r.is_dismissed);
+  reminders.slice(0, 2).forEach((rem) => {
+    attentionItems.push({
+      id: `att_rem_${rem.id}`,
       severity: 'MEDIUM',
       badgeColor: 'bg-amber-500',
       icon: 'Zap',
-      title: 'Electricity Bill Due Tomorrow',
-      description: 'TSSPDCL Bill of ₹3,840 is due on 10 Sep',
-      actionTab: 'money',
-    },
-    {
-      id: 'att_3',
-      severity: 'MEDIUM',
-      badgeColor: 'bg-amber-500',
-      icon: 'FileText',
-      title: 'Passport Renewal Notice',
-      description: 'Raj Passport expires in 45 days (24 Oct)',
-      actionTab: 'vault',
-    },
-    {
-      id: 'att_4',
+      title: rem.title,
+      description: rem.description || `Due on ${rem.due_date}`,
+      actionTab: rem.category === 'FINANCE' ? 'money' : 'calendar',
+    });
+  });
+
+  // Check pending high priority tasks
+  const pendingTasks = db.find('tasks', (t) => t.family_id === familyId && t.status !== 'COMPLETED');
+  const highPriorityTask = pendingTasks.find((t) => t.priority === 'HIGH');
+  if (highPriorityTask) {
+    attentionItems.push({
+      id: `att_task_${highPriorityTask.id}`,
+      severity: 'HIGH',
+      badgeColor: 'bg-rose-500',
+      icon: 'ShieldAlert',
+      title: 'High Priority Chore',
+      description: `${highPriorityTask.title} (Assigned to ${highPriorityTask.assigned_to_name})`,
+      actionTab: 'family',
+    });
+  }
+
+  // Fallback pleasant welcome item if no urgent attention items
+  if (attentionItems.length === 0) {
+    attentionItems.push({
+      id: 'att_welcome',
       severity: 'LOW',
       badgeColor: 'bg-emerald-500',
       icon: 'CheckCircle2',
-      title: 'SIP Auto-debit Completed',
-      description: '₹25,000 invested across active SIP portfolios',
-      actionTab: 'money',
-    },
-  ];
+      title: 'Family Hub Ready',
+      description: `Welcome to your private family operating system! Everything is securely synchronized.`,
+      actionTab: 'family',
+    });
+  }
 
-  // Filter attention items based on permissions
-  const filteredAttention = attentionItems.filter((item) => {
-    if (item.actionTab === 'money' && !hasFinance) return false;
-    if (item.actionTab === 'vault' && !hasDocuments) return false;
-    return true;
-  });
+  const filteredAttention = attentionItems;
 
   // 4. Today's Events, Tasks, and Reminders
   const todayDate = new Date().toISOString().split('T')[0];
   const calendarEvents = db.find('calendar_events', (e) => e.family_id === familyId);
-  const pendingTasks = db.find('tasks', (t) => t.family_id === familyId && t.status !== 'COMPLETED');
-  const reminders = db.find('reminders', (r) => r.family_id === familyId && !r.is_dismissed);
 
   // 5. Goals
   const goals = db.find('goals', (g) => g.family_id === familyId);
@@ -119,8 +149,10 @@ router.get('/:id/dashboard', (req: AuthRequest, res) => {
       membersCount: members.length,
       netWorth: hasInvestments ? netWorth : null,
       monthlySpending: hasFinance ? monthlySpending : null,
+      monthlyBudget: hasFinance ? monthlyBudget : null,
       savingsGoalPct: hasFinance ? savingsGoalPct : null,
     },
+
     attentionItems: filteredAttention,
     today: {
       events: calendarEvents.slice(0, 3),

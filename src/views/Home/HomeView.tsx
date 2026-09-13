@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFamily } from '../../context/FamilyContext.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
@@ -11,10 +11,15 @@ interface HomeViewProps {
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
-  const { dashboard, isLoading } = useFamily();
-  const { activeLanguage, currentUser } = useAuth();
+  const { dashboard, isLoading, refreshDashboard } = useFamily();
+  const { activeLanguage, currentUser, family } = useAuth();
   const { isPrivacyMode } = useSecurity();
   const t = translations[activeLanguage];
+
+  useEffect(() => {
+    refreshDashboard();
+  }, [refreshDashboard]);
+
 
   if (isLoading || !dashboard) {
     return (
@@ -39,7 +44,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-extrabold text-white tracking-tight">{dashboard.userGreeting}</h2>
-          <p className="text-xs text-slate-400">Sharma Family Hub • Hyderabad</p>
+          <p className="text-xs text-slate-400">{family?.name || 'Family Hub'} • {family?.location || 'India'}</p>
         </div>
         <div className="flex items-center gap-1 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-full text-[11px] text-indigo-300 font-semibold">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -79,15 +84,19 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           >
             <div className="flex items-center justify-between text-slate-400 mb-1">
               <span className="text-[11px] font-semibold">{t.netWorth}</span>
-              <div className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg group-hover:scale-110 transition-transform">
+              <div className={`p-1.5 rounded-lg group-hover:scale-110 transition-transform ${
+                snapshot.netWorth !== null && snapshot.netWorth < 0 ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'
+              }`}>
                 <TrendingUp className="w-3.5 h-3.5" />
               </div>
             </div>
-            <div className="text-lg font-extrabold text-emerald-400 tracking-tight">
+            <div className={`text-lg font-extrabold tracking-tight ${
+              snapshot.netWorth !== null && snapshot.netWorth < 0 ? 'text-rose-400' : 'text-emerald-400'
+            }`}>
               {isPrivacyMode ? '••••••' : formatCurrency(snapshot.netWorth, true)}
             </div>
             <div className="text-[10px] text-slate-400 mt-0.5">
-              {snapshot.netWorth ? '+4.2% this year' : 'Restricted'}
+              {snapshot.netWorth !== null ? (snapshot.netWorth >= 0 ? '+4.2% this year' : 'Liabilities exceed assets') : 'Restricted'}
             </div>
           </div>
 
@@ -105,8 +114,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             <div className="text-lg font-extrabold text-amber-400 tracking-tight">
               {isPrivacyMode ? '••••••' : formatCurrency(snapshot.monthlySpending, false)}
             </div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Sep Budget: ₹93,000</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">
+              Sep Budget: {formatCurrency(snapshot.monthlyBudget || 93000, true)}
+            </div>
           </div>
+
 
           {/* Savings Goal */}
           <div

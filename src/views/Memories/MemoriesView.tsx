@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { Memory, VoiceMemory } from '../../types/index.js';
-import { formatDate } from '../../utils/formatters.js';
-import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar } from 'lucide-react';
+import { formatDate, getLocalDateString } from '../../utils/formatters.js';
+import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar, Image as ImageIcon, Video, Upload, X, Film, Eye } from 'lucide-react';
+
+const PRESET_MEMORIES = [
+  { url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800', label: 'Family Vacation' },
+  { url: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=800', label: 'Diwali Gathering' },
+  { url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800', label: 'Birthday Party' },
+  { url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800', label: 'Family Reunion' },
+  { url: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800', label: 'Road Trip' },
+  { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800', label: 'Wedding / Function' },
+];
 
 export const MemoriesView: React.FC = () => {
   const { family, activeLanguage, hasPermission, currentUser } = useAuth();
@@ -19,10 +28,20 @@ export const MemoriesView: React.FC = () => {
 
   const [showAddMemory, setShowAddMemory] = useState(false);
   const [showRecordVoice, setShowRecordVoice] = useState(false);
+  const [lightboxMedia, setLightboxMedia] = useState<{ url: string; type: 'image' | 'video'; title?: string } | null>(null);
+
+  const [selectedMedia, setSelectedMedia] = useState<string[]>([
+    'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800',
+  ]);
+  const [customMediaUrl, setCustomMediaUrl] = useState('');
+
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [newMemory, setNewMemory] = useState({
     title: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getLocalDateString(),
     location: '',
     album: 'Family Vacation',
     description: '',
@@ -48,29 +67,69 @@ export const MemoriesView: React.FC = () => {
     loadMemories();
   }, [family?.id, currentUser?.id]);
 
+  const handleMediaFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        if (uploadEvent.target?.result) {
+          const resultStr = uploadEvent.target.result as string;
+          setSelectedMedia((prev) => [...prev, resultStr]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+  };
+
+  const handleAddCustomUrl = () => {
+    if (customMediaUrl.trim()) {
+      setSelectedMedia((prev) => [...prev, customMediaUrl.trim()]);
+      setCustomMediaUrl('');
+    }
+  };
+
+  const handleRemoveMedia = (index: number) => {
+    setSelectedMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const isVideoMedia = (url: string) => {
+    return url.startsWith('data:video') || url.includes('.mp4') || url.includes('.webm') || url.includes('.mov') || url.includes('video');
+  };
+
   const handleSaveMemory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const mediaList = selectedMedia.length > 0 ? selectedMedia : ['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800'];
       const created = await apiRequest(`/memories/${family?.id}/memories`, {
         method: 'POST',
-        body: JSON.stringify(newMemory),
+        body: JSON.stringify({
+          ...newMemory,
+          photos: mediaList,
+          tagged_members: [currentUser?.name || family?.name || 'Our Family'],
+        }),
       });
+
       setMemories([
         {
           ...created,
-          photosList: ['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800'],
-          taggedMembersList: [currentUser?.name || 'Sharma Family'],
+          photosList: mediaList,
+          taggedMembersList: [currentUser?.name || family?.name || 'Our Family'],
         },
         ...memories,
       ]);
       setShowAddMemory(false);
       setNewMemory({
         title: '',
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalDateString(),
         location: '',
         album: 'Family Vacation',
         description: '',
       });
+      setSelectedMedia(['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800']);
     } catch (err) {
       console.error(err);
     }
@@ -150,13 +209,41 @@ export const MemoriesView: React.FC = () => {
                 </span>
               </div>
 
-              {/* Photos Gallery Horizontal Scroll */}
+              {/* Photos & Videos Gallery Horizontal Scroll */}
               <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
-                {mem.photosList?.map((photo, i) => (
-                  <div key={i} className="min-w-[200px] h-36 rounded-2xl overflow-hidden border border-slate-700 shrink-0">
-                    <img src={photo} alt="Story" className="w-full h-full object-cover" />
-                  </div>
-                ))}
+                {mem.photosList?.map((media, i) => {
+                  const isVid = isVideoMedia(media);
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => setLightboxMedia({ url: media, type: isVid ? 'video' : 'image', title: mem.title })}
+                      className="relative min-w-[220px] max-w-[260px] h-40 rounded-2xl overflow-hidden border border-slate-700 shrink-0 bg-slate-950 cursor-pointer group shadow-md"
+                    >
+                      {isVid ? (
+                        <div className="w-full h-full relative flex items-center justify-center bg-black">
+                          <video src={media} className="w-full h-full object-cover opacity-80" preload="metadata" />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-all">
+                            <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
+                              <Play className="w-5 h-5 ml-0.5 fill-current" />
+                            </div>
+                          </div>
+                          <span className="absolute bottom-2 left-2 text-[9px] bg-slate-900/90 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
+                            <Film className="w-3 h-3" /> VIDEO
+                          </span>
+                        </div>
+                      ) : (
+                        <img
+                          src={media}
+                          alt="Story"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      )}
+                      <div className="absolute top-2 right-2 bg-slate-900/80 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Eye className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {mem.description && (
@@ -268,7 +355,7 @@ export const MemoriesView: React.FC = () => {
             <span className="text-3xl">📖</span>
             <h3 className="text-lg font-extrabold text-white">{yearbook.title}</h3>
             <p className="text-xs text-slate-300 max-w-xs mx-auto">
-              Curated review of Sharma Family achievements, trips, birthdays, and savings milestones.
+              Curated review of {family?.name || 'our family'} achievements, trips, birthdays, and savings milestones.
             </p>
 
             <div className="grid grid-cols-2 gap-2 pt-2 text-left">
@@ -297,30 +384,173 @@ export const MemoriesView: React.FC = () => {
 
       {/* Add Memory Modal */}
       {showAddMemory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-white">Save Family Memory</h3>
-            <form onSubmit={handleSaveMemory} className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Title</label>
+                <h3 className="text-base font-bold text-white">Save Family Memory</h3>
+                <p className="text-[11px] text-slate-400">Add photos, video clips, and cherish family moments forever</p>
+              </div>
+              <button onClick={() => setShowAddMemory(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            {/* Hidden native file inputs for Gallery & Camera */}
+            <input
+              type="file"
+              ref={galleryInputRef}
+              onChange={handleMediaFilesSelected}
+              accept="image/*,video/*"
+              multiple
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={cameraInputRef}
+              onChange={handleMediaFilesSelected}
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={videoInputRef}
+              onChange={handleMediaFilesSelected}
+              accept="video/*"
+              capture="environment"
+              className="hidden"
+            />
+
+            <form onSubmit={handleSaveMemory} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Title *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Weekend Picnic at Golconda Fort"
                   value={newMemory.title}
                   onChange={(e) => setNewMemory({ ...newMemory, title: e.target.value })}
-                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              {/* Photos & Videos Upload Area */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-amber-300 font-bold flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    <span>Upload Photos & Videos ({selectedMedia.length})</span>
+                  </label>
+                  <span className="text-[10px] text-slate-400">Gallery or Camera</span>
+                </div>
+
+                {/* Upload action buttons */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="p-2.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors"
+                  >
+                    <Upload className="w-4 h-4 text-indigo-300" />
+                    <span>From Gallery</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="p-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors"
+                  >
+                    <Camera className="w-4 h-4 text-amber-400" />
+                    <span>Take Snap</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => videoInputRef.current?.click()}
+                    className="p-2.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors"
+                  >
+                    <Video className="w-4 h-4 text-purple-300" />
+                    <span>Record Clip</span>
+                  </button>
+                </div>
+
+                {/* Selected Media Preview Grid */}
+                {selectedMedia.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Selected Media Preview</span>
+                    <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1">
+                      {selectedMedia.map((media, idx) => {
+                        const isVid = isVideoMedia(media);
+                        return (
+                          <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-600 aspect-video bg-black">
+                            {isVid ? (
+                              <video src={media} className="w-full h-full object-cover opacity-80" />
+                            ) : (
+                              <img src={media} alt="Preview" className="w-full h-full object-cover" />
+                            )}
+                            <div className="absolute top-1 left-1">
+                              {isVid ? (
+                                <span className="bg-purple-600/90 text-white text-[8px] font-bold px-1 py-0.5 rounded">VIDEO</span>
+                              ) : (
+                                <span className="bg-indigo-600/90 text-white text-[8px] font-bold px-1 py-0.5 rounded">PHOTO</span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMedia(idx)}
+                              className="absolute top-1 right-1 bg-rose-600/90 text-white p-1 rounded-full hover:bg-rose-500 shadow transition-colors"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preset moments picker */}
+                <div className="space-y-1 pt-1">
+                  <span className="text-[10px] text-slate-400">Or quick-add curated moments</span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {PRESET_MEMORIES.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setSelectedMedia((prev) => [...prev, preset.url])}
+                        className="text-[9px] p-1.5 bg-slate-900/80 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 truncate font-medium flex items-center gap-1"
+                      >
+                        <Plus className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                        <span className="truncate">{preset.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom media URL */}
+                <div className="flex gap-1.5 pt-1">
+                  <input
+                    type="url"
+                    placeholder="Or paste image/video URL..."
+                    value={customMediaUrl}
+                    onChange={(e) => setCustomMediaUrl(e.target.value)}
+                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomUrl}
+                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs font-bold"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Date</label>
                   <input
                     type="date"
                     value={newMemory.date}
                     onChange={(e) => setNewMemory({ ...newMemory, date: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
                   />
                 </div>
                 <div>
@@ -330,7 +560,7 @@ export const MemoriesView: React.FC = () => {
                     placeholder="e.g. Hyderabad"
                     value={newMemory.location}
                     onChange={(e) => setNewMemory({ ...newMemory, location: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
                   />
                 </div>
               </div>
@@ -338,15 +568,15 @@ export const MemoriesView: React.FC = () => {
               <div>
                 <label className="text-xs text-slate-300 font-semibold">Description / Story</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   placeholder="What made this moment special for our family?"
                   value={newMemory.description}
                   onChange={(e) => setNewMemory({ ...newMemory, description: e.target.value })}
-                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
                 />
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAddMemory(false)}
@@ -386,6 +616,36 @@ export const MemoriesView: React.FC = () => {
             >
               Finish & Save Voice Story
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full-size Lightbox Modal */}
+      {lightboxMedia && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+          onClick={() => setLightboxMedia(null)}
+        >
+          <div
+            className="relative max-w-3xl w-full max-h-[85vh] bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-3 bg-slate-900/90 border-b border-slate-800">
+              <span className="text-xs font-bold text-white">{lightboxMedia.title || 'Memory Media'}</span>
+              <button
+                onClick={() => setLightboxMedia(null)}
+                className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-center p-2 bg-black min-h-[300px]">
+              {lightboxMedia.type === 'video' ? (
+                <video src={lightboxMedia.url} controls autoPlay className="max-w-full max-h-[70vh] rounded-2xl shadow-lg" />
+              ) : (
+                <img src={lightboxMedia.url} alt="Memory" className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-lg" />
+              )}
+            </div>
           </div>
         </div>
       )}

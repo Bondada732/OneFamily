@@ -3,6 +3,7 @@ import db from '../db/database.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { logActivity } from '../services/auditService.js';
+import { getOrCreateExpenseCategories } from '../services/categoryService.js';
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -15,8 +16,8 @@ router.get('/:id/budget', requirePermission('FINANCE_VIEW'), (req: AuthRequest, 
   const budgets = db.find('budgets', (b) => b.family_id === familyId && b.month_year === monthYear);
   const expenses = db.find('expenses', (e) => e.family_id === familyId);
 
-  // Compute spending per category
-  const categories = db.find('expense_categories', (c) => c.family_id === familyId);
+  // Compute spending per category (auto-initialized if empty)
+  const categories = getOrCreateExpenseCategories(familyId);
   const budgetReports = categories.map((cat) => {
     const budget = budgets.find((b) => b.category_id === cat.id);
     const catExpenses = expenses.filter((e) => e.category_id === cat.id);

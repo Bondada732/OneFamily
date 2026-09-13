@@ -105,4 +105,118 @@ router.post('/:id/investments', requirePermission('INVESTMENT_EDIT'), (req: Auth
   res.status(201).json(newInvestment);
 });
 
+// Add New Liability / Loan Record
+router.post('/:id/liabilities', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { title, type, lender, total_loan, outstanding_amount, monthly_emi, interest_rate, end_date, owner_name } = req.body;
+
+  const total = Number(total_loan) || Number(outstanding_amount) || 0;
+  const outstanding = Number(outstanding_amount) || total;
+  const emi = Number(monthly_emi) || 0;
+  const rate = Number(interest_rate) || 8.5;
+
+  const newLiability = {
+    id: `lia_${Date.now()}`,
+    family_id: familyId,
+    owner_name: owner_name || req.user!.name,
+    type: type || 'HOME_LOAN',
+    title: title || 'Family Loan',
+    lender: lender || '',
+    total_loan: total,
+    outstanding_amount: outstanding,
+    monthly_emi: emi,
+    interest_rate: rate,
+    end_date: end_date || '',
+    created_at: new Date().toISOString(),
+  };
+
+  db.insert('liabilities', newLiability);
+  logActivity(familyId, req.user!.id, req.user!.name, 'Added Liability', 'FINANCE', `Added ${title} with outstanding ₹${outstanding}`);
+
+  res.status(201).json(newLiability);
+});
+
+// Update Investment
+router.put('/:id/investments/:invId', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const { invId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+  const { title, type, institution, invested_amount, current_value, maturity_date, folio_number, nominee, notes, owner_name } = req.body;
+
+  const existing = db.findOne('investments', (i) => i.id === invId && i.family_id === familyId);
+  if (!existing) {
+    return res.status(404).json({ error: 'Investment not found' });
+  }
+
+  const invested = invested_amount !== undefined ? Number(invested_amount) : existing.invested_amount;
+  const current = current_value !== undefined ? Number(current_value) : existing.current_value;
+
+  const updated = db.update('investments', (i) => i.id === invId && i.family_id === familyId, {
+    title: title ?? existing.title,
+    type: type ?? existing.type,
+    institution: institution ?? existing.institution,
+    invested_amount: invested,
+    current_value: current,
+    gain_loss: current - invested,
+    maturity_date: maturity_date ?? existing.maturity_date,
+    folio_number: folio_number ?? existing.folio_number,
+    nominee: nominee ?? existing.nominee,
+    notes: notes ?? existing.notes,
+    owner_name: owner_name ?? existing.owner_name,
+    updated_at: new Date().toISOString(),
+  });
+
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Investment', 'FINANCE', `Updated ${title || existing.title}`);
+  res.json(updated[0] || existing);
+});
+
+// Delete Investment
+router.delete('/:id/investments/:invId', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const { invId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+
+  const deleted = db.delete('investments', (i) => i.id === invId && i.family_id === familyId);
+  if (deleted) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Investment', 'FINANCE', `Removed investment ${invId}`);
+  }
+  res.json({ success: deleted });
+});
+
+// Delete Liability
+router.delete('/:id/liabilities/:liaId', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const { liaId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+
+  const deleted = db.delete('liabilities', (l) => l.id === liaId && l.family_id === familyId);
+  if (deleted) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Liability', 'FINANCE', `Removed loan/liability ${liaId}`);
+  }
+  res.json({ success: deleted });
+});
+
+// Add Insurance Policy Record
+router.post('/:id/insurance', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { policy_name, policy_type, provider, policy_number, sum_insured, premium_amount, renewal_date, covered_members } = req.body;
+
+  const newPolicy = {
+    id: `pol_${Date.now()}`,
+    family_id: familyId,
+    policy_name,
+    policy_type: policy_type || 'HEALTH',
+    provider: provider || '',
+    policy_number: policy_number || '',
+    sum_insured: Number(sum_insured) || 0,
+    premium_amount: Number(premium_amount) || 0,
+    renewal_date: renewal_date || '',
+    covered_members: JSON.stringify(covered_members || [req.user!.name]),
+    created_at: new Date().toISOString(),
+  };
+
+  db.insert('insurance_policies', newPolicy);
+  logActivity(familyId, req.user!.id, req.user!.name, 'Added Insurance', 'FINANCE', `Added policy "${policy_name}"`);
+
+  res.status(201).json(newPolicy);
+});
+
 export default router;
+

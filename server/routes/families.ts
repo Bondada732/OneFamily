@@ -20,9 +20,13 @@ router.get('/:id', (req: AuthRequest, res) => {
   const permissions = db.find('member_permissions', (mp) => members.some((m) => m.id === mp.user_id));
 
   const membersWithPerms = members.map((m) => {
-    const userPerms = permissions
-      .filter((p) => p.user_id === m.id)
-      .map((p) => p.permission_code);
+    const mIsHead = m.role === 'FAMILY_HEAD';
+    const userPerms = mIsHead
+      ? DEFAULT_PERMISSIONS.FAMILY_HEAD
+      : permissions
+          .filter((p) => p.user_id === m.id)
+          .map((p) => p.permission_code);
+
     return {
       ...m,
       permissions: userPerms,
@@ -120,24 +124,123 @@ router.put('/:id/members/:userId/permissions', requirePermission('FAMILY_MANAGE'
   res.json({ success: true, userId, permissions });
 });
 
+// Update Member Profile (Avatar photo, name, phone, relationship)
+router.patch('/:id/members/:userId', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
+  const { userId } = req.params;
+  const { name, avatar_url, phone, pin_code, relationship, role } = req.body;
+
+  const member = db.findOne('users', (u) => u.id === userId);
+  if (!member) {
+    return res.status(404).json({ error: 'Member not found' });
+  }
+
+  const updated = db.update('users', (u) => u.id === userId, {
+    ...(name && { name }),
+    ...(avatar_url && { avatar_url }),
+    ...(phone && { phone }),
+    ...(pin_code && { pin_code }),
+    ...(relationship && { relationship }),
+    ...(role && { role }),
+  });
+
+  logActivity(
+    req.familyId!,
+    req.user!.id,
+    req.user!.name,
+    'Updated Member Profile',
+    'ADMIN',
+    `Updated profile for ${updated?.name || userId}`
+  );
+
+  res.json({ success: true, member: updated });
+});
+
+// Approve Pending Family Member & Assign Permissions (Family Head only)
+router.post('/:id/members/:userId/approve', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
+  const { userId } = req.params;
+  const { permissions, role, relationship } = req.body;
+
+  const member = db.findOne('users', (u) => u.id === userId);
+  if (!member) {
+    return res.status(404).json({ error: 'Member not found' });
+  }
+
+  // Update member status to approved
+  const updated = db.update('users', (u) => u.id === userId, {
+    is_approved: true,
+    status: 'ACTIVE',
+    ...(role && { role }),
+    ...(relationship && { relationship }),
+  });
+
+  // Assign permissions
+  db.delete('member_permissions', (mp) => mp.user_id === userId);
+  const grantedPerms: string[] = Array.isArray(permissions) ? permissions : [];
+  grantedPerms.forEach((code) => {
+    db.insert('member_permissions', { user_id: userId, permission_code: code });
+  });
+
+  logActivity(
+    req.familyId!,
+    req.user!.id,
+    req.user!.name,
+    'Approved Member Access',
+    'ADMIN',
+    `Approved access for ${member.name} (${role || member.role}) with ${grantedPerms.length} permissions.`
+  );
+
+  res.json({
+    success: true,
+    member: {
+      ...updated,
+      is_approved: true,
+      status: 'ACTIVE',
+      permissions: grantedPerms,
+    },
+  });
+});
+
+// Reject / Delete Pending Member (Family Head only)
+router.delete('/:id/members/:userId/reject', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
+  const { userId } = req.params;
+  const member = db.findOne('users', (u) => u.id === userId);
+  if (!member) {
+    return res.status(404).json({ error: 'Member not found' });
+  }
+
+  db.delete('member_permissions', (mp) => mp.user_id === userId);
+  db.delete('users', (u) => u.id === userId);
+
+  logActivity(
+    req.familyId!,
+    req.user!.id,
+    req.user!.name,
+    'Rejected Member Request',
+    'ADMIN',
+    `Rejected and removed registration request for ${member.name}.`
+  );
+
+  res.json({ success: true, message: `Registration for ${member.name} has been rejected.` });
+});
+
 // Family Tree hierarchy data
 router.get('/:id/tree', (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId;
   const members = db.find('users', (u) => u.family_id === familyId);
 
-  // Build tree node mapping
+  // Build tree node mapping with null-safe relationship checks
   const treeNodes = [
     {
       id: 'gen_1',
       generation: 1,
       title: 'Grandparents Generation',
-      members: members.filter((m) => m.role === 'VIEWER' || m.relationship.toLowerCase().includes('grand')),
+      members: members.filter((m) => m.role === 'VIEWER' || (m.relationship && m.relationship.toLowerCase().includes('grand'))),
     },
     {
       id: 'gen_2',
       generation: 2,
       title: 'Parents Generation',
-      members: members.filter((m) => m.role === 'FAMILY_HEAD' || m.role === 'SPOUSE' || (m.role === 'ADULT' && !m.relationship.toLowerCase().includes('grand'))),
+      members: members.filter((m) => m.role === 'FAMILY_HEAD' || m.role === 'SPOUSE' || (m.role === 'ADULT' && !(m.relationship && m.relationship.toLowerCase().includes('grand')))),
     },
     {
       id: 'gen_3',

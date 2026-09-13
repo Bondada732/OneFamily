@@ -4,6 +4,7 @@ dist/
 .env.*
 !.env.example
 GitHub user.txt
+New folder/
 android/.gradle/
 android/build/
 android/app/build/

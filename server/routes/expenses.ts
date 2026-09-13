@@ -4,21 +4,60 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { extractReceiptData } from '../services/ocrService.js';
 import { logActivity } from '../services/auditService.js';
+import { getOrCreateExpenseCategories, addExpenseCategory, deleteExpenseCategory } from '../services/categoryService.js';
 
 const router = express.Router();
 router.use(authMiddleware);
 
-// Get All Expenses
+// Get All Expenses & Categories
 router.get('/:id/expenses', requirePermission('FINANCE_VIEW'), (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
   const expenses = db.find('expenses', (e) => e.family_id === familyId);
-  const categories = db.find('expense_categories', (c) => c.family_id === familyId);
+  const categories = getOrCreateExpenseCategories(familyId);
 
   res.json({
     expenses: expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     categories,
     totalExpenses: expenses.reduce((sum, e) => sum + e.amount, 0),
   });
+});
+
+// Get Categories
+router.get('/:id/categories', requirePermission('FINANCE_VIEW'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const categories = getOrCreateExpenseCategories(familyId);
+  res.json({ categories });
+});
+
+// Add Custom Category
+router.post('/:id/categories', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { name, icon, color } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Category name is required' });
+  }
+
+  // Ensure default categories exist first
+  getOrCreateExpenseCategories(familyId);
+
+  const newCat = addExpenseCategory(familyId, name.trim(), icon, color);
+  logActivity(familyId, req.user!.id, req.user!.name, 'Created Category', 'FINANCE', `Added custom expense category "${newCat.name}"`);
+
+  res.status(201).json(newCat);
+});
+
+// Delete Category
+router.delete('/:id/categories/:catId', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { catId } = req.params;
+
+  const deleted = deleteExpenseCategory(familyId, catId);
+  if (deleted) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Category', 'FINANCE', `Removed category ${catId}`);
+  }
+
+  res.json({ success: deleted });
 });
 
 // Add New Expense
@@ -76,3 +115,4 @@ router.delete('/:id/expenses/:expenseId', requirePermission('FINANCE_EDIT'), (re
 });
 
 export default router;
+

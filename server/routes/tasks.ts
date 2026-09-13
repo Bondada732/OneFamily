@@ -81,17 +81,24 @@ router.post('/:id/grocery', requirePermission('TASK_EDIT'), (req: AuthRequest, r
   res.status(201).json(newItem);
 });
 
-// Grocery List: Toggle Item
+// Grocery / Wishlist: Toggle Item
 router.patch('/:id/grocery/:itemId/toggle', requirePermission('TASK_EDIT'), (req: AuthRequest, res) => {
   const { itemId } = req.params;
   const item = db.findOne('grocery_items', (g) => g.id === itemId);
-  if (!item) return res.status(404).json({ error: 'Grocery item not found' });
+  if (!item) return res.status(404).json({ error: 'Wish list item not found' });
 
   const updated = db.update('grocery_items', (g) => g.id === itemId, {
     is_purchased: !item.is_purchased,
   });
 
   res.json(updated);
+});
+
+// Grocery / Wishlist: Delete Item
+router.delete('/:id/grocery/:itemId', requirePermission('TASK_EDIT'), (req: AuthRequest, res) => {
+  const { itemId } = req.params;
+  const deleted = db.delete('grocery_items', (g) => g.id === itemId);
+  res.json({ success: deleted });
 });
 
 // Household Maintenance: Add / Service update
@@ -116,4 +123,12 @@ router.post('/:id/maintenance', requirePermission('TASK_EDIT'), (req: AuthReques
   res.status(201).json(newItem);
 });
 
+// Household Maintenance: Delete Item
+router.delete('/:id/maintenance/:maintId', requirePermission('TASK_EDIT'), (req: AuthRequest, res) => {
+  const { maintId } = req.params;
+  const deleted = db.delete('maintenance_items', (m) => m.id === maintId);
+  res.json({ success: deleted });
+});
+
 export default router;
+

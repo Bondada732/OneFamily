@@ -1,33 +1,47 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Heart, Users, Sparkles, TrendingUp, FolderLock, ArrowRight, Check, Plus, KeyRound } from 'lucide-react';
-import { apiRequest } from '../../utils/api.js';
+import { ShieldCheck, Heart, Users, Sparkles, TrendingUp, FolderLock, ArrowRight, Check, Plus, KeyRound, LogIn, Copy, Share2, CheckCircle2, UserPlus, Sparkle, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.js';
 
 interface OnboardingViewProps {
   onComplete: () => void;
 }
 
 export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [mode, setMode] = useState<'SLIDES' | 'CREATE_FAMILY' | 'JOIN_FAMILY' | 'CHECKLIST'>('SLIDES');
-  const [formData, setFormData] = useState({
-    familyName: 'Sharma Family',
-    location: 'Hyderabad, India',
-    currency: 'INR',
-    language: 'en',
-    headName: 'Raj Sharma',
-    headEmail: 'raj.sharma@example.com',
+  const { registerHead, joinFamily, login, family } = useAuth();
+  const [mode, setMode] = useState<'SIGN_IN' | 'REGISTER_HEAD' | 'JOIN_FAMILY' | 'SUCCESS_KEY' | 'SLIDES'>('SIGN_IN');
+  
+  // Sign In state
+  const [signInEmail, setSignInEmail] = useState('');
+  const [signInPin, setSignInPin] = useState('');
+  const [signInError, setSignInError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Register Head state
+  const [headForm, setHeadForm] = useState({
+    familyName: '',
+    headName: '',
+    headEmail: '',
     pinCode: '1234',
+    relationship: 'Father / Family Head',
+    currency: 'INR',
+    location: 'India',
   });
-  const [inviteCode, setInviteCode] = useState('');
-  const [checklist, setChecklist] = useState([
-    { id: 1, label: 'Add family members', done: true },
-    { id: 2, label: 'Create monthly budget', done: false },
-    { id: 3, label: 'Add first family goal', done: false },
-    { id: 4, label: 'Upload an important document', done: false },
-    { id: 5, label: 'Add family calendar events', done: false },
-    { id: 6, label: 'Add emergency contacts', done: false },
-    { id: 7, label: 'Create your first memory', done: false },
-  ]);
+  const [headError, setHeadError] = useState('');
+  const [createdKey, setCreatedKey] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  // Join Member state
+  const [joinForm, setJoinForm] = useState({
+    familyKey: '',
+    name: '',
+    email: '',
+    pinCode: '1234',
+    relationship: 'Spouse',
+    role: 'SPOUSE',
+  });
+  const [joinError, setJoinError] = useState('');
+
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const slides = [
     {
@@ -45,324 +59,607 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
       color: 'from-indigo-500 to-blue-600',
     },
     {
-      title: 'Secure Your Important Information',
-      subtitle: 'Private Digital Family Vault',
-      description: 'Store Aadhaar, PAN, passports, insurance policies, and property deeds with AI expiry tracking and OCR scanner.',
+      title: 'Secure Digital Vault',
+      subtitle: 'Aadhaar, PAN & Insurance Policies',
+      description: 'Store government IDs, property deeds, and medical cards with OCR scanning and automated renewal reminders.',
       icon: FolderLock,
       color: 'from-amber-500 to-yellow-600',
     },
     {
-      title: "Plan Your Family's Future",
-      subtitle: 'Wealth, Budgets & Shared Goals',
+      title: "Plan Your Family's Wealth",
+      subtitle: 'Expenses, Budgets & Net Worth',
       description: 'Track mutual funds, SIPs, fixed deposits, gold, and calculate family net worth while budgeting for what matters.',
       icon: TrendingUp,
       color: 'from-emerald-500 to-teal-600',
     },
     {
-      title: 'Preserve Your Memories',
-      subtitle: 'Timelines, Voice Notes & Yearbook',
-      description: 'Capture trip photo timelines, record grandparent stories with audio translation, and generate annual family yearbooks.',
-      icon: Heart,
-      color: 'from-rose-500 to-purple-600',
-    },
-    {
-      title: 'Meet Your Family AI Assistant',
-      subtitle: 'FamilyAI — Safe, Calm & Context-Aware',
+      title: 'Meet Family AI Assistant',
+      subtitle: 'Private, Context-Aware & Empathetic',
       description: 'Ask questions about grocery spending, insurance due dates, trip packing lists, and personalized gift suggestions.',
       icon: Sparkles,
       color: 'from-purple-500 to-indigo-600',
     },
   ];
 
-  const handleCreateFamily = async (e: React.FormEvent) => {
+  // 1. Handle Sign In
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await apiRequest('/auth/register-family', {
-        method: 'POST',
-        body: JSON.stringify(formData),
-      });
-      setMode('CHECKLIST');
-    } catch (err) {
-      console.error(err);
-      setMode('CHECKLIST');
+    setSignInError('');
+    if (!signInEmail.trim()) {
+      setSignInError('Please enter your email or PIN.');
+      return;
+    }
+    setIsSubmitting(true);
+    const result = await login(signInEmail.trim(), signInPin.trim());
+    setIsSubmitting(false);
+    if (result.success) {
+      onComplete();
+    } else {
+      setSignInError(result.error || 'Invalid credentials. (Demo PIN: 1234)');
     }
   };
 
-  const toggleChecklistItem = (id: number) => {
-    setChecklist((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
-    );
+  // Quick Demo Login helper
+  const handleQuickDemo = async (email: string) => {
+    setIsSubmitting(true);
+    setSignInError('');
+    const result = await login(email, '1234');
+    setIsSubmitting(false);
+    if (result.success) {
+      onComplete();
+    } else {
+      setSignInError('Demo login failed. Please try again.');
+    }
   };
 
-  const completedCount = checklist.filter((c) => c.done).length;
+  // 2. Handle Register Family Head
+  const handleRegisterHead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setHeadError('');
+    if (!headForm.familyName.trim() || !headForm.headName.trim()) {
+      setHeadError('Family Name and Family Head Name are required.');
+      return;
+    }
+    if (headForm.pinCode.length !== 4) {
+      setHeadError('PIN code must be exactly 4 digits.');
+      return;
+    }
 
-  if (mode === 'CREATE_FAMILY') {
+    setIsSubmitting(true);
+    const result = await registerHead(headForm);
+    setIsSubmitting(false);
+
+    if (result.success && result.familyKey) {
+      setCreatedKey(result.familyKey);
+      setMode('SUCCESS_KEY');
+    } else if (result.success) {
+      onComplete();
+    } else {
+      setHeadError(result.error || 'Failed to create family space.');
+    }
+  };
+
+  // 3. Handle Join Family Member
+  const handleJoinFamily = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setJoinError('');
+    if (!joinForm.familyKey.trim() || !joinForm.name.trim()) {
+      setJoinError('Family Key and your name are required.');
+      return;
+    }
+    if (joinForm.pinCode.length !== 4) {
+      setJoinError('PIN code must be exactly 4 digits.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await joinFamily({
+      ...joinForm,
+      familyKey: joinForm.familyKey.trim().toUpperCase(),
+    });
+    setIsSubmitting(false);
+
+    if (result.success) {
+      onComplete();
+    } else {
+      setJoinError(result.error || 'Failed to join family. Please verify the Family Key.');
+    }
+  };
+
+  const handleCopyKey = (key: string) => {
+    navigator.clipboard.writeText(key);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleWhatsAppShare = (key: string, familyName: string) => {
+    const text = `Join our family space "${familyName}" on Famora! Use Family Secret Key: *${key}* to sign up and join.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  // SUCCESS KEY MODAL / SCREEN (After Family Head Creates Account)
+  if (mode === 'SUCCESS_KEY') {
     return (
-      <div className="p-6 space-y-6 animate-fade-in text-white">
-        <div className="text-center space-y-1">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-indigo-600 mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <Heart className="w-6 h-6 text-white" />
-          </div>
-          <h2 className="text-xl font-bold tracking-tight">Create Your Family</h2>
-          <p className="text-xs text-slate-400">Set up your private family digital space</p>
-        </div>
-
-        <form onSubmit={handleCreateFamily} className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-300">Family Name</label>
-            <input
-              type="text"
-              required
-              value={formData.familyName}
-              onChange={(e) => setFormData({ ...formData, familyName: e.target.value })}
-              className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:border-amber-400 outline-none"
-            />
+      <div className="p-6 space-y-6 animate-fade-in text-white min-h-full flex flex-col justify-between">
+        <div className="space-y-6 pt-4 text-center">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-500/40 mx-auto flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-500/20">
+            <CheckCircle2 className="w-8 h-8" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-300">Location</label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white outline-none"
-              />
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Family Created Successfully!</span>
+            <h2 className="text-2xl font-extrabold tracking-tight">{headForm.familyName || 'Your Family'}</h2>
+            <p className="text-xs text-slate-300 max-w-xs mx-auto pt-1">
+              Here is your private **Family Secret Key**. Share this key with your spouse, children, and elders so they can join your family space.
+            </p>
+          </div>
+
+          {/* Key Card */}
+          <div className="p-5 rounded-3xl bg-slate-800/90 border-2 border-amber-500/50 shadow-2xl space-y-3">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">Family Secret Key</span>
+            <div className="text-2xl font-black font-mono tracking-widest text-amber-400 bg-slate-900/90 py-3.5 px-4 rounded-2xl border border-slate-700 select-all">
+              {createdKey}
             </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-300">Currency</label>
-              <select
-                value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white outline-none"
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleCopyKey(createdKey)}
+                className="flex-1 py-2.5 px-3 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95"
               >
-                <option value="INR">₹ INR (Indian Rupee)</option>
-                <option value="USD">$ USD (US Dollar)</option>
-                <option value="EUR">€ EUR (Euro)</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-300">Family Head Full Name</label>
-            <input
-              type="text"
-              required
-              value={formData.headName}
-              onChange={(e) => setFormData({ ...formData, headName: e.target.value })}
-              className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white outline-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-300">Email Address</label>
-              <input
-                type="email"
-                value={formData.headEmail}
-                onChange={(e) => setFormData({ ...formData, headEmail: e.target.value })}
-                className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-300">App PIN (4 Digits)</label>
-              <input
-                type="password"
-                maxLength={4}
-                value={formData.pinCode}
-                onChange={(e) => setFormData({ ...formData, pinCode: e.target.value })}
-                className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white outline-none"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 transition-all active:scale-95 text-sm"
-          >
-            Create Family Space
-          </button>
-        </form>
-
-        <button
-          onClick={() => setMode('SLIDES')}
-          className="w-full text-center text-xs text-slate-400 hover:text-slate-200"
-        >
-          ← Back to Walkthrough
-        </button>
-      </div>
-    );
-  }
-
-  if (mode === 'JOIN_FAMILY') {
-    return (
-      <div className="p-6 space-y-6 animate-fade-in text-white">
-        <div className="text-center space-y-1">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-500/40 mx-auto flex items-center justify-center">
-            <KeyRound className="w-6 h-6 text-indigo-400" />
-          </div>
-          <h2 className="text-xl font-bold tracking-tight">Join Existing Family</h2>
-          <p className="text-xs text-slate-400">Enter the invitation code provided by your Family Head</p>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-300">6-Digit Family Invite Code</label>
-            <input
-              type="text"
-              maxLength={6}
-              placeholder="e.g. 1F-9482"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              className="w-full mt-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-lg font-mono tracking-widest text-amber-400 outline-none"
-            />
-          </div>
-
-          <button
-            onClick={() => setMode('CHECKLIST')}
-            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all text-sm"
-          >
-            Join Family
-          </button>
-        </div>
-
-        <button
-          onClick={() => setMode('SLIDES')}
-          className="w-full text-center text-xs text-slate-400 hover:text-slate-200"
-        >
-          ← Back
-        </button>
-      </div>
-    );
-  }
-
-  if (mode === 'CHECKLIST') {
-    return (
-      <div className="p-6 space-y-5 animate-fade-in text-white">
-        <div className="text-center space-y-1">
-          <span className="text-3xl">❤️</span>
-          <h2 className="text-xl font-extrabold text-white">Welcome to One Family!</h2>
-          <p className="text-xs text-slate-400">Let's build your family's new digital home.</p>
-        </div>
-
-        {/* Progress Card */}
-        <div className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 shadow-md">
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="font-bold text-slate-200">Setup Checklist</span>
-            <span className="text-amber-400 font-bold">{completedCount} of {checklist.length} completed</span>
-          </div>
-          <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-amber-400 to-indigo-500 transition-all duration-500"
-              style={{ width: `${(completedCount / checklist.length) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Checklist items */}
-        <div className="space-y-2">
-          {checklist.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => toggleChecklistItem(item.id)}
-              className={`flex items-center gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
-                item.done
-                  ? 'bg-slate-800/40 border-slate-800 text-slate-400'
-                  : 'bg-slate-800 border-slate-700 text-slate-100 hover:border-slate-600'
-              }`}
-            >
-              <div
-                className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
-                  item.done ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'border-slate-600'
-                }`}
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-300" />}
+                <span>{copied ? 'Copied Key!' : 'Copy Key'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWhatsAppShare(createdKey, headForm.familyName)}
+                className="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/30 transition-all active:scale-95"
               >
-                {item.done && <Check className="w-4 h-4" />}
-              </div>
-              <span className={`text-xs font-semibold ${item.done ? 'line-through text-slate-500' : ''}`}>
-                {item.label}
-              </span>
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Share WhatsApp</span>
+              </button>
             </div>
-          ))}
+          </div>
+
+          <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl text-[11px] text-indigo-300 text-left space-y-1">
+            <p className="font-semibold">💡 What happens next?</p>
+            <p className="text-slate-300">
+              When family members enter this key during sign-up, they will immediately appear in your <strong>Family Hub &gt; Members</strong> list with tailored role access!
+            </p>
+          </div>
         </div>
 
         <button
           onClick={onComplete}
-          className="w-full py-4 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 transition-transform active:scale-95 text-sm flex items-center justify-center gap-2"
+          className="w-full py-4 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
         >
-          <span>Enter Family Operating System</span>
+          <span>Enter Family Hub</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     );
   }
 
-  // SLIDES View
-  const slide = slides[currentSlide];
-  const Icon = slide.icon;
-
   return (
-    <div className="min-h-full flex flex-col justify-between p-6 text-white animate-fade-in">
-      {/* Top indicator dots */}
-      <div className="flex justify-center gap-1.5 pt-2">
-        {slides.map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              currentSlide === i ? 'w-6 bg-amber-400' : 'w-2 bg-slate-700'
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Center visual & slide content */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center my-8 space-y-6">
-        <div className={`w-28 h-28 rounded-3xl bg-gradient-to-tr ${slide.color} p-0.5 shadow-2xl flex items-center justify-center ring-8 ring-slate-800/50`}>
-          <div className="w-full h-full bg-slate-900/40 rounded-3xl backdrop-blur-sm flex items-center justify-center">
-            <Icon className="w-14 h-14 text-white drop-shadow" />
+    <div className="p-5 space-y-5 animate-fade-in text-white min-h-full flex flex-col justify-between">
+      {/* Brand Header */}
+      <div className="text-center space-y-1 pt-2">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 via-rose-500 to-indigo-600 mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/30 p-0.5">
+          <div className="w-full h-full bg-slate-900/60 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+            <Heart className="w-6 h-6 text-amber-300 fill-amber-300/30" />
           </div>
         </div>
-
-        <div className="space-y-2 max-w-xs">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400">{slide.subtitle}</span>
-          <h2 className="text-2xl font-extrabold text-white tracking-tight leading-tight">{slide.title}</h2>
-          <p className="text-xs text-slate-400 leading-relaxed pt-1">{slide.description}</p>
-        </div>
+        <h1 className="text-xl font-extrabold tracking-tight">ONE FAMILY</h1>
+        <p className="text-xs text-slate-400">One Home. One Family. One Future.</p>
       </div>
 
-      {/* Actions */}
-      <div className="space-y-3">
-        {currentSlide < slides.length - 1 ? (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMode('CREATE_FAMILY')}
-              className="py-3 px-4 text-xs font-semibold text-slate-400 hover:text-white"
-            >
-              Skip
-            </button>
-            <button
-              onClick={() => setCurrentSlide((prev) => prev + 1)}
-              className="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/30 text-xs flex items-center justify-center gap-2"
-            >
-              <span>Next</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+      {/* Segmented Mode Selector */}
+      <div className="flex bg-slate-800/90 p-1 rounded-2xl border border-slate-700/80 shadow-inner">
+        <button
+          onClick={() => { setMode('SIGN_IN'); setSignInError(''); }}
+          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+            mode === 'SIGN_IN'
+              ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Sign In
+        </button>
+        <button
+          onClick={() => { setMode('REGISTER_HEAD'); setHeadError(''); }}
+          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+            mode === 'REGISTER_HEAD'
+              ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Create Family
+        </button>
+        <button
+          onClick={() => { setMode('JOIN_FAMILY'); setJoinError(''); }}
+          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+            mode === 'JOIN_FAMILY'
+              ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Join with Key
+        </button>
+      </div>
+
+      {/* 1. SIGN IN MODE */}
+      {mode === 'SIGN_IN' && (
+        <div className="space-y-4 animate-fade-in">
+          <div className="text-center space-y-0.5">
+            <h2 className="text-base font-bold text-white">Sign In to Your Family</h2>
+            <p className="text-[11px] text-slate-400">Enter your family email address or 4-digit PIN</p>
           </div>
+
+          {signInError && (
+            <div className="p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{signInError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSignIn} className="space-y-3.5">
+            <div>
+              <label className="text-xs font-semibold text-slate-300">Email Address or Member Name</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. raj.sharma@example.com"
+                value={signInEmail}
+                onChange={(e) => setSignInEmail(e.target.value)}
+                className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:border-amber-400 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-300">4-Digit App PIN</label>
+              <input
+                type="password"
+                maxLength={4}
+                placeholder="••••"
+                value={signInPin}
+                onChange={(e) => setSignInPin(e.target.value)}
+                className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:border-amber-400 outline-none tracking-widest font-mono"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 text-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>{isSubmitting ? 'Signing In...' : 'Sign In'}</span>
+            </button>
+          </form>
+
+          {/* Quick Demo Logins Section */}
+          <div className="pt-2 border-t border-slate-800 space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block text-center">
+              Quick Switch / Demo Profiles (Key: FAM-SHARMA-01)
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('raj.sharma@example.com')}
+                className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-left transition-all flex items-center gap-2"
+              >
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" className="w-7 h-7 rounded-lg object-cover" alt="Raj" />
+                <div>
+                  <div className="text-[11px] font-bold text-white leading-tight">Raj Sharma</div>
+                  <div className="text-[9px] text-amber-400">Family Head</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('priya.sharma@example.com')}
+                className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-left transition-all flex items-center gap-2"
+              >
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" className="w-7 h-7 rounded-lg object-cover" alt="Priya" />
+                <div>
+                  <div className="text-[11px] font-bold text-white leading-tight">Priya Sharma</div>
+                  <div className="text-[9px] text-indigo-300">Spouse / Co-Head</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. CREATE FAMILY (REGISTER HEAD) MODE */}
+      {mode === 'REGISTER_HEAD' && (
+        <div className="space-y-3.5 animate-fade-in">
+          <div className="text-center space-y-0.5">
+            <h2 className="text-base font-bold text-white">Create a New Family Account</h2>
+            <p className="text-[11px] text-slate-400">As Family Head, you will generate a Family Key for your members</p>
+          </div>
+
+          {headError && (
+            <div className="p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{headError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleRegisterHead} className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-slate-300">Family Name</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Verma Family / Reddy Household"
+                value={headForm.familyName}
+                onChange={(e) => setHeadForm({ ...headForm, familyName: e.target.value })}
+                className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:border-amber-400 outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="text-xs font-semibold text-slate-300">Family Head Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ramesh Verma"
+                  value={headForm.headName}
+                  onChange={(e) => setHeadForm({ ...headForm, headName: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300">Head Relationship</label>
+                <select
+                  value={headForm.relationship}
+                  onChange={(e) => setHeadForm({ ...headForm, relationship: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                >
+                  <option value="Father / Family Head">Father / Head</option>
+                  <option value="Mother / Family Head">Mother / Head</option>
+                  <option value="Self / Family Head">Self / Head</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="text-xs font-semibold text-slate-300">Head Email Address</label>
+                <input
+                  type="email"
+                  placeholder="head@example.com"
+                  value={headForm.headEmail}
+                  onChange={(e) => setHeadForm({ ...headForm, headEmail: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300">4-Digit App PIN</label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  required
+                  placeholder="1234"
+                  value={headForm.pinCode}
+                  onChange={(e) => setHeadForm({ ...headForm, pinCode: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400 tracking-widest font-mono"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 text-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>{isSubmitting ? 'Creating Family...' : 'Create Family & Generate Key'}</span>
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* 3. JOIN FAMILY (WITH KEY) MODE */}
+      {mode === 'JOIN_FAMILY' && (
+        <div className="space-y-3.5 animate-fade-in">
+          <div className="text-center space-y-0.5">
+            <h2 className="text-base font-bold text-white">Join Family with Secret Key</h2>
+            <p className="text-[11px] text-slate-400">Enter the invitation key shared by your Family Head</p>
+          </div>
+
+          {joinError && (
+            <div className="p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{joinError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleJoinFamily} className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-slate-300">Family Secret Key</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  maxLength={16}
+                  placeholder="e.g. FAM-8492 or FAM-SHARMA-01"
+                  value={joinForm.familyKey}
+                  onChange={(e) => setJoinForm({ ...joinForm, familyKey: e.target.value.toUpperCase() })}
+                  className="w-full mt-1 px-4 py-3 bg-slate-800 border-2 border-amber-500/50 rounded-xl text-center text-base font-mono font-bold tracking-widest text-amber-400 placeholder-slate-500 focus:border-amber-400 outline-none uppercase"
+                />
+                <KeyRound className="w-4 h-4 text-amber-400/60 absolute left-3 top-4" />
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Ask your Family Head for their family key shown on their Family Hub screen.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="text-xs font-semibold text-slate-300">Your Full Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Priya / Aarav"
+                  value={joinForm.name}
+                  onChange={(e) => setJoinForm({ ...joinForm, name: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300">Relationship to Head</label>
+                <select
+                  value={joinForm.relationship}
+                  onChange={(e) => setJoinForm({ ...joinForm, relationship: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                >
+                  <option value="Spouse">Spouse / Wife / Husband</option>
+                  <option value="Son">Son</option>
+                  <option value="Daughter">Daughter</option>
+                  <option value="Mother / Grandmother">Grandmother</option>
+                  <option value="Father / Grandfather">Grandfather</option>
+                  <option value="Brother">Brother</option>
+                  <option value="Sister">Sister</option>
+                  <option value="Family Member">Other Member</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="text-xs font-semibold text-slate-300">Your Email Address</label>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={joinForm.email}
+                  onChange={(e) => setJoinForm({ ...joinForm, email: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300">4-Digit App PIN</label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  required
+                  placeholder="1234"
+                  value={joinForm.pinCode}
+                  onChange={(e) => setJoinForm({ ...joinForm, pinCode: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400 tracking-widest font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-300">Family Role</label>
+              <div className="grid grid-cols-4 gap-1.5 mt-1">
+                {[
+                  { id: 'SPOUSE', label: 'Spouse' },
+                  { id: 'ADULT', label: 'Adult' },
+                  { id: 'CHILD', label: 'Child/Teen' },
+                  { id: 'VIEWER', label: 'Elder' },
+                ].map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setJoinForm({ ...joinForm, role: r.id })}
+                    className={`py-1.5 px-2 rounded-xl border text-[11px] font-semibold transition-all ${
+                      joinForm.role === r.id
+                        ? 'bg-indigo-600/30 border-indigo-500 text-white'
+                        : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 text-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1"
+            >
+              <KeyRound className="w-4 h-4" />
+              <span>{isSubmitting ? 'Joining Family...' : 'Verify Key & Join Family'}</span>
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* 4. SLIDES / FEATURE WALKTHROUGH */}
+      {mode === 'SLIDES' && (
+        <div className="space-y-4 animate-fade-in flex-1 flex flex-col justify-between py-2">
+          {/* Visual card */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
+            <div className={`w-24 h-24 rounded-3xl bg-gradient-to-tr ${slides[currentSlide].color} p-0.5 shadow-2xl flex items-center justify-center ring-8 ring-slate-800/50`}>
+              <div className="w-full h-full bg-slate-900/40 rounded-3xl backdrop-blur-sm flex items-center justify-center">
+                {React.createElement(slides[currentSlide].icon, { className: 'w-12 h-12 text-white drop-shadow' })}
+              </div>
+            </div>
+
+            <div className="space-y-1.5 max-w-xs">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">{slides[currentSlide].subtitle}</span>
+              <h2 className="text-xl font-extrabold text-white tracking-tight">{slides[currentSlide].title}</h2>
+              <p className="text-xs text-slate-400 leading-relaxed">{slides[currentSlide].description}</p>
+            </div>
+
+            {/* Dots */}
+            <div className="flex gap-1.5 pt-2">
+              {slides.map((_, i) => (
+                <div
+                  key={i}
+                  onClick={() => setCurrentSlide(i)}
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    currentSlide === i ? 'w-6 bg-amber-400' : 'w-2 bg-slate-700'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setMode('REGISTER_HEAD')}
+                className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-indigo-600 text-white font-bold rounded-2xl text-xs shadow-lg"
+              >
+                Create Family
+              </button>
+              <button
+                onClick={() => setMode('JOIN_FAMILY')}
+                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl border border-slate-700 text-xs"
+              >
+                Join with Key
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Footer Info */}
+      <div className="pt-2 text-center">
+        {mode !== 'SLIDES' ? (
+          <button
+            onClick={() => setMode('SLIDES')}
+            className="text-[11px] text-amber-400 hover:underline font-semibold"
+          >
+            ✨ Explore App Features & Walkthrough →
+          </button>
         ) : (
-          <div className="space-y-2.5">
-            <button
-              onClick={() => setMode('CREATE_FAMILY')}
-              className="w-full py-4 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
-            >
-              <span>Create Family Space</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setMode('JOIN_FAMILY')}
-              className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-2xl border border-slate-700 text-xs transition-colors"
-            >
-              Join Existing Family with Code
-            </button>
-          </div>
+          <button
+            onClick={() => setMode('SIGN_IN')}
+            className="text-[11px] text-slate-400 hover:text-white"
+          >
+            ← Back to Sign In
+          </button>
         )}
       </div>
     </div>

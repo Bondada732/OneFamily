@@ -1,4 +1,19 @@
-const API_BASE = '/api';
+const getApiBase = (): string => {
+  if (typeof window !== 'undefined') {
+    // If accessed via Vite dev server port (e.g. mobile browser at 192.168.1.5:5173 or localhost:5173)
+    if (window.location.port === '5173') {
+      return '/api';
+    }
+    // If running inside Capacitor Native APK on Android
+    if (window.location.protocol === 'capacitor:' || (window.location.hostname === 'localhost' && window.location.port === '')) {
+      const customHost = localStorage.getItem('onefamily_api_host') || `http://${window.location.hostname === 'localhost' ? '192.168.1.5' : window.location.hostname}:4000`;
+      return `${customHost}/api`;
+    }
+  }
+  return '/api';
+};
+
+const API_BASE = getApiBase();
 
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -6,11 +21,11 @@ export async function apiRequest<T = any>(
   activeUserId?: string
 ): Promise<T> {
   const token = localStorage.getItem('onefamily_token');
-  const activeUser = activeUserId || localStorage.getItem('onefamily_active_user_id') || 'usr_raj';
+  const activeUser = activeUserId || localStorage.getItem('onefamily_active_user_id');
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'x-active-user-id': activeUser,
+    ...(activeUser ? { 'x-active-user-id': activeUser } : {}),
     ...(options.headers as Record<string, string>),
   };
 

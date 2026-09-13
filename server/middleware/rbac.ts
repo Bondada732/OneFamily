@@ -7,18 +7,27 @@ export function requirePermission(permissionCode: string) {
       return res.status(401).json({ error: 'Unauthorized: Authentication required' });
     }
 
-    // Family Head has full master access
+    // Only Family Head has automatic full master access
     if (req.user.role === 'FAMILY_HEAD') {
       return next();
     }
 
-    const hasPermission = req.user.permissions.includes(permissionCode);
+    // Check approval status
+    if (req.user.is_approved === false || req.user.status === 'PENDING_APPROVAL') {
+      return res.status(403).json({
+        error: 'Access Denied: Account is awaiting approval from Family Head',
+        userRole: req.user.role,
+        message: 'Your Family Head has not yet approved your access and granted permissions.',
+      });
+    }
+
+    const hasPermission = Array.isArray(req.user.permissions) && req.user.permissions.includes(permissionCode);
     if (!hasPermission) {
       return res.status(403).json({
         error: `Access Denied: Missing required permission (${permissionCode})`,
         requiredPermission: permissionCode,
         userRole: req.user.role,
-        message: `Your current family role (${req.user.role}) does not have permission to view or modify this area. Please ask your Family Head to grant access.`,
+        message: `You do not have permission to view or modify this area (${permissionCode}). Please ask your Family Head to grant access.`,
       });
     }
 

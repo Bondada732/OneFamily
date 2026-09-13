@@ -8,16 +8,16 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // FamilyAI Chat (Strictly Permission Aware)
-router.post('/chat', (req: AuthRequest, res) => {
+router.post('/chat', async (req: AuthRequest, res) => {
   const familyId = req.familyId!;
   const userId = req.user!.id;
-  const { query } = req.body;
+  const { query, apiKey, provider, history } = req.body;
 
   if (!query || typeof query !== 'string') {
     return res.status(400).json({ error: 'Query string required' });
   }
 
-  const response = processAIChat(familyId, userId, query);
+  const response = await processAIChat(familyId, userId, query, apiKey, provider, history);
 
   // Save in conversation history
   db.insert('ai_conversations', {
@@ -33,6 +33,7 @@ router.post('/chat', (req: AuthRequest, res) => {
 
   res.json(response);
 });
+
 
 // Proactive AI Financial Insights
 router.get('/insights', (req: AuthRequest, res) => {

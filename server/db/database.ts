@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { syncRecordToSupabase } from './supabaseClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -129,6 +130,8 @@ class DatabaseService {
   public insert<K extends keyof DBStore>(tableName: K, record: any): any {
     this.getTable(tableName).push(record);
     this.save();
+    // Real-time synchronization to Supabase Cloud Database
+    syncRecordToSupabase(tableName as string, record, 'insert').catch(() => {});
     return record;
   }
 
@@ -138,6 +141,8 @@ class DatabaseService {
     if (index !== -1) {
       table[index] = { ...table[index], ...updates };
       this.save();
+      // Real-time synchronization to Supabase Cloud Database
+      syncRecordToSupabase(tableName as string, table[index], 'update').catch(() => {});
       return table[index];
     }
     return null;
@@ -145,11 +150,15 @@ class DatabaseService {
 
   public delete<K extends keyof DBStore>(tableName: K, predicate: (item: any) => boolean): boolean {
     const table = this.getTable(tableName);
+    const itemToDelete = table.find(predicate);
     const initialLen = table.length;
     this.data[tableName] = table.filter((item) => !predicate(item)) as any;
     const removed = this.data[tableName].length < initialLen;
     if (removed) {
       this.save();
+      if (itemToDelete) {
+        syncRecordToSupabase(tableName as string, itemToDelete, 'delete').catch(() => {});
+      }
     }
     return removed;
   }

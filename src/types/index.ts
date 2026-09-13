@@ -11,11 +11,14 @@ export interface FamilyMember {
   relationship: string;
   birth_date?: string;
   permissions: string[];
+  is_approved?: boolean;
+  status?: 'PENDING_APPROVAL' | 'ACTIVE' | 'BLOCKED';
 }
 
 export interface Family {
   id: string;
   name: string;
+  family_key?: string;
   photo_url?: string;
   location?: string;
   currency: string;
@@ -186,6 +189,7 @@ export interface GroceryItem {
   category: string;
   is_purchased: boolean;
   added_by_name: string;
+  created_at?: string;
 }
 
 export interface MaintenanceItem {
@@ -265,8 +269,10 @@ export interface HomeDashboardData {
     membersCount: number;
     netWorth: number | null;
     monthlySpending: number | null;
+    monthlyBudget?: number | null;
     savingsGoalPct: number | null;
   };
+
   attentionItems: AttentionItem[];
   today: {
     events: CalendarEvent[];

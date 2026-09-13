@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS families (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  family_key TEXT UNIQUE,
   photo_url TEXT,
   location TEXT,
   currency TEXT DEFAULT 'INR',
@@ -50,7 +51,7 @@ CREATE TABLE IF NOT EXISTS devices (
   os TEXT,
   ip_address TEXT,
   last_active TEXT NOT NULL,
-  is_current BOOLEAN DEFAULT 0,
+  is_current BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS expense_categories (
   name TEXT NOT NULL,
   icon TEXT NOT NULL,
   color TEXT NOT NULL,
-  is_custom BOOLEAN DEFAULT 0
+  is_custom BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS expenses (
@@ -184,10 +185,10 @@ CREATE TABLE IF NOT EXISTS calendar_events (
   type TEXT NOT NULL, -- BIRTHDAY, ANNIVERSARY, SCHOOL, BILL, INSURANCE, SIP, MEDICAL, TRAVEL, FUNCTION, RELIGIOUS, OTHER
   start_date TEXT NOT NULL,
   end_date TEXT,
-  is_all_day BOOLEAN DEFAULT 1,
+  is_all_day BOOLEAN DEFAULT TRUE,
   assigned_member_id TEXT,
   assigned_member_name TEXT,
-  is_recurring BOOLEAN DEFAULT 0,
+  is_recurring BOOLEAN DEFAULT FALSE,
   recurrence_rule TEXT,
   visibility TEXT DEFAULT 'FAMILY', -- FAMILY, PRIVATE
   notes TEXT,
@@ -202,7 +203,7 @@ CREATE TABLE IF NOT EXISTS reminders (
   due_date TEXT NOT NULL,
   category TEXT NOT NULL,
   lead_days INTEGER DEFAULT 3,
-  is_dismissed BOOLEAN DEFAULT 0,
+  is_dismissed BOOLEAN DEFAULT FALSE,
   linked_entity_type TEXT,
   linked_entity_id TEXT,
   created_at TEXT NOT NULL,
@@ -213,7 +214,8 @@ CREATE TABLE IF NOT EXISTS document_categories (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   icon TEXT NOT NULL,
-  is_sensitive BOOLEAN DEFAULT 0
+  description TEXT,
+  is_sensitive BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS documents (
@@ -233,7 +235,7 @@ CREATE TABLE IF NOT EXISTS documents (
   tags TEXT,
   notes TEXT,
   ocr_extracted_text TEXT,
-  is_verified BOOLEAN DEFAULT 1,
+  is_verified BOOLEAN DEFAULT TRUE,
   created_at TEXT NOT NULL,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
 );
@@ -248,7 +250,7 @@ CREATE TABLE IF NOT EXISTS emergency_contacts (
   email TEXT,
   type TEXT NOT NULL DEFAULT 'PERSONAL', -- PERSONAL, DOCTOR, HOSPITAL, AMBULANCE, POLICE, INSURANCE
   address TEXT,
-  is_primary BOOLEAN DEFAULT 0,
+  is_primary BOOLEAN DEFAULT FALSE,
   created_at TEXT NOT NULL,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
 );
@@ -309,7 +311,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   assigned_to_id TEXT,
   assigned_to_name TEXT,
   due_date TEXT,
-  is_recurring BOOLEAN DEFAULT 0,
+  is_recurring BOOLEAN DEFAULT FALSE,
   completed_at TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
@@ -321,7 +323,7 @@ CREATE TABLE IF NOT EXISTS grocery_items (
   item_name TEXT NOT NULL,
   quantity TEXT NOT NULL,
   category TEXT NOT NULL, -- PRODUCE, DAIRY, STAPLES, SNACKS, HOUSEHOLD, OTHER
-  is_purchased BOOLEAN DEFAULT 0,
+  is_purchased BOOLEAN DEFAULT FALSE,
   added_by_name TEXT NOT NULL,
   created_at TEXT NOT NULL,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
@@ -349,7 +351,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   message TEXT NOT NULL,
   type TEXT NOT NULL, -- URGENT, WARNING, SUCCESS, INFO, REMINDER
   link_tab TEXT,
-  is_read BOOLEAN DEFAULT 0,
+  is_read BOOLEAN DEFAULT FALSE,
   created_at TEXT NOT NULL,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
 );

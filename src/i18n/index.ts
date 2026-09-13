@@ -43,7 +43,7 @@ export interface TranslationDictionary {
   askFamilyAI: string;
 }
 
-export const translations: Record<LanguageCode, TranslationDictionary> = {
+const rawTranslations: Record<LanguageCode, TranslationDictionary> = {
   en: {
     appName: 'ONE FAMILY',
     tagline: 'One Home. One Family. One Future.',
@@ -77,7 +77,7 @@ export const translations: Record<LanguageCode, TranslationDictionary> = {
     voiceMemories: 'Grandparent Voice Stories',
     familyTree: 'Family Tree',
     yearbook: 'Family Yearbook',
-    groceryList: 'Grocery Shopping List',
+    groceryList: 'Wish List',
     householdMaintenance: 'Household Maintenance',
     switchRole: 'Switch Member Role',
     lockApp: 'Lock App',
@@ -119,7 +119,7 @@ export const translations: Record<LanguageCode, TranslationDictionary> = {
     voiceMemories: 'నాయనమ్మ / తాతయ్య మాటలు',
     familyTree: 'వంశ వృక్షం (Family Tree)',
     yearbook: 'వార్షిక జ్ఞాపకాల పుస్తకం',
-    groceryList: 'సరుకుల జాబితా',
+    groceryList: 'కోరికల జాబితా (Wish List)',
     householdMaintenance: 'ఇంటి నిర్వహణ',
     switchRole: 'సభ్యుడిని మార్చండి',
     lockApp: 'యాప్ లాక్ చేయండి',
@@ -161,7 +161,7 @@ export const translations: Record<LanguageCode, TranslationDictionary> = {
     voiceMemories: 'दादी-नानी की कहानियां',
     familyTree: 'पारिवारिक वृक्ष (Family Tree)',
     yearbook: 'वार्षिक पारिवारिक किताब',
-    groceryList: 'राशन की सूची',
+    groceryList: 'इच्छा सूची (Wish List)',
     householdMaintenance: 'घरेलू रखरखाव',
     switchRole: 'सदस्य बदलें',
     lockApp: 'ऐप लॉक करें',
@@ -171,3 +171,10 @@ export const translations: Record<LanguageCode, TranslationDictionary> = {
     askFamilyAI: 'फैमिली AI से कुछ भी पूछें...',
   },
 };
+
+const defaultDict = rawTranslations.en;
+export const translations: Record<string, TranslationDictionary> = new Proxy(rawTranslations, {
+  get(target, prop: string) {
+    return target[prop as LanguageCode] || defaultDict;
+  },
+});

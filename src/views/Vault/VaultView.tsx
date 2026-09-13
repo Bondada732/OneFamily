@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { DocumentRecord } from '../../types/index.js';
-import { FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, Eye } from 'lucide-react';
+import { FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, Eye, Upload, Image as ImageIcon, X, FileCheck } from 'lucide-react';
 
 export const VaultView: React.FC = () => {
-  const { currentUser, family, activeLanguage, hasPermission } = useAuth();
+  const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
   const t = translations[activeLanguage];
 
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
@@ -20,10 +20,21 @@ export const VaultView: React.FC = () => {
   const [showOCRResult, setShowOCRResult] = useState<any>(null);
   const [previewDoc, setPreviewDoc] = useState<DocumentRecord | null>(null);
 
+  // File upload state
+  const [uploadedFile, setUploadedFile] = useState<{
+    dataUrl: string;
+    name: string;
+    type: 'PDF' | 'IMAGE';
+    sizeKb: number;
+  } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
   const [newDoc, setNewDoc] = useState({
     title: '',
     category_id: 'doc_identity',
-    owner_name: currentUser?.name || 'Raj Sharma',
+    owner_name: currentUser?.name || 'Self',
     document_number: '',
     issue_date: '',
     expiry_date: '',
@@ -74,6 +85,35 @@ export const VaultView: React.FC = () => {
     );
   }
 
+  const handleDocumentFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fileType = file.type.includes('pdf') ? 'PDF' : 'IMAGE';
+    const sizeKb = Math.round(file.size / 1024);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setUploadedFile({
+        dataUrl,
+        name: file.name,
+        type: fileType,
+        sizeKb,
+      });
+
+      // Auto-populate document title if empty
+      if (!newDoc.title) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        setNewDoc((prev) => ({
+          ...prev,
+          title: cleanName.charAt(0).toUpperCase() + cleanName.slice(1),
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSimulateOCRUpload = async (docPreset: string) => {
     try {
       const res = await apiRequest(`/documents/${family?.id}/scan-ocr`, {
@@ -100,15 +140,21 @@ export const VaultView: React.FC = () => {
     try {
       const created = await apiRequest(`/documents/${family?.id}/documents`, {
         method: 'POST',
-        body: JSON.stringify(newDoc),
+        body: JSON.stringify({
+          ...newDoc,
+          file_url: uploadedFile?.dataUrl || undefined,
+          file_type: uploadedFile?.type || 'PDF',
+          file_size_kb: uploadedFile?.sizeKb || undefined,
+        }),
       });
       setDocuments([created, ...documents]);
       setShowUploadModal(false);
       setShowOCRResult(null);
+      setUploadedFile(null);
       setNewDoc({
         title: '',
-        category_id: 'doc_identity',
-        owner_name: currentUser?.name || 'Raj Sharma',
+        category_id: categories[0]?.id || 'doc_identity',
+        owner_name: currentUser?.name || 'Self',
         document_number: '',
         issue_date: '',
         expiry_date: '',
@@ -124,11 +170,12 @@ export const VaultView: React.FC = () => {
 
   const filteredDocs = documents.filter((doc) => {
     const matchesCategory = selectedCategory === 'ALL' || doc.category_id === selectedCategory;
+    const q = searchQuery.toLowerCase();
     const matchesQuery =
       !searchQuery ||
-      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (doc.tags && doc.tags.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      doc.owner_name.toLowerCase().includes(searchQuery.toLowerCase());
+      (doc.title && doc.title.toLowerCase().includes(q)) ||
+      (doc.tags && doc.tags.toLowerCase().includes(q)) ||
+      (doc.owner_name && doc.owner_name.toLowerCase().includes(q));
     return matchesCategory && matchesQuery;
   });
 
@@ -263,20 +310,25 @@ export const VaultView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FolderLock className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-bold text-white">{previewDoc.title}</h3>
+                <h3 className="text-base font-bold text-white truncate">{previewDoc.title}</h3>
               </div>
               <button onClick={() => setPreviewDoc(null)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
-            {/* Simulated Document Preview Card */}
-            <div className="h-44 rounded-2xl overflow-hidden relative border border-slate-700 bg-slate-950">
-              <img src={previewDoc.file_url} alt={previewDoc.title} className="w-full h-full object-cover opacity-80" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent flex items-end p-3">
-                <div className="text-xs text-slate-300 font-mono">
-                  Verified Family Record • Encrypted with AES-256
+            {/* Document Preview Card */}
+            {previewDoc.file_url && (previewDoc.file_url.startsWith('data:image') || previewDoc.file_type === 'IMAGE') ? (
+              <div className="max-h-56 rounded-2xl overflow-hidden relative border border-slate-700 bg-slate-950 flex items-center justify-center">
+                <img src={previewDoc.file_url} alt={previewDoc.title} className="max-h-56 w-auto object-contain rounded-2xl" />
+              </div>
+            ) : (
+              <div className="h-44 rounded-2xl overflow-hidden relative border border-slate-700 bg-slate-950 flex flex-col items-center justify-center p-4 text-center">
+                <FileText className="w-12 h-12 text-indigo-400 mb-2" />
+                <div className="text-xs text-slate-200 font-bold truncate max-w-xs">{previewDoc.title}</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  PDF Document • Encrypted Record
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-1.5 text-xs text-slate-300 bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700">
               <div><strong>Owner:</strong> {previewDoc.owner_name}</div>
@@ -287,13 +339,16 @@ export const VaultView: React.FC = () => {
             </div>
 
             <div className="flex gap-2">
-              <button
-                onClick={() => alert(`Simulated secure download for ${previewDoc.title}`)}
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
+              <a
+                href={previewDoc.file_url}
+                download={`${previewDoc.title || 'document'}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all text-center"
               >
                 <Download className="w-4 h-4" />
-                <span>Download Copy</span>
-              </button>
+                <span>Open / Download</span>
+              </a>
             </div>
           </div>
         </div>
@@ -307,6 +362,78 @@ export const VaultView: React.FC = () => {
               <h3 className="text-base font-bold text-white">Store Document in Vault</h3>
               <button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
+
+            {/* Hidden file inputs for file/gallery & camera scan */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="application/pdf,image/*"
+              className="hidden"
+              onChange={handleDocumentFileSelected}
+            />
+            <input
+              type="file"
+              ref={cameraInputRef}
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleDocumentFileSelected}
+            />
+
+            {/* Upload Document / Scan from Camera Section */}
+            {!uploadedFile ? (
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase">Upload Document / Scan:</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2.5 bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/40 rounded-xl text-center text-xs text-indigo-200 flex items-center justify-center gap-1.5 font-semibold active:scale-95 transition-all"
+                  >
+                    <Upload className="w-4 h-4 text-indigo-400" />
+                    <span>Choose File / PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="p-2.5 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 rounded-xl text-center text-xs text-amber-200 flex items-center justify-center gap-1.5 font-semibold active:scale-95 transition-all"
+                  >
+                    <Camera className="w-4 h-4 text-amber-400" />
+                    <span>Scan with Camera</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 bg-slate-800/90 border border-emerald-500/40 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  {uploadedFile.type === 'IMAGE' ? (
+                    <img
+                      src={uploadedFile.dataUrl}
+                      alt="Preview"
+                      className="w-10 h-10 object-cover rounded-lg shrink-0 border border-slate-700"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0 font-bold text-xs">
+                      PDF
+                    </div>
+                  )}
+                  <div className="overflow-hidden">
+                    <div className="text-xs font-bold text-white truncate">{uploadedFile.name}</div>
+                    <div className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                      <FileCheck className="w-3 h-3" />
+                      <span>{uploadedFile.sizeKb} KB • Ready to save</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUploadedFile(null)}
+                  className="p-1 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors shrink-0 ml-2"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* OCR Preset trigger buttons */}
             <div className="space-y-1">
@@ -355,15 +482,44 @@ export const VaultView: React.FC = () => {
                 />
               </div>
 
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Vault Folder</label>
+                <select
+                  value={newDoc.category_id}
+                  onChange={(e) => setNewDoc({ ...newDoc, category_id: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Owner</label>
-                  <input
-                    type="text"
-                    value={newDoc.owner_name}
-                    onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  />
+                  <label className="text-xs text-slate-300 font-semibold">Owner / Holder</label>
+                  {familyMembers && familyMembers.length > 0 ? (
+                    <select
+                      value={newDoc.owner_name}
+                      onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
+                      className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    >
+                      {familyMembers.map((m) => (
+                        <option key={m.id} value={m.name}>
+                          {m.name} ({m.relationship})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={newDoc.owner_name}
+                      onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
+                      className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Expiry Date</label>

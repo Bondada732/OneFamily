@@ -11,7 +11,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotifications, onOpenEmergency }) => {
-  const { currentUser, familyMembers, switchActiveMember, activeLanguage, setLanguage } = useAuth();
+  const { currentUser, familyMembers, switchActiveMember, activeLanguage, setLanguage, logout } = useAuth();
   const { isPrivacyMode, togglePrivacyMode, lockApp } = useSecurity();
   const [showMemberDropdown, setShowMemberDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
@@ -55,32 +55,65 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
 
           {/* Switcher Dropdown */}
           {showMemberDropdown && (
-            <div className="absolute top-full left-0 mt-1.5 w-64 bg-slate-850 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-2 z-50 text-slate-200">
+            <div className="absolute top-full left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-2 z-50 text-slate-200">
               <div className="text-[11px] font-semibold text-slate-400 px-2.5 py-1 uppercase tracking-wider">
-                {t.switchRole} (Test RBAC)
+                {currentUser?.role === 'FAMILY_HEAD' ? 'Switch Active Profile (Head Only)' : 'My Profile'}
               </div>
-              <div className="space-y-1 mt-1">
-                {familyMembers.map((member) => (
-                  <button
-                    key={member.id}
-                    onClick={() => {
-                      switchActiveMember(member.id);
-                      setShowMemberDropdown(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left text-xs transition-colors ${
-                      currentUser?.id === member.id ? 'bg-indigo-600/30 text-white font-bold border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <img src={member.avatar_url} alt={member.name} className="w-6 h-6 rounded-full object-cover" />
-                      <div>
-                        <div className="font-medium text-slate-100">{member.name}</div>
-                        <div className="text-[10px] text-slate-400">{member.relationship}</div>
+              
+              {currentUser?.role === 'FAMILY_HEAD' ? (
+                <div className="space-y-1 mt-1">
+                  {familyMembers.map((member) => (
+                    <button
+                      key={member.id}
+                      onClick={() => {
+                        switchActiveMember(member.id);
+                        setShowMemberDropdown(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left text-xs transition-colors ${
+                        currentUser?.id === member.id ? 'bg-indigo-600/30 text-white font-bold border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <img src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'} alt={member.name} className="w-6 h-6 rounded-full object-cover" />
+                        <div>
+                          <div className="font-medium text-slate-100">{member.name}</div>
+                          <div className="text-[10px] text-slate-400">{member.relationship}</div>
+                        </div>
                       </div>
+                      {getRoleBadge(member.role)}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-800/80 rounded-xl space-y-2 mt-1 border border-slate-700/80">
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                      alt={currentUser?.name}
+                      className="w-10 h-10 rounded-xl object-cover ring-1 ring-amber-400/40"
+                    />
+                    <div>
+                      <div className="font-bold text-white text-xs">{currentUser?.name}</div>
+                      <div className="text-[10px] text-slate-400">{currentUser?.relationship || 'Family Member'}</div>
                     </div>
-                    {getRoleBadge(member.role)}
-                  </button>
-                ))}
+                  </div>
+                  <div className="text-[10px] text-indigo-400 pt-1.5 border-t border-slate-700/50">
+                    🔒 {currentUser?.permissions?.length || 0} permissions authorized by Family Head
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 mt-2 border-t border-slate-800 space-y-1">
+                <button
+                  onClick={() => {
+                    setShowMemberDropdown(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 font-semibold transition-colors"
+                >
+                  <span>Sign Out</span>
+                  <span>➔</span>
+                </button>
               </div>
             </div>
           )}

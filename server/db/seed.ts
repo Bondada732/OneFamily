@@ -10,6 +10,7 @@ export function seedDatabase() {
     {
       id: familyId,
       name: 'Sharma Family',
+      family_key: 'FAM-SHARMA-01',
       photo_url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&auto=format&fit=crop&q=80',
       location: 'Hyderabad, India',
       currency: 'INR',

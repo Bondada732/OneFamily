@@ -30,7 +30,26 @@ if (db.getTable('users').length === 0) {
   seedDatabase();
 }
 
-// Health Check
+// Root & Health Check Endpoints
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    app: APP_NAME,
+    tagline: TAGLINE,
+    message: 'Famora API Server is up and running!',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      families: '/api/families',
+      expenses: '/api/expenses',
+      goals: '/api/goals',
+      dashboard: '/api/dashboard',
+    },
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',

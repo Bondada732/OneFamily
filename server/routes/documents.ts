@@ -72,7 +72,7 @@ router.post('/:id/documents', requirePermission('DOCUMENT_UPLOAD'), (req: AuthRe
     issuer: issuer || 'Authorized Entity',
     file_url: file_url || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600',
     file_type: file_type || 'PDF',
-    file_size_kb: Math.floor(500 + Math.random() * 2000),
+    file_size_kb: req.body.file_size_kb || Math.floor(500 + Math.random() * 2000),
     tags: tags || '',
     notes: notes || '',
     ocr_extracted_text: `Extracted verification for ${title}`,

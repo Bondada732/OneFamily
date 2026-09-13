@@ -1,18 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
-import { ShieldCheck, Smartphone, Lock, Globe2, FileText, Download, UserX, KeyRound, Check, History } from 'lucide-react';
+import { ShieldCheck, Smartphone, Lock, Globe2, FileText, Download, UserX, KeyRound, Check, History, Camera, User, Edit3, Upload, Image as ImageIcon } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
-  const { currentUser, family, activeLanguage, setLanguage, familyMembers } = useAuth();
+  const { currentUser, family, activeLanguage, setLanguage, familyMembers, logout, refreshUser } = useAuth();
   const { lockApp, isPrivacyMode, togglePrivacyMode } = useSecurity();
   const t = translations[activeLanguage];
 
   const [devices, setDevices] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [activeSettingsTab, setActiveSettingsTab] = useState<'SECURITY' | 'DEVICES' | 'AUDIT' | 'PREFERENCES'>('SECURITY');
+
+  // Edit Profile Modal State
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: currentUser?.name || '',
+    avatar_url: currentUser?.avatar_url || '',
+    phone: currentUser?.phone || '',
+    pin_code: currentUser?.pin_code || '1234',
+  });
+
+  const settingsGalleryRef = useRef<HTMLInputElement>(null);
+  const settingsCameraRef = useRef<HTMLInputElement>(null);
+
+  const handleProfilePhotoSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setProfileForm((prev) => ({ ...prev, avatar_url: event.target!.result as string }));
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const avatarPresets = [
+    { url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', label: 'Father / Head' },
+    { url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200', label: 'Mother / Co-Head' },
+    { url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200', label: 'Teen Boy' },
+    { url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200', label: 'Young Girl' },
+    { url: 'https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=200', label: 'Grandmother' },
+    { url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200', label: 'Grandfather' },
+    { url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200', label: 'Professional' },
+    { url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200', label: 'Smart Casual' },
+  ];
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfileForm({
+        name: currentUser.name || '',
+        avatar_url: currentUser.avatar_url || '',
+        phone: currentUser.phone || '',
+        pin_code: currentUser.pin_code || '1234',
+      });
+    }
+  }, [currentUser]);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiRequest('/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(profileForm),
+      });
+      await refreshUser();
+      setShowEditProfile(false);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+    }
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -84,14 +145,48 @@ export const SettingsView: React.FC = () => {
         </button>
       </div>
 
-      {/* 1. SECURITY TAB */}
+      {/* 1. SECURITY / PROFILE TAB */}
       {activeSettingsTab === 'SECURITY' && (
         <div className="space-y-3">
+          {/* My Profile & Avatar Card */}
+          <div className="p-4 rounded-2xl bg-gradient-to-tr from-slate-900 via-slate-850 to-slate-900 border border-slate-700/80 shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative group cursor-pointer" onClick={() => setShowEditProfile(true)}>
+                <img
+                  src={currentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120'}
+                  alt={currentUser?.name}
+                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-amber-400/80 shadow"
+                />
+                <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-white">{currentUser?.name}</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-500/30">
+                    {currentUser?.role}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">{currentUser?.relationship || 'Family Member'}</div>
+                <div className="text-[10px] text-indigo-400 mt-0.5">{currentUser?.email || 'No email attached'}</div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowEditProfile(true)}
+              className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-xl text-xs font-bold border border-amber-500/40 flex items-center gap-1 transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit Photo</span>
+            </button>
+          </div>
+
           <div className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-bold text-white">App Lock & Biometrics</div>
-                <div className="text-[11px] text-slate-400">PIN 1234 or Face/Touch ID</div>
+                <div className="text-[11px] text-slate-400">PIN {currentUser?.pin_code || '1234'} or Face/Touch ID</div>
               </div>
               <button
                 onClick={lockApp}
@@ -130,6 +225,28 @@ export const SettingsView: React.FC = () => {
               <Download className="w-3.5 h-3.5" />
               <span>Export Family Data (JSON)</span>
             </button>
+          </div>
+
+          {/* Account & Family Session */}
+          <div className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 space-y-2">
+            <div className="text-xs font-bold text-white">Family Session & Account</div>
+            <p className="text-[11px] text-slate-400">
+              Active Family: <span className="font-semibold text-amber-400">{family?.name || 'Our Family'}</span> • Logged in as <span className="font-semibold text-slate-200">{currentUser?.name}</span>
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={logout}
+                className="py-2.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded-xl text-xs font-bold transition-colors"
+              >
+                + Create New Family
+              </button>
+              <button
+                onClick={logout}
+                className="py-2.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-xl text-xs font-bold transition-colors"
+              >
+                Sign Out / Switch
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -212,6 +329,153 @@ export const SettingsView: React.FC = () => {
                 {activeLanguage === lang.code && <Check className="w-4 h-4 text-amber-400" />}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile & Avatar Modal */}
+      {showEditProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-white">Edit Profile & Photo</h3>
+                <p className="text-[11px] text-slate-400">Select photo from Gallery, snap with Camera, or choose a preset</p>
+              </div>
+              <button onClick={() => setShowEditProfile(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            {/* Hidden native file inputs */}
+            <input
+              type="file"
+              ref={settingsGalleryRef}
+              onChange={handleProfilePhotoSelected}
+              accept="image/*"
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={settingsCameraRef}
+              onChange={handleProfilePhotoSelected}
+              accept="image/*"
+              capture="user"
+              className="hidden"
+            />
+
+            {/* Avatar Preview & Source Selection */}
+            <div className="space-y-2.5">
+              <span className="text-[11px] font-bold text-slate-300 uppercase">Profile Picture</span>
+              
+              <div className="flex items-center gap-3 bg-slate-800/80 p-3 rounded-2xl border border-slate-700/80">
+                <img
+                  src={profileForm.avatar_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200'}
+                  alt="Preview"
+                  className="w-14 h-14 rounded-2xl object-cover ring-2 ring-amber-400 shadow-md"
+                />
+                <div className="flex-1 space-y-1.5">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => settingsGalleryRef.current?.click()}
+                      className="px-2.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-indigo-300" />
+                      <span>From Gallery</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => settingsCameraRef.current?.click()}
+                      className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Camera</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400">Or pick from curated presets below</p>
+                </div>
+              </div>
+
+              {/* Avatar Presets Grid */}
+              <div className="grid grid-cols-4 gap-2 pt-1">
+                {avatarPresets.map((preset, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setProfileForm({ ...profileForm, avatar_url: preset.url })}
+                    className={`p-1 rounded-2xl border-2 cursor-pointer transition-all ${
+                      profileForm.avatar_url === preset.url
+                        ? 'border-amber-400 ring-2 ring-amber-400/40 bg-amber-500/10 scale-105'
+                        : 'border-slate-700 hover:border-slate-500'
+                    }`}
+                  >
+                    <img src={preset.url} alt={preset.label} className="w-full h-12 rounded-xl object-cover" />
+                    <div className="text-[9px] text-center text-slate-300 mt-1 truncate">{preset.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateProfile} className="space-y-3 pt-2 border-t border-slate-800">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Custom Image URL (Optional)</label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={profileForm.avatar_url}
+                  onChange={(e) => setProfileForm({ ...profileForm, avatar_url: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Phone Number</label>
+                  <input
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={profileForm.phone}
+                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">App PIN (4-Digits)</label>
+                  <input
+                    type="password"
+                    maxLength={4}
+                    value={profileForm.pin_code}
+                    onChange={(e) => setProfileForm({ ...profileForm, pin_code: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfile(false)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Profile
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
