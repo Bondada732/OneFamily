@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ShieldCheck, Heart, Users, Sparkles, TrendingUp, FolderLock, ArrowRight, Check, Plus, KeyRound, LogIn, Copy, Share2, CheckCircle2, UserPlus, Sparkle, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShieldCheck, Heart, Users, Sparkles, TrendingUp, FolderLock, ArrowRight, Check, Plus, KeyRound, LogIn, Copy, Share2, CheckCircle2, UserPlus, Sparkle, AlertCircle, Mail, RotateCcw, ArrowLeft, Send } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 
 interface OnboardingViewProps {
@@ -7,8 +7,8 @@ interface OnboardingViewProps {
 }
 
 export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) => {
-  const { registerHead, joinFamily, login, family } = useAuth();
-  const [mode, setMode] = useState<'SIGN_IN' | 'REGISTER_HEAD' | 'JOIN_FAMILY' | 'SUCCESS_KEY' | 'SLIDES'>('SIGN_IN');
+  const { registerHead, joinFamily, login, sendRegistrationOtp, verifyRegistrationOtp, family } = useAuth();
+  const [mode, setMode] = useState<'SIGN_IN' | 'REGISTER_HEAD' | 'VERIFY_HEAD_OTP' | 'JOIN_FAMILY' | 'SUCCESS_KEY' | 'SLIDES'>('SIGN_IN');
   
   // Sign In state
   const [signInEmail, setSignInEmail] = useState('');
@@ -29,6 +29,13 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
   const [headError, setHeadError] = useState('');
   const [createdKey, setCreatedKey] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Email OTP state
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(30);
+  const [isResending, setIsResending] = useState(false);
 
   // Join Member state
   const [joinForm, setJoinForm] = useState({
@@ -81,6 +88,17 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
     },
   ];
 
+  // Countdown timer effect for OTP resend
+  useEffect(() => {
+    let timer: any;
+    if (mode === 'VERIFY_HEAD_OTP' && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [mode, countdown]);
+
   // 1. Handle Sign In
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,12 +130,21 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
     }
   };
 
-  // 2. Handle Register Family Head
-  const handleRegisterHead = async (e: React.FormEvent) => {
+  // 2. Handle Send Registration OTP (Initiates Family Creation)
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setHeadError('');
     if (!headForm.familyName.trim() || !headForm.headName.trim()) {
       setHeadError('Family Name and Family Head Name are required.');
+      return;
+    }
+    if (!headForm.headEmail.trim()) {
+      setHeadError('Family Head Email Address is required for OTP verification.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(headForm.headEmail.trim())) {
+      setHeadError('Please enter a valid email format (e.g. name@example.com).');
       return;
     }
     if (headForm.pinCode.length !== 4) {
@@ -126,7 +153,57 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
     }
 
     setIsSubmitting(true);
-    const result = await registerHead(headForm);
+    const result = await sendRegistrationOtp(
+      headForm.headEmail.trim(),
+      headForm.familyName.trim(),
+      headForm.headName.trim()
+    );
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setDevOtp(result.devOtp || null);
+      setOtp('');
+      setOtpError('');
+      setCountdown(30);
+      setMode('VERIFY_HEAD_OTP');
+    } else {
+      setHeadError(result.error || 'Failed to send OTP verification email.');
+    }
+  };
+
+  // 2b. Handle Resend OTP
+  const handleResendOtp = async () => {
+    if (countdown > 0 || isResending) return;
+    setIsResending(true);
+    setOtpError('');
+    const result = await sendRegistrationOtp(
+      headForm.headEmail.trim(),
+      headForm.familyName.trim(),
+      headForm.headName.trim()
+    );
+    setIsResending(false);
+    if (result.success) {
+      setDevOtp(result.devOtp || null);
+      setCountdown(30);
+    } else {
+      setOtpError(result.error || 'Failed to resend OTP code.');
+    }
+  };
+
+  // 2c. Handle Verify OTP and Complete Registration
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOtpError('');
+    if (otp.trim().length !== 6) {
+      setOtpError('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await verifyRegistrationOtp(otp.trim(), {
+      ...headForm,
+      headEmail: headForm.headEmail.trim().toLowerCase(),
+    });
     setIsSubmitting(false);
 
     if (result.success && result.familyKey) {
@@ -135,7 +212,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
     } else if (result.success) {
       onComplete();
     } else {
-      setHeadError(result.error || 'Failed to create family space.');
+      setOtpError(result.error || 'Invalid or expired verification code.');
     }
   };
 
@@ -376,7 +453,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
         <div className="space-y-3.5 animate-fade-in">
           <div className="text-center space-y-0.5">
             <h2 className="text-base font-bold text-white">Create a New Family Account</h2>
-            <p className="text-[11px] text-slate-400">As Family Head, you will generate a Family Key for your members</p>
+            <p className="text-[11px] text-slate-400">As Family Head, enter your details to verify your email and generate your Family Key</p>
           </div>
 
           {headError && (
@@ -386,7 +463,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
             </div>
           )}
 
-          <form onSubmit={handleRegisterHead} className="space-y-3">
+          <form onSubmit={handleSendOtp} className="space-y-3">
             <div>
               <label className="text-xs font-semibold text-slate-300">Family Name</label>
               <input
@@ -428,9 +505,12 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
 
             <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className="text-xs font-semibold text-slate-300">Head Email Address</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Head Email <span className="text-amber-400 font-bold">*</span>
+                </label>
                 <input
                   type="email"
+                  required
                   placeholder="head@example.com"
                   value={headForm.headEmail}
                   onChange={(e) => setHeadForm({ ...headForm, headEmail: e.target.value })}
@@ -457,8 +537,117 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
               disabled={isSubmitting}
               className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 text-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1"
             >
-              <UserPlus className="w-4 h-4" />
-              <span>{isSubmitting ? 'Creating Family...' : 'Create Family & Generate Key'}</span>
+              <Mail className="w-4 h-4" />
+              <span>{isSubmitting ? 'Sending Verification Code...' : 'Verify Email & Create Family'}</span>
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* 2b. VERIFY HEAD EMAIL OTP SCREEN */}
+      {mode === 'VERIFY_HEAD_OTP' && (
+        <div className="space-y-4 animate-fade-in text-slate-200">
+          <div className="text-center space-y-1">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 mx-auto flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/10 mb-2">
+              <Mail className="w-6 h-6 animate-bounce" />
+            </div>
+            <h2 className="text-lg font-bold text-white">Verify Your Email Address</h2>
+            <p className="text-xs text-slate-300">
+              We sent a 6-digit verification code to:
+            </p>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800/90 rounded-full border border-slate-700 mt-1">
+              <span className="text-xs font-semibold text-amber-300 font-mono">{headForm.headEmail}</span>
+              <button
+                type="button"
+                onClick={() => { setMode('REGISTER_HEAD'); setHeadError(''); }}
+                className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline"
+              >
+                Change
+              </button>
+            </div>
+          </div>
+
+          {/* Dev Mode Helper Banner */}
+          {devOtp && (
+            <div className="p-2.5 bg-indigo-950/60 border border-indigo-500/40 rounded-xl text-center space-y-1">
+              <div className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">
+                ⚡ Development Preview OTP
+              </div>
+              <button
+                type="button"
+                onClick={() => setOtp(devOtp)}
+                className="text-sm font-mono font-bold tracking-widest text-amber-400 bg-slate-900 px-3 py-1 rounded-lg border border-indigo-500/30 hover:bg-slate-800 transition-colors"
+                title="Click to Auto-fill"
+              >
+                {devOtp} (Click to Auto-fill)
+              </button>
+            </div>
+          )}
+
+          {otpError && (
+            <div className="p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{otpError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-slate-300 block text-center mb-1.5">
+                Enter 6-Digit OTP Code
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                required
+                autoFocus
+                placeholder="• • • • • •"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                className="w-full py-3.5 bg-slate-900 border-2 border-amber-500/60 rounded-2xl text-center text-2xl font-mono font-black tracking-[0.5em] text-amber-400 placeholder-slate-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 outline-none transition-all shadow-inner"
+              />
+            </div>
+
+            {/* Resend OTP & Countdown */}
+            <div className="flex items-center justify-between px-1 text-xs">
+              <button
+                type="button"
+                onClick={() => { setMode('REGISTER_HEAD'); setHeadError(''); }}
+                className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={countdown > 0 || isResending}
+                onClick={handleResendOtp}
+                className={`flex items-center gap-1.5 font-semibold transition-colors ${
+                  countdown > 0 || isResending
+                    ? 'text-slate-500 cursor-not-allowed'
+                    : 'text-amber-400 hover:text-amber-300 cursor-pointer'
+                }`}
+              >
+                <RotateCcw className={`w-3.5 h-3.5 ${isResending ? 'animate-spin' : ''}`} />
+                <span>
+                  {isResending
+                    ? 'Resending...'
+                    : countdown > 0
+                    ? `Resend in ${countdown}s`
+                    : 'Resend Code'}
+                </span>
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || otp.length !== 6}
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-xl shadow-indigo-500/30 text-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>{isSubmitting ? 'Verifying...' : 'Verify OTP & Create Family Space'}</span>
             </button>
           </form>
         </div>

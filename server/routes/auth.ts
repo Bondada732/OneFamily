@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import db from '../db/database.js';
 import { JWT_SECRET, DEFAULT_PERMISSIONS } from '../config.js';
 import { logActivity } from '../services/auditService.js';
+import { sendEmailOtp, verifyEmailOtp } from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -231,7 +232,148 @@ router.post('/login', (req, res) => {
   });
 });
 
-// Register Family & Family Head (Creates new Family + generates Family Key)
+// 1. Send OTP for Family Creation Registration
+router.post('/send-registration-otp', async (req, res) => {
+  const { email, familyName, headName } = req.body;
+
+  if (!email || !email.trim()) {
+    return res.status(400).json({ error: 'Valid Email address is required to receive OTP.' });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    return res.status(400).json({ error: 'Please enter a valid email address format (e.g. name@example.com).' });
+  }
+
+  // Check if an existing Family Head is already registered with this email
+  const existingHead = db.findOne('users', (u) => u.email && u.email.toLowerCase() === email.trim().toLowerCase() && u.role === 'FAMILY_HEAD');
+  if (existingHead) {
+    return res.status(409).json({
+      error: `A family is already registered with email "${email}". Please sign in instead or use another email.`,
+    });
+  }
+
+  try {
+    const result = await sendEmailOtp(email.trim(), familyName || 'New Family', headName || 'Family Head');
+    res.json(result);
+  } catch (err: any) {
+    console.error('Failed to send registration OTP:', err);
+    res.status(500).json({ error: 'Failed to send OTP email. Please try again.' });
+  }
+});
+
+// 2. Verify OTP & Complete Family Creation Registration
+router.post('/verify-registration-otp', (req, res) => {
+  const { otp, familyName, location, currency, language, headName, headEmail, pinCode, relationship, phone } = req.body;
+
+  if (!headEmail?.trim()) {
+    return res.status(400).json({ error: 'Email address is required.' });
+  }
+
+  if (!otp?.trim()) {
+    return res.status(400).json({ error: 'Please enter the 6-digit verification code.' });
+  }
+
+  if (!familyName?.trim() || !headName?.trim()) {
+    return res.status(400).json({ error: 'Family name and Family Head name are required.' });
+  }
+
+  // Verify the OTP
+  const verification = verifyEmailOtp(headEmail.trim(), otp.trim());
+  if (!verification.success) {
+    return res.status(400).json({ error: verification.error || 'Invalid OTP code' });
+  }
+
+  // OTP verified! Proceed with Family Creation
+  const familyId = `fam_${Date.now()}`;
+  const userId = `usr_head_${Date.now()}`;
+  const familyKey = generateUniqueFamilyKey(familyName.trim().replace(/[^a-zA-Z]/g, '').slice(0, 3) || 'FAM');
+
+  const family = {
+    id: familyId,
+    name: familyName.trim(),
+    family_key: familyKey,
+    photo_url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600',
+    location: location || 'India',
+    currency: currency || 'INR',
+    language: language || 'en',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const headUser = {
+    id: userId,
+    family_id: familyId,
+    email: headEmail.trim().toLowerCase(),
+    phone: phone || '',
+    name: headName.trim(),
+    password_hash: 'hash',
+    pin_code: pinCode || '1234',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+    role: 'FAMILY_HEAD',
+    relationship: relationship || 'Family Head / Father',
+    birth_date: '1985-01-01',
+    is_email_verified: true,
+    created_at: new Date().toISOString(),
+  };
+
+  db.insert('families', family);
+  db.insert('users', headUser);
+
+  // Grant ALL master permissions to Family Head
+  const headPermissions = DEFAULT_PERMISSIONS.FAMILY_HEAD;
+  headPermissions.forEach((code) => {
+    db.insert('member_permissions', { user_id: userId, permission_code: code });
+  });
+
+  // Initialize Default Expense Categories for the new family
+  const defaultExpenseCategories = [
+    { id: `cat_groceries_${familyId}`, family_id: familyId, name: 'Groceries', icon: 'ShoppingCart', color: '#10B981' },
+    { id: `cat_dining_${familyId}`, family_id: familyId, name: 'Food & Dining', icon: 'Utensils', color: '#F59E0B' },
+    { id: `cat_utilities_${familyId}`, family_id: familyId, name: 'Utilities & Bills', icon: 'Zap', color: '#6366F1' },
+    { id: `cat_rent_${familyId}`, family_id: familyId, name: 'Rent & Maintenance', icon: 'Home', color: '#8B5CF6' },
+    { id: `cat_education_${familyId}`, family_id: familyId, name: 'Education & School', icon: 'GraduationCap', color: '#EC4899' },
+    { id: `cat_transport_${familyId}`, family_id: familyId, name: 'Transport & Fuel', icon: 'Car', color: '#3B82F6' },
+    { id: `cat_healthcare_${familyId}`, family_id: familyId, name: 'Healthcare & Medicine', icon: 'HeartPulse', color: '#EF4444' },
+    { id: `cat_shopping_${familyId}`, family_id: familyId, name: 'Shopping', icon: 'ShoppingBag', color: '#14B8A6' },
+    { id: `cat_entertainment_${familyId}`, family_id: familyId, name: 'Entertainment', icon: 'Film', color: '#F97316' },
+    { id: `cat_travel_${familyId}`, family_id: familyId, name: 'Travel & Trips', icon: 'Plane', color: '#06B6D4' },
+    { id: `cat_insurance_${familyId}`, family_id: familyId, name: 'Insurance Premiums', icon: 'ShieldCheck', color: '#059669' },
+    { id: `cat_investments_${familyId}`, family_id: familyId, name: 'Investments / SIP', icon: 'TrendingUp', color: '#4F46E5' },
+    { id: `cat_emi_${familyId}`, family_id: familyId, name: 'Loan EMI', icon: 'CreditCard', color: '#7C3AED' },
+    { id: `cat_misc_${familyId}`, family_id: familyId, name: 'Miscellaneous', icon: 'MoreHorizontal', color: '#64748B' },
+  ];
+  defaultExpenseCategories.forEach((cat) => db.insert('expense_categories', cat));
+
+  // Initialize Default Document Categories
+  const defaultDocCategories = [
+    { id: `doc_cat_id_${familyId}`, family_id: familyId, name: 'Identity & KYC', icon: 'CreditCard', description: 'Aadhaar, PAN, Passport, Voter ID' },
+    { id: `doc_cat_health_${familyId}`, family_id: familyId, name: 'Health & Medical', icon: 'HeartPulse', description: 'Insurance policies, prescriptions, reports' },
+    { id: `doc_cat_prop_${familyId}`, family_id: familyId, name: 'Property & Assets', icon: 'Home', description: 'Sale deeds, property tax receipts, rent agreements' },
+    { id: `doc_cat_veh_${familyId}`, family_id: familyId, name: 'Vehicle & Transport', icon: 'Car', description: 'RC Books, driving licenses, vehicle insurance' },
+    { id: `doc_cat_edu_${familyId}`, family_id: familyId, name: 'Education & Certificates', icon: 'GraduationCap', description: 'Degrees, marksheets, certificates' },
+    { id: `doc_cat_fin_${familyId}`, family_id: familyId, name: 'Financial & Tax', icon: 'TrendingUp', description: 'ITR filings, mutual fund statements, FD receipts' },
+  ];
+  defaultDocCategories.forEach((cat) => db.insert('document_categories', cat));
+
+  const token = jwt.sign({ id: userId, family_id: familyId, role: 'FAMILY_HEAD' }, JWT_SECRET, { expiresIn: '7d' });
+
+  logActivity(familyId, userId, headName, 'Family Created (Email Verified)', 'ADMIN', `Family "${familyName}" registered with Key: ${familyKey} via Email OTP verification.`);
+
+  res.json({
+    success: true,
+    token,
+    family,
+    familyKey,
+    user: {
+      ...headUser,
+      permissions: headPermissions,
+    },
+    familyMembers: [{ ...headUser, permissions: headPermissions }],
+  });
+});
+
+// Register Family & Family Head (Direct/Fallback with optional OTP)
 router.post(['/register-head', '/register-family'], (req, res) => {
   const { familyName, location, currency, language, headName, headEmail, pinCode, relationship, phone } = req.body;
 

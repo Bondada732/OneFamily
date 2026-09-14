@@ -14,6 +14,25 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   logout: () => void;
   login: (emailOrPin: string, pin?: string) => Promise<{ success: boolean; error?: string }>;
+  sendRegistrationOtp: (
+    email: string,
+    familyName: string,
+    headName: string
+  ) => Promise<{ success: boolean; message?: string; devOtp?: string; error?: string }>;
+  verifyRegistrationOtp: (
+    otp: string,
+    data: {
+      familyName: string;
+      headName: string;
+      headEmail: string;
+      pinCode: string;
+      location?: string;
+      currency?: string;
+      language?: string;
+      relationship?: string;
+      phone?: string;
+    }
+  ) => Promise<{ success: boolean; familyKey?: string; error?: string }>;
   registerHead: (data: {
     familyName: string;
     headName: string;
@@ -130,6 +149,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Login failed:', err);
       return { success: false, error: err.message || 'Invalid login credentials' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const sendRegistrationOtp = async (
+    email: string,
+    familyName: string,
+    headName: string
+  ): Promise<{ success: boolean; message?: string; devOtp?: string; error?: string }> => {
+    try {
+      setIsLoading(true);
+      const res = await apiRequest('/auth/send-registration-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email, familyName, headName }),
+      });
+      return { success: true, message: res.message, devOtp: res.devOtp };
+    } catch (err: any) {
+      console.error('Send OTP failed:', err);
+      return { success: false, error: err.message || 'Failed to send verification code' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyRegistrationOtp = async (
+    otp: string,
+    data: {
+      familyName: string;
+      headName: string;
+      headEmail: string;
+      pinCode: string;
+      location?: string;
+      currency?: string;
+      language?: string;
+      relationship?: string;
+      phone?: string;
+    }
+  ): Promise<{ success: boolean; familyKey?: string; error?: string }> => {
+    try {
+      setIsLoading(true);
+      const res = await apiRequest('/auth/verify-registration-otp', {
+        method: 'POST',
+        body: JSON.stringify({ otp, ...data }),
+      });
+      if (res.token) {
+        localStorage.setItem('onefamily_token', res.token);
+      }
+      if (res.user?.id) {
+        localStorage.setItem('onefamily_active_user_id', res.user.id);
+      }
+      localStorage.setItem('onefamily_onboarded', 'true');
+      setCurrentUser(res.user);
+      setFamily(res.family);
+      setFamilyMembers(res.familyMembers || [res.user]);
+      return { success: true, familyKey: res.familyKey || res.family?.family_key };
+    } catch (err: any) {
+      console.error('Verify OTP failed:', err);
+      return { success: false, error: err.message || 'Failed to verify code' };
     } finally {
       setIsLoading(false);
     }
@@ -313,6 +391,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshUser: fetchCurrentUser,
         logout,
         login,
+        sendRegistrationOtp,
+        verifyRegistrationOtp,
         registerHead,
         joinFamily,
         regenerateFamilyKey,
