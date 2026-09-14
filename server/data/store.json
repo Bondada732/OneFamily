@@ -5046,6 +5046,176 @@
       "category": "EMERGENCY",
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-13T17:41:35.084Z"
+    },
+    {
+      "id": "aud_1789321343901_2lm06",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T17:42:23.901Z"
+    },
+    {
+      "id": "aud_1789321344129_to5ve",
+      "family_id": "fam_1789193802598",
+      "user_id": "usr_head_1789193802598",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-13T17:42:24.129Z"
+    },
+    {
+      "id": "aud_1789361691736_d21x7",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Recorded Expense",
+      "category": "FINANCE",
+      "details": "Added ₹1500 for Groceries (Supermarket Test)",
+      "created_at": "2026-09-14T04:54:51.736Z"
+    },
+    {
+      "id": "aud_1789361724501_2gkty",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Recorded Expense",
+      "category": "FINANCE",
+      "details": "Added ₹1500 for Groceries (Supermarket Test)",
+      "created_at": "2026-09-14T04:55:24.501Z"
+    },
+    {
+      "id": "aud_1789361725123_shecl",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Updated Expense",
+      "category": "FINANCE",
+      "details": "Updated expense: ₹1850 for Groceries (Supermarket Test Updated)",
+      "created_at": "2026-09-14T04:55:25.123Z"
+    },
+    {
+      "id": "aud_1789361725559_l8zf2",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Deleted Expense",
+      "category": "FINANCE",
+      "details": "Deleted expense record exp_1789361724277",
+      "created_at": "2026-09-14T04:55:25.559Z"
+    },
+    {
+      "id": "aud_1789361725981_y6qax",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Created Goal",
+      "category": "FINANCE",
+      "details": "Created goal \"New Car 2027\" targeting ₹1500000",
+      "created_at": "2026-09-14T04:55:25.981Z"
+    },
+    {
+      "id": "aud_1789361726408_oxuo6",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Updated Goal",
+      "category": "FINANCE",
+      "details": "Updated goal \"New Luxury Car 2027\"",
+      "created_at": "2026-09-14T04:55:26.408Z"
+    },
+    {
+      "id": "aud_1789361726923_25f4m",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Deleted Goal",
+      "category": "FINANCE",
+      "details": "Removed goal \"New Luxury Car 2027\"",
+      "created_at": "2026-09-14T04:55:26.923Z"
+    },
+    {
+      "id": "aud_1789361727423_xsx8h",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Created Task",
+      "category": "TASK",
+      "details": "Added task \"Clean Balcony & Garden\"",
+      "created_at": "2026-09-14T04:55:27.423Z"
+    },
+    {
+      "id": "aud_1789361727898_51or5",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Updated Task",
+      "category": "TASK",
+      "details": "Updated task \"Clean Balcony & Repot Plants\"",
+      "created_at": "2026-09-14T04:55:27.898Z"
+    },
+    {
+      "id": "aud_1789361728421_m6n01",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Deleted Task",
+      "category": "TASK",
+      "details": "Deleted task \"Clean Balcony & Repot Plants\"",
+      "created_at": "2026-09-14T04:55:28.421Z"
+    },
+    {
+      "id": "aud_1789361729163_1k8qy",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Updated Wishlist Item",
+      "category": "TASK",
+      "details": "Updated \"Kindle Paperwhite Signature Edition\"",
+      "created_at": "2026-09-14T04:55:29.163Z"
+    },
+    {
+      "id": "aud_1789361729589_hgshi",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Deleted Wishlist Item",
+      "category": "TASK",
+      "details": "Deleted \"Kindle Paperwhite Signature Edition\"",
+      "created_at": "2026-09-14T04:55:29.589Z"
+    },
+    {
+      "id": "aud_1789361729992_posgy",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Uploaded Document",
+      "category": "DOCUMENT",
+      "details": "Uploaded \"House Electricity Agreement\" to Vault",
+      "created_at": "2026-09-14T04:55:29.992Z"
+    },
+    {
+      "id": "aud_1789361730393_r80cl",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Updated Document",
+      "category": "DOCUMENT",
+      "details": "Updated details for \"House Electricity Agreement (Updated 2026)\"",
+      "created_at": "2026-09-14T04:55:30.393Z"
+    },
+    {
+      "id": "aud_1789361730771_bwiiz",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "user_name": "Raj Sharma",
+      "action": "Deleted Document",
+      "category": "DOCUMENT",
+      "details": "Removed document \"House Electricity Agreement (Updated 2026)\" from Vault",
+      "created_at": "2026-09-14T04:55:30.771Z"
     }
   ],
   "expense_categories": [
@@ -6192,6 +6362,24 @@
       "receipt_url": "",
       "split_type": "EQUAL",
       "created_at": "2026-09-12T23:07:46.829Z"
+    },
+    {
+      "id": "exp_1789361691225",
+      "family_id": "fam_sharma_01",
+      "user_id": "usr_raj",
+      "paid_by_name": "Raj",
+      "category_id": "cat_misc",
+      "category_name": "Groceries",
+      "amount": 1500,
+      "currency": "INR",
+      "date": "2026-09-14",
+      "payment_method": "UPI",
+      "merchant": "Supermarket Test",
+      "notes": "",
+      "location": "",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-14T04:54:51.226Z"
     }
   ],
   "budgets": [

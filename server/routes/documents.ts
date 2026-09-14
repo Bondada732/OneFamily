@@ -103,14 +103,41 @@ router.post('/:id/documents', requirePermission('DOCUMENT_UPLOAD'), (req: AuthRe
   res.status(201).json(newDoc);
 });
 
+// Update Document Metadata
+router.patch('/:id/documents/:docId', requirePermission('DOCUMENT_UPLOAD'), (req: AuthRequest, res) => {
+  const { docId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+  const { title, category_id, owner_name, document_number, issue_date, expiry_date, issuer, tags, notes } = req.body;
+
+  const existing = db.findOne('documents', (d) => d.id === docId && d.family_id === familyId);
+  if (!existing) return res.status(404).json({ error: 'Document not found' });
+
+  const updated = db.update('documents', (d) => d.id === docId && d.family_id === familyId, {
+    title: title ?? existing.title,
+    category_id: category_id ?? existing.category_id,
+    owner_name: owner_name ?? existing.owner_name,
+    document_number: document_number ?? existing.document_number,
+    issue_date: issue_date ?? existing.issue_date,
+    expiry_date: expiry_date ?? existing.expiry_date,
+    issuer: issuer ?? existing.issuer,
+    tags: tags ?? existing.tags,
+    notes: notes ?? existing.notes,
+    updated_at: new Date().toISOString(),
+  });
+
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Document', 'DOCUMENT', `Updated details for "${title || existing.title}"`);
+  res.json(updated[0] || existing);
+});
+
 // Delete Document
 router.delete('/:id/documents/:docId', requirePermission('DOCUMENT_DELETE'), (req: AuthRequest, res) => {
   const { docId } = req.params;
   const familyId = req.params.id || req.familyId!;
 
+  const existing = db.findOne('documents', (d) => d.id === docId && d.family_id === familyId);
   const deleted = db.delete('documents', (d) => d.id === docId && d.family_id === familyId);
   if (deleted) {
-    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Document', 'DOCUMENT', `Removed document ${docId} from Vault`);
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Document', 'DOCUMENT', `Removed document "${existing?.title || docId}" from Vault`);
   }
 
   res.json({ success: deleted });

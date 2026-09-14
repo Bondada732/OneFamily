@@ -47,6 +47,47 @@ router.post('/:id/calendar', requirePermission('CALENDAR_EDIT'), (req: AuthReque
   res.status(201).json(newEvent);
 });
 
+// Update Calendar Event
+router.patch('/:id/calendar/:evtId', requirePermission('CALENDAR_EDIT'), (req: AuthRequest, res) => {
+  const { evtId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+  const { title, type, start_date, end_date, is_all_day, assigned_member_id, assigned_member_name, is_recurring, visibility, notes } = req.body;
+
+  const existing = db.findOne('calendar_events', (e) => e.id === evtId && e.family_id === familyId);
+  if (!existing) return res.status(404).json({ error: 'Calendar event not found' });
+
+  const updated = db.update('calendar_events', (e) => e.id === evtId && e.family_id === familyId, {
+    title: title ?? existing.title,
+    type: type ?? existing.type,
+    start_date: start_date ?? existing.start_date,
+    end_date: end_date ?? existing.end_date,
+    is_all_day: is_all_day !== undefined ? Boolean(is_all_day) : existing.is_all_day,
+    assigned_member_id: assigned_member_id !== undefined ? assigned_member_id : existing.assigned_member_id,
+    assigned_member_name: assigned_member_name ?? existing.assigned_member_name,
+    is_recurring: is_recurring !== undefined ? Boolean(is_recurring) : existing.is_recurring,
+    visibility: visibility ?? existing.visibility,
+    notes: notes ?? existing.notes,
+    updated_at: new Date().toISOString(),
+  });
+
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Calendar Event', 'TASK', `Updated event "${title || existing.title}"`);
+  res.json(updated[0] || existing);
+});
+
+// Delete Calendar Event
+router.delete('/:id/calendar/:evtId', requirePermission('CALENDAR_EDIT'), (req: AuthRequest, res) => {
+  const { evtId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+
+  const existing = db.findOne('calendar_events', (e) => e.id === evtId && e.family_id === familyId);
+  const deleted = db.delete('calendar_events', (e) => e.id === evtId && e.family_id === familyId);
+  if (deleted && existing) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Calendar Event', 'TASK', `Deleted event "${existing.title}"`);
+  }
+
+  res.json({ success: deleted });
+});
+
 // Add / Dismiss Smart Reminder
 router.post('/:id/reminders', (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;

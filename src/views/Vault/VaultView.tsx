@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { DocumentRecord } from '../../types/index.js';
-import { FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, Eye, Upload, Image as ImageIcon, X, FileCheck } from 'lucide-react';
+import { FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, Eye, Upload, Image as ImageIcon, X, FileCheck, Edit3, Trash2 } from 'lucide-react';
 
 export const VaultView: React.FC = () => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
@@ -19,6 +19,7 @@ export const VaultView: React.FC = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showOCRResult, setShowOCRResult] = useState<any>(null);
   const [previewDoc, setPreviewDoc] = useState<DocumentRecord | null>(null);
+  const [editingDoc, setEditingDoc] = useState<DocumentRecord | null>(null);
 
   // File upload state
   const [uploadedFile, setUploadedFile] = useState<{
@@ -46,6 +47,8 @@ export const VaultView: React.FC = () => {
 
   const canViewDocs = hasPermission('DOCUMENT_VIEW');
   const canUploadDocs = hasPermission('DOCUMENT_UPLOAD');
+  const canEditDocs = currentUser?.role === 'FAMILY_HEAD' || hasPermission('DOCUMENT_UPLOAD');
+  const canDeleteDocs = currentUser?.role === 'FAMILY_HEAD' || hasPermission('DOCUMENT_DELETE');
 
   useEffect(() => {
     if (!canViewDocs || !family?.id) {
@@ -168,6 +171,41 @@ export const VaultView: React.FC = () => {
     }
   };
 
+  const handleDeleteDoc = async (docId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!family?.id) return;
+    setDocuments((prev) => prev.filter((d) => d.id !== docId));
+    if (previewDoc?.id === docId) setPreviewDoc(null);
+    try {
+      await apiRequest(`/documents/${family.id}/documents/${docId}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      console.error('Failed to delete document:', err);
+    }
+  };
+
+  const handleUpdateDoc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDoc || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/documents/${family.id}/documents/${editingDoc.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editingDoc),
+      });
+      setDocuments((prev) => prev.map((d) => (d.id === editingDoc.id ? { ...d, ...updated } : d)));
+      if (previewDoc?.id === editingDoc.id) {
+        setPreviewDoc({ ...previewDoc, ...updated });
+      }
+      setEditingDoc(null);
+    } catch (err) {
+      console.error('Failed to update document:', err);
+    }
+  };
+
   const filteredDocs = documents.filter((doc) => {
     const matchesCategory = selectedCategory === 'ALL' || doc.category_id === selectedCategory;
     const q = searchQuery.toLowerCase();
@@ -280,8 +318,8 @@ export const VaultView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <div className="text-right shrink-0">
+              {/* Status Badge & Actions */}
+              <div className="flex items-center gap-2 shrink-0">
                 {doc.expiry_date ? (
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -297,6 +335,29 @@ export const VaultView: React.FC = () => {
                     Permanent
                   </span>
                 )}
+
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  {canEditDocs && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingDoc(doc)}
+                      className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                      title="Edit Document"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  {canDeleteDocs && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteDoc(doc.id, e)}
+                      className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                      title="Delete Document"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -349,7 +410,165 @@ export const VaultView: React.FC = () => {
                 <Download className="w-4 h-4" />
                 <span>Open / Download</span>
               </a>
+              {canEditDocs && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingDoc(previewDoc);
+                  }}
+                  className="px-3 py-2.5 bg-slate-800 hover:bg-amber-500/20 border border-slate-700 text-slate-300 hover:text-amber-400 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span>Edit</span>
+                </button>
+              )}
+              {canDeleteDocs && (
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteDoc(previewDoc.id, e)}
+                  className="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 border border-slate-700 text-slate-300 hover:text-rose-400 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete</span>
+                </button>
+              )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Document Modal */}
+      {editingDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Document Details</h3>
+              <button onClick={() => setEditingDoc(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            <form onSubmit={handleUpdateDoc} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Document Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingDoc.title}
+                  onChange={(e) => setEditingDoc({ ...editingDoc, title: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Category</label>
+                  <select
+                    value={editingDoc.category_id}
+                    onChange={(e) => setEditingDoc({ ...editingDoc, category_id: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Owner / Member</label>
+                  <select
+                    value={editingDoc.owner_name}
+                    onChange={(e) => setEditingDoc({ ...editingDoc, owner_name: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="All Family">All Family</option>
+                    {familyMembers.map((m) => (
+                      <option key={m.id} value={m.name}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Document Number</label>
+                  <input
+                    type="text"
+                    value={editingDoc.document_number || ''}
+                    onChange={(e) => setEditingDoc({ ...editingDoc, document_number: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Issuer Authority</label>
+                  <input
+                    type="text"
+                    value={editingDoc.issuer || ''}
+                    onChange={(e) => setEditingDoc({ ...editingDoc, issuer: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Issue Date</label>
+                  <input
+                    type="date"
+                    value={editingDoc.issue_date || ''}
+                    onChange={(e) => setEditingDoc({ ...editingDoc, issue_date: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Expiry Date</label>
+                  <input
+                    type="date"
+                    value={editingDoc.expiry_date || ''}
+                    onChange={(e) => setEditingDoc({ ...editingDoc, expiry_date: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Tags / Keywords</label>
+                <input
+                  type="text"
+                  placeholder="e.g. passport, renewal, trip"
+                  value={editingDoc.tags || ''}
+                  onChange={(e) => setEditingDoc({ ...editingDoc, tags: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Private Notes</label>
+                <input
+                  type="text"
+                  value={editingDoc.notes || ''}
+                  onChange={(e) => setEditingDoc({ ...editingDoc, notes: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingDoc(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

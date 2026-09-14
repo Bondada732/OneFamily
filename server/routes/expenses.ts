@@ -101,6 +101,36 @@ router.post('/:id/expenses/scan-receipt', requirePermission('FINANCE_EDIT'), (re
   });
 });
 
+// Update Expense
+router.patch('/:id/expenses/:expenseId', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const { expenseId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+  const { category_id, category_name, amount, payment_method, merchant, notes, location, receipt_url, split_type, date } = req.body;
+
+  const existing = db.findOne('expenses', (e) => e.id === expenseId && e.family_id === familyId);
+  if (!existing) {
+    return res.status(404).json({ error: 'Expense not found' });
+  }
+
+  const updated = db.update('expenses', (e) => e.id === expenseId && e.family_id === familyId, {
+    category_id: category_id !== undefined ? category_id : existing.category_id,
+    category_name: category_name !== undefined ? category_name : existing.category_name,
+    amount: amount !== undefined ? Number(amount) : existing.amount,
+    payment_method: payment_method !== undefined ? payment_method : existing.payment_method,
+    merchant: merchant !== undefined ? merchant : existing.merchant,
+    notes: notes !== undefined ? notes : existing.notes,
+    location: location !== undefined ? location : existing.location,
+    receipt_url: receipt_url !== undefined ? receipt_url : existing.receipt_url,
+    split_type: split_type !== undefined ? split_type : existing.split_type,
+    date: date !== undefined ? date : existing.date,
+    updated_at: new Date().toISOString(),
+  });
+
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Expense', 'FINANCE', `Updated expense: ₹${amount || existing.amount} for ${category_name || existing.category_name} (${merchant || existing.merchant})`);
+
+  res.json(updated[0] || existing);
+});
+
 // Delete Expense
 router.delete('/:id/expenses/:expenseId', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
   const { expenseId } = req.params;

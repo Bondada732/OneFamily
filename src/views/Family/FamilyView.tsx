@@ -63,6 +63,11 @@ export const FamilyView: React.FC = () => {
   const [newGroceryQty, setNewGroceryQty] = useState('1 unit');
   const [newGroceryPrice, setNewGroceryPrice] = useState('');
 
+  // Editing Modals State (Family Head or TASK_EDIT permitted)
+  const [editingTask, setEditingTask] = useState<TaskItem | null>(null);
+  const [editingGrocery, setEditingGrocery] = useState<GroceryItem | null>(null);
+  const [editingMaintenance, setEditingMaintenance] = useState<MaintenanceItem | null>(null);
+
   // Emergency Contacts & Medical Profiles Form States
   const [showAddContact, setShowAddContact] = useState(false);
   const [editingContact, setEditingContact] = useState<EmergencyContact | null>(null);
@@ -190,6 +195,34 @@ export const FamilyView: React.FC = () => {
     }
   };
 
+  const handleDeleteTask = async (taskId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    try {
+      await apiRequest(`/tasks/${family?.id}/tasks/${taskId}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+    }
+  };
+
+  const handleUpdateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTask || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/tasks/${family.id}/tasks/${editingTask.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editingTask),
+      });
+      setTasks((prev) => prev.map((t) => (t.id === editingTask.id ? { ...t, ...updated } : t)));
+      setEditingTask(null);
+    } catch (err) {
+      console.error('Failed to update task:', err);
+    }
+  };
+
   const toggleGrocery = async (itemId: string) => {
     try {
       const updated = await apiRequest(`/tasks/${family?.id}/grocery/${itemId}/toggle`, { method: 'PATCH' });
@@ -210,6 +243,21 @@ export const FamilyView: React.FC = () => {
       await apiRequest(`/tasks/${family?.id}/grocery/${itemId}`, { method: 'DELETE' });
     } catch (err) {
       console.error('Failed to delete wish item:', err);
+    }
+  };
+
+  const handleUpdateGrocery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGrocery || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/tasks/${family.id}/grocery/${editingGrocery.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editingGrocery),
+      });
+      setGroceryItems((prev) => prev.map((g) => (g.id === editingGrocery.id ? { ...g, ...updated } : g)));
+      setEditingGrocery(null);
+    } catch (err) {
+      console.error('Failed to update wish item:', err);
     }
   };
 
@@ -264,6 +312,21 @@ export const FamilyView: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to add maintenance item:', err);
+    }
+  };
+
+  const handleUpdateMaintenance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMaintenance || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/tasks/${family.id}/maintenance/${editingMaintenance.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editingMaintenance),
+      });
+      setMaintenanceItems((prev) => prev.map((m) => (m.id === editingMaintenance.id ? { ...m, ...updated } : m)));
+      setEditingMaintenance(null);
+    } catch (err) {
+      console.error('Failed to update maintenance item:', err);
     }
   };
 
@@ -983,15 +1046,37 @@ export const FamilyView: React.FC = () => {
                   </div>
                 </div>
 
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    task.priority === 'HIGH'
-                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                      : 'bg-indigo-500/20 text-indigo-300'
-                  }`}
-                >
-                  {task.priority}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      task.priority === 'HIGH'
+                        ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                        : 'bg-indigo-500/20 text-indigo-300'
+                    }`}
+                  >
+                    {task.priority}
+                  </span>
+                  {canEditTasks && (
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => setEditingTask(task)}
+                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                        title="Edit Task"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteTask(task.id, e)}
+                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                        title="Delete Task"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -1003,13 +1088,15 @@ export const FamilyView: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-400 uppercase">Shared Family Wish List ({groceryItems.length})</span>
-            <button
-              onClick={() => setShowAddGrocery(true)}
-              className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add to Wish List</span>
-            </button>
+            {canEditTasks && (
+              <button
+                onClick={() => setShowAddGrocery(true)}
+                className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add to Wish List</span>
+              </button>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -1040,7 +1127,7 @@ export const FamilyView: React.FC = () => {
                   }`}
                 >
                   <div
-                    onClick={() => toggleGrocery(item.id)}
+                    onClick={() => canEditTasks && toggleGrocery(item.id)}
                     className="flex items-center gap-3 flex-1 cursor-pointer overflow-hidden mr-2"
                   >
                     <div
@@ -1064,18 +1151,30 @@ export const FamilyView: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-semibold">
                       {item.category || 'WISH'}
                     </span>
-                    <button
-                      type="button"
-                      onClick={(e) => handleDeleteGrocery(item.id, e)}
-                      className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 active:scale-90 transition-all z-10"
-                      title="Delete item"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
-                    </button>
+                    {canEditTasks && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingGrocery(item)}
+                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 active:scale-90 transition-all z-10"
+                        title="Edit item"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 pointer-events-none" />
+                      </button>
+                    )}
+                    {canEditTasks && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteGrocery(item.id, e)}
+                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 active:scale-90 transition-all z-10"
+                        title="Delete item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -1089,13 +1188,15 @@ export const FamilyView: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-400 uppercase">Household Equipment Maintenance ({maintenanceItems.length})</span>
-            <button
-              onClick={() => setShowAddMaintenance(true)}
-              className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Equipment</span>
-            </button>
+            {canEditTasks && (
+              <button
+                onClick={() => setShowAddMaintenance(true)}
+                className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Equipment</span>
+              </button>
+            )}
           </div>
 
           <div className="space-y-2.5">
@@ -1139,14 +1240,26 @@ export const FamilyView: React.FC = () => {
                       <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">
                         Due: {maint.next_service_due ? formatDate(maint.next_service_due) : 'Upcoming'}
                       </span>
-                      <button
-                        type="button"
-                        onClick={(e) => handleDeleteMaintenance(maint.id, e)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 active:scale-90 transition-all"
-                        title="Delete Equipment"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
-                      </button>
+                      {canEditTasks && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setEditingMaintenance(maint)}
+                            className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 active:scale-90 transition-all"
+                            title="Edit Equipment"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 pointer-events-none" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteMaintenance(maint.id, e)}
+                            className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 active:scale-90 transition-all"
+                            title="Delete Equipment"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2723,6 +2836,271 @@ export const FamilyView: React.FC = () => {
                   className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-rose-600/30 transition-all active:scale-95"
                 >
                   {editingProfile ? 'Save Medical Card' : 'Add Medical Card'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Family Task</h3>
+              <button onClick={() => setEditingTask(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <form onSubmit={handleUpdateTask} className="space-y-3">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Task Title</label>
+                <input
+                  type="text"
+                  required
+                  value={editingTask.title}
+                  onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Assign To</label>
+                  <select
+                    value={editingTask.assigned_to_name}
+                    onChange={(e) => setEditingTask({ ...editingTask, assigned_to_name: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="All Family">All Family</option>
+                    {familyMembers.map((m) => (
+                      <option key={m.id} value={m.name}>
+                        {m.name} ({m.relationship || m.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Priority</label>
+                  <select
+                    value={editingTask.priority}
+                    onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as any })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Due Date</label>
+                <input
+                  type="date"
+                  value={editingTask.due_date || ''}
+                  onChange={(e) => setEditingTask({ ...editingTask, due_date: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingTask(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Wishlist Modal */}
+      {editingGrocery && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Wish List Item</h3>
+              <button onClick={() => setEditingGrocery(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <form onSubmit={handleUpdateGrocery} className="space-y-3">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Item Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingGrocery.item_name}
+                  onChange={(e) => setEditingGrocery({ ...editingGrocery, item_name: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Estimated Cost (₹)</label>
+                  <input
+                    type="number"
+                    value={editingGrocery.estimated_cost || ''}
+                    onChange={(e) => setEditingGrocery({ ...editingGrocery, estimated_cost: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Category</label>
+                  <select
+                    value={editingGrocery.category || 'WISH'}
+                    onChange={(e) => setEditingGrocery({ ...editingGrocery, category: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="WISH">Family Wish / Gift</option>
+                    <option value="GROCERY">Grocery / Kirana</option>
+                    <option value="HOME">Home Essentials</option>
+                    <option value="GADGET">Gadget / Tech</option>
+                    <option value="CLOTHING">Clothing & Apparel</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Notes / Links</label>
+                <input
+                  type="text"
+                  value={editingGrocery.notes || ''}
+                  onChange={(e) => setEditingGrocery({ ...editingGrocery, notes: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingGrocery(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Maintenance Modal */}
+      {editingMaintenance && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Household Equipment</h3>
+              <button onClick={() => setEditingMaintenance(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <form onSubmit={handleUpdateMaintenance} className="space-y-3">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Equipment / Appliance Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingMaintenance.item_name}
+                  onChange={(e) => setEditingMaintenance({ ...editingMaintenance, item_name: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Type</label>
+                  <select
+                    value={editingMaintenance.service_type || 'APPLIANCE'}
+                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, service_type: e.target.value as any })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="APPLIANCE">Appliance (AC, Fridge)</option>
+                    <option value="WATER_PURIFIER">Water Purifier (RO)</option>
+                    <option value="VEHICLE">Car / Bike / EV</option>
+                    <option value="ELECTRICAL">Inverter / Solar / Geyser</option>
+                    <option value="OTHER">Other Equipment</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Interval (Months)</label>
+                  <input
+                    type="number"
+                    value={editingMaintenance.recurring_interval_months || 6}
+                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, recurring_interval_months: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Last Service Date</label>
+                  <input
+                    type="date"
+                    value={editingMaintenance.last_service_date || ''}
+                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, last_service_date: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Next Service Due</label>
+                  <input
+                    type="date"
+                    value={editingMaintenance.next_service_due || ''}
+                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, next_service_due: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Service Provider / Agency</label>
+                  <input
+                    type="text"
+                    value={editingMaintenance.service_provider || ''}
+                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, service_provider: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Technician Phone</label>
+                  <input
+                    type="text"
+                    value={editingMaintenance.contact_phone || ''}
+                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, contact_phone: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingMaintenance(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

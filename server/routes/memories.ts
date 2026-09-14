@@ -49,6 +49,44 @@ router.post('/:id/memories', requirePermission('MEMORY_UPLOAD'), (req: AuthReque
   res.status(201).json(newMemory);
 });
 
+// Update Memory
+router.patch('/:id/memories/:memId', requirePermission('MEMORY_UPLOAD'), (req: AuthRequest, res) => {
+  const { memId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+  const { title, date, location, album, description, photos, tagged_members } = req.body;
+
+  const existing = db.findOne('memories', (m) => m.id === memId && m.family_id === familyId);
+  if (!existing) return res.status(404).json({ error: 'Memory not found' });
+
+  const updated = db.update('memories', (m) => m.id === memId && m.family_id === familyId, {
+    title: title ?? existing.title,
+    date: date ?? existing.date,
+    location: location ?? existing.location,
+    album: album ?? existing.album,
+    description: description ?? existing.description,
+    photos: photos ? JSON.stringify(photos) : existing.photos,
+    tagged_members: tagged_members ? JSON.stringify(tagged_members) : existing.tagged_members,
+    updated_at: new Date().toISOString(),
+  });
+
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Family Memory', 'MEMORY', `Updated memory "${title || existing.title}"`);
+  res.json(updated[0] || existing);
+});
+
+// Delete Memory
+router.delete('/:id/memories/:memId', requirePermission('MEMORY_DELETE'), (req: AuthRequest, res) => {
+  const { memId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+
+  const existing = db.findOne('memories', (m) => m.id === memId && m.family_id === familyId);
+  const deleted = db.delete('memories', (m) => m.id === memId && m.family_id === familyId);
+  if (deleted && existing) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Family Memory', 'MEMORY', `Removed memory "${existing.title}"`);
+  }
+
+  res.json({ success: deleted });
+});
+
 // Add Grandparent Voice Memory
 router.post('/:id/voice-memories', requirePermission('MEMORY_UPLOAD'), (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;

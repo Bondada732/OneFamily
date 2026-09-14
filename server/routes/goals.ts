@@ -58,25 +58,55 @@ router.post('/:id/goals', requirePermission('FINANCE_EDIT'), (req: AuthRequest, 
   res.status(201).json(newGoal);
 });
 
-// Update Goal Progress / Contribution
+// Update Goal
 router.patch('/:id/goals/:goalId', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
   const { goalId } = req.params;
   const familyId = req.params.id || req.familyId!;
-  const { current_amount, monthly_contribution, status } = req.body;
+  const { title, category, target_amount, current_amount, monthly_contribution, target_date, priority, status, contributors } = req.body;
+
+  const existing = db.findOne('goals', (g) => g.id === goalId && g.family_id === familyId);
+  if (!existing) {
+    return res.status(404).json({ error: 'Goal not found' });
+  }
 
   const updated = db.update(
     'goals',
     (g) => g.id === goalId && g.family_id === familyId,
     {
-      ...(current_amount !== undefined && { current_amount: Number(current_amount) }),
-      ...(monthly_contribution !== undefined && { monthly_contribution: Number(monthly_contribution) }),
-      ...(status && { status }),
+      title: title !== undefined ? title : existing.title,
+      category: category !== undefined ? category : existing.category,
+      target_amount: target_amount !== undefined ? Number(target_amount) : existing.target_amount,
+      current_amount: current_amount !== undefined ? Number(current_amount) : existing.current_amount,
+      monthly_contribution: monthly_contribution !== undefined ? Number(monthly_contribution) : existing.monthly_contribution,
+      target_date: target_date !== undefined ? target_date : existing.target_date,
+      priority: priority !== undefined ? priority : existing.priority,
+      status: status !== undefined ? status : existing.status,
+      contributors: contributors ? JSON.stringify(contributors) : existing.contributors,
+      updated_at: new Date().toISOString(),
     }
   );
 
-  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Goal', 'FINANCE', `Contributed to goal ${goalId}`);
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Goal', 'FINANCE', `Updated goal "${title || existing.title}"`);
 
-  res.json(updated);
+  res.json(updated[0] || existing);
+});
+
+// Delete Goal
+router.delete('/:id/goals/:goalId', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const { goalId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+
+  const existing = db.findOne('goals', (g) => g.id === goalId && g.family_id === familyId);
+  if (!existing) {
+    return res.status(404).json({ error: 'Goal not found' });
+  }
+
+  const deleted = db.delete('goals', (g) => g.id === goalId && g.family_id === familyId);
+  if (deleted) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Goal', 'FINANCE', `Removed goal "${existing.title}"`);
+  }
+
+  res.json({ success: deleted });
 });
 
 export default router;

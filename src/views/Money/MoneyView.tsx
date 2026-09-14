@@ -6,7 +6,7 @@ import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { apiRequest } from '../../utils/api.js';
 import { Expense, BudgetReport, Investment, Liability, Goal } from '../../types/index.js';
-import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2 } from 'lucide-react';
+import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 const DEFAULT_EXPENSE_CATEGORIES = [
@@ -56,6 +56,12 @@ export const MoneyView: React.FC = () => {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [contributingGoal, setContributingGoal] = useState<Goal | null>(null);
   const [contributionAmount, setContributionAmount] = useState('');
+
+  // Editing Modals State (Family Head or RBAC Permitted)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
+  const [editingLiability, setEditingLiability] = useState<Liability | null>(null);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
   // New Investment Form State
   const [newInvestment, setNewInvestment] = useState({
@@ -421,6 +427,96 @@ export const MoneyView: React.FC = () => {
     }
   };
 
+  const handleUpdateExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingExpense || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/expenses/${family.id}/expenses/${editingExpense.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editingExpense),
+      });
+      setExpenses((prev) => prev.map((exp) => (exp.id === editingExpense.id ? { ...exp, ...updated } : exp)));
+      setEditingExpense(null);
+      const budData = await apiRequest(`/budget/${family.id}/budget`);
+      setBudgetReports(budData.categories || []);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to update expense:', err);
+    }
+  };
+
+  const handleUpdateInvestment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingInvestment || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/investments/${family.id}/investments/${editingInvestment.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(editingInvestment),
+      });
+      setInvestments((prev) => prev.map((inv) => (inv.id === editingInvestment.id ? { ...inv, ...updated } : inv)));
+      setEditingInvestment(null);
+      const invData = await apiRequest(`/investments/${family.id}/investments`);
+      setNetWorthData(invData);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to update investment:', err);
+    }
+  };
+
+  const handleUpdateLiability = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLiability || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/investments/${family.id}/liabilities/${editingLiability.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editingLiability),
+      });
+      setLiabilities((prev) => prev.map((lia) => (lia.id === editingLiability.id ? { ...lia, ...updated } : lia)));
+      setEditingLiability(null);
+      const invData = await apiRequest(`/investments/${family.id}/investments`);
+      setNetWorthData(invData);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to update liability:', err);
+    }
+  };
+
+  const handleDeleteGoal = async (goalId: string) => {
+    if (!family?.id) return;
+    try {
+      await apiRequest(`/goals/${family.id}/goals/${goalId}`, {
+        method: 'DELETE',
+      });
+      setGoals((prev) => prev.filter((g) => g.id !== goalId));
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to delete goal:', err);
+    }
+  };
+
+  const handleUpdateGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGoal || !family?.id) return;
+    try {
+      const updated = await apiRequest(`/goals/${family.id}/goals/${editingGoal.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editingGoal),
+      });
+      const target = Number(editingGoal.target_amount) || 1;
+      const current = Number(editingGoal.current_amount) || 0;
+      const enriched = {
+        ...updated,
+        progressPct: Math.min(100, Math.round((current / target) * 100)),
+        shortfall: Math.max(0, target - current),
+      };
+      setGoals((prev) => prev.map((g) => (g.id === editingGoal.id ? enriched : g)));
+      setEditingGoal(null);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to update goal:', err);
+    }
+  };
+
 
   const handleSimulateScan = async (sampleName: string) => {
     try {
@@ -766,13 +862,22 @@ export const MoneyView: React.FC = () => {
                       <div className="text-[10px] text-slate-500">{formatDate(exp.date)}</div>
                     </div>
                     {canEditFinance && (
-                      <button
-                        onClick={() => handleDeleteExpense(exp.id)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
-                        title="Delete Expense"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditingExpense(exp)}
+                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                          title="Edit Expense"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteExpense(exp.id)}
+                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                          title="Delete Expense"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -844,13 +949,22 @@ export const MoneyView: React.FC = () => {
                       </div>
                     </div>
                     {canEditFinance && (
-                      <button
-                        onClick={() => handleDeleteInvestment(inv.id)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
-                        title="Delete Asset"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditingInvestment(inv)}
+                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                          title="Edit Asset"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteInvestment(inv.id)}
+                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                          title="Delete Asset"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -913,13 +1027,22 @@ export const MoneyView: React.FC = () => {
                       <div className="text-[10px] text-slate-400">Rate: {lia.interest_rate}%</div>
                     </div>
                     {canEditFinance && (
-                      <button
-                        onClick={() => handleDeleteLiability(lia.id)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
-                        title="Delete Loan"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditingLiability(lia)}
+                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                          title="Edit Loan"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteLiability(lia.id)}
+                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                          title="Delete Loan"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -983,15 +1106,31 @@ export const MoneyView: React.FC = () => {
                     <div className="text-right">
                       <span className="text-sm font-extrabold text-amber-400">{pct}%</span>
                       {canEditFinance && (
-                        <button
-                          onClick={() => {
-                            setContributingGoal(goal);
-                            setContributionAmount(String(goal.monthly_contribution || '10000'));
-                          }}
-                          className="block ml-auto mt-1 px-2 py-0.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 rounded-lg text-[10px] font-semibold transition-colors"
-                        >
-                          + Add Savings
-                        </button>
+                        <div className="flex items-center gap-1.5 ml-auto mt-1">
+                          <button
+                            onClick={() => {
+                              setContributingGoal(goal);
+                              setContributionAmount(String(goal.monthly_contribution || '10000'));
+                            }}
+                            className="px-2 py-0.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 rounded-lg text-[10px] font-semibold transition-colors"
+                          >
+                            + Add Savings
+                          </button>
+                          <button
+                            onClick={() => setEditingGoal(goal)}
+                            className="p-1 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                            title="Edit Goal"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGoal(goal.id)}
+                            className="p-1 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                            title="Delete Goal"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1841,6 +1980,468 @@ export const MoneyView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Expense Modal */}
+      {editingExpense && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Family Expense</h3>
+              <button onClick={() => setEditingExpense(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            <form onSubmit={handleUpdateExpense} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Amount (₹) *</label>
+                <input
+                  type="number"
+                  required
+                  value={editingExpense.amount}
+                  onChange={(e) => setEditingExpense({ ...editingExpense, amount: Number(e.target.value) })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm font-bold text-rose-400 outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Merchant / Store / Payee *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingExpense.merchant}
+                  onChange={(e) => setEditingExpense({ ...editingExpense, merchant: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Category</label>
+                  <select
+                    value={editingExpense.category_id}
+                    onChange={(e) => {
+                      const sel = categories.find((c) => (c.id || c.categoryId) === e.target.value);
+                      setEditingExpense({
+                        ...editingExpense,
+                        category_id: e.target.value,
+                        category_name: sel ? (sel.name || sel.categoryName) : editingExpense.category_name,
+                      });
+                    }}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id || c.categoryId} value={c.id || c.categoryId}>
+                        {c.name || c.categoryName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Payment Method</label>
+                  <select
+                    value={editingExpense.payment_method}
+                    onChange={(e) => setEditingExpense({ ...editingExpense, payment_method: e.target.value as any })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="UPI">UPI / GPay / PhonePe</option>
+                    <option value="CREDIT_CARD">Credit Card</option>
+                    <option value="DEBIT_CARD">Debit Card</option>
+                    <option value="NET_BANKING">Net Banking</option>
+                    <option value="CASH">Cash</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Expense Date</label>
+                <input
+                  type="date"
+                  value={editingExpense.date}
+                  onChange={(e) => setEditingExpense({ ...editingExpense, date: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Notes / Purpose</label>
+                <input
+                  type="text"
+                  value={editingExpense.notes || ''}
+                  onChange={(e) => setEditingExpense({ ...editingExpense, notes: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingExpense(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Investment Modal */}
+      {editingInvestment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Investment / Asset</h3>
+              <button onClick={() => setEditingInvestment(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            <form onSubmit={handleUpdateInvestment} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Asset Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingInvestment.title}
+                  onChange={(e) => setEditingInvestment({ ...editingInvestment, title: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Asset Type</label>
+                  <select
+                    value={editingInvestment.type}
+                    onChange={(e) => setEditingInvestment({ ...editingInvestment, type: e.target.value as any })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="MUTUAL_FUND">Mutual Fund (SIP / Lumpsum)</option>
+                    <option value="STOCK">Indian Stocks / Equity</option>
+                    <option value="FIXED_DEPOSIT">Fixed Deposit (FD)</option>
+                    <option value="GOLD">Physical Gold / Sovereign Gold Bonds</option>
+                    <option value="PPF">PPF / EPF / NPS</option>
+                    <option value="REAL_ESTATE">Real Estate / Land / Flat</option>
+                    <option value="SAVINGS_ACCOUNT">Savings Bank Account</option>
+                    <option value="OTHER">Other Asset</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Institution / Platform</label>
+                  <input
+                    type="text"
+                    value={editingInvestment.institution || ''}
+                    onChange={(e) => setEditingInvestment({ ...editingInvestment, institution: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Invested Amount (₹)</label>
+                  <input
+                    type="number"
+                    value={editingInvestment.invested_amount}
+                    onChange={(e) => setEditingInvestment({ ...editingInvestment, invested_amount: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Current Value (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={editingInvestment.current_value}
+                    onChange={(e) => setEditingInvestment({ ...editingInvestment, current_value: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-emerald-400 outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Folio / Account No.</label>
+                  <input
+                    type="text"
+                    value={editingInvestment.folio_number || ''}
+                    onChange={(e) => setEditingInvestment({ ...editingInvestment, folio_number: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Nominee Name</label>
+                  <input
+                    type="text"
+                    value={editingInvestment.nominee || ''}
+                    onChange={(e) => setEditingInvestment({ ...editingInvestment, nominee: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Notes / Details</label>
+                <input
+                  type="text"
+                  value={editingInvestment.notes || ''}
+                  onChange={(e) => setEditingInvestment({ ...editingInvestment, notes: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingInvestment(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Liability Modal */}
+      {editingLiability && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Loan / Liability</h3>
+              <button onClick={() => setEditingLiability(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            <form onSubmit={handleUpdateLiability} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Loan Name / Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingLiability.title}
+                  onChange={(e) => setEditingLiability({ ...editingLiability, title: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Loan Type</label>
+                  <select
+                    value={editingLiability.type}
+                    onChange={(e) => setEditingLiability({ ...editingLiability, type: e.target.value as any })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="HOME_LOAN">Home Loan</option>
+                    <option value="CAR_LOAN">Car / Auto Loan</option>
+                    <option value="PERSONAL_LOAN">Personal Loan</option>
+                    <option value="EDUCATION_LOAN">Education Loan</option>
+                    <option value="CREDIT_CARD">Credit Card Outstanding</option>
+                    <option value="OTHER">Other Debt</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Bank / Lender</label>
+                  <input
+                    type="text"
+                    value={editingLiability.lender || ''}
+                    onChange={(e) => setEditingLiability({ ...editingLiability, lender: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Total Sanctioned (₹)</label>
+                  <input
+                    type="number"
+                    value={editingLiability.total_loan}
+                    onChange={(e) => setEditingLiability({ ...editingLiability, total_loan: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Outstanding Balance (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={editingLiability.outstanding_amount}
+                    onChange={(e) => setEditingLiability({ ...editingLiability, outstanding_amount: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-rose-400 outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Monthly EMI (₹)</label>
+                  <input
+                    type="number"
+                    value={editingLiability.monthly_emi}
+                    onChange={(e) => setEditingLiability({ ...editingLiability, monthly_emi: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Interest Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editingLiability.interest_rate}
+                    onChange={(e) => setEditingLiability({ ...editingLiability, interest_rate: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingLiability(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Goal Modal */}
+      {editingGoal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white">Edit Family Goal</h3>
+              <button onClick={() => setEditingGoal(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            <form onSubmit={handleUpdateGoal} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Goal Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingGoal.title}
+                  onChange={(e) => setEditingGoal({ ...editingGoal, title: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Goal Category</label>
+                  <select
+                    value={editingGoal.category}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, category: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="EDUCATION">Children Higher Education</option>
+                    <option value="HOME">Dream House / Flat Purchase</option>
+                    <option value="VEHICLE">New Car / Vehicle</option>
+                    <option value="RETIREMENT">Retirement Freedom Fund</option>
+                    <option value="EMERGENCY">Emergency 6-Month Reserve</option>
+                    <option value="TRAVEL">Annual Family Vacation / Tour</option>
+                    <option value="WEDDING">Wedding & Celebrations</option>
+                    <option value="OTHER">Other Milestone</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Priority</label>
+                  <select
+                    value={editingGoal.priority}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, priority: e.target.value as any })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  >
+                    <option value="HIGH">High Priority (Must-Have)</option>
+                    <option value="MEDIUM">Medium Priority</option>
+                    <option value="LOW">Low Priority (Flexible)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Target Amount (₹) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={editingGoal.target_amount}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, target_amount: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Current Saved (₹)</label>
+                  <input
+                    type="number"
+                    value={editingGoal.current_amount}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, current_amount: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-amber-400 outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Monthly SIP (₹)</label>
+                  <input
+                    type="number"
+                    value={editingGoal.monthly_contribution}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, monthly_contribution: Number(e.target.value) })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Target Date</label>
+                  <input
+                    type="date"
+                    value={editingGoal.target_date}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, target_date: e.target.value })}
+                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingGoal(null)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+

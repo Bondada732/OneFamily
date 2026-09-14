@@ -181,6 +181,34 @@ router.delete('/:id/investments/:invId', requirePermission('INVESTMENT_EDIT'), (
   res.json({ success: deleted });
 });
 
+// Update Liability / Loan Record
+router.patch('/:id/liabilities/:liaId', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const { liaId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+  const { title, type, lender, total_loan, outstanding_amount, monthly_emi, interest_rate, end_date, owner_name } = req.body;
+
+  const existing = db.findOne('liabilities', (l) => l.id === liaId && l.family_id === familyId);
+  if (!existing) {
+    return res.status(404).json({ error: 'Liability not found' });
+  }
+
+  const updated = db.update('liabilities', (l) => l.id === liaId && l.family_id === familyId, {
+    title: title ?? existing.title,
+    type: type ?? existing.type,
+    lender: lender ?? existing.lender,
+    total_loan: total_loan !== undefined ? Number(total_loan) : existing.total_loan,
+    outstanding_amount: outstanding_amount !== undefined ? Number(outstanding_amount) : existing.outstanding_amount,
+    monthly_emi: monthly_emi !== undefined ? Number(monthly_emi) : existing.monthly_emi,
+    interest_rate: interest_rate !== undefined ? Number(interest_rate) : existing.interest_rate,
+    end_date: end_date ?? existing.end_date,
+    owner_name: owner_name ?? existing.owner_name,
+    updated_at: new Date().toISOString(),
+  });
+
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Liability', 'FINANCE', `Updated loan/liability "${title || existing.title}"`);
+  res.json(updated[0] || existing);
+});
+
 // Delete Liability
 router.delete('/:id/liabilities/:liaId', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
   const { liaId } = req.params;
@@ -216,6 +244,45 @@ router.post('/:id/insurance', requirePermission('INVESTMENT_EDIT'), (req: AuthRe
   logActivity(familyId, req.user!.id, req.user!.name, 'Added Insurance', 'FINANCE', `Added policy "${policy_name}"`);
 
   res.status(201).json(newPolicy);
+});
+
+// Update Insurance Policy
+router.put('/:id/insurance/:polId', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const { polId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+  const { policy_name, policy_type, provider, policy_number, sum_insured, premium_amount, renewal_date, covered_members } = req.body;
+
+  const existing = db.findOne('insurance_policies', (p) => p.id === polId && p.family_id === familyId);
+  if (!existing) {
+    return res.status(404).json({ error: 'Insurance policy not found' });
+  }
+
+  const updated = db.update('insurance_policies', (p) => p.id === polId && p.family_id === familyId, {
+    policy_name: policy_name ?? existing.policy_name,
+    policy_type: policy_type ?? existing.policy_type,
+    provider: provider ?? existing.provider,
+    policy_number: policy_number ?? existing.policy_number,
+    sum_insured: sum_insured !== undefined ? Number(sum_insured) : existing.sum_insured,
+    premium_amount: premium_amount !== undefined ? Number(premium_amount) : existing.premium_amount,
+    renewal_date: renewal_date ?? existing.renewal_date,
+    covered_members: covered_members ? JSON.stringify(covered_members) : existing.covered_members,
+    updated_at: new Date().toISOString(),
+  });
+
+  logActivity(familyId, req.user!.id, req.user!.name, 'Updated Insurance', 'FINANCE', `Updated policy "${policy_name || existing.policy_name}"`);
+  res.json(updated[0] || existing);
+});
+
+// Delete Insurance Policy
+router.delete('/:id/insurance/:polId', requirePermission('INVESTMENT_EDIT'), (req: AuthRequest, res) => {
+  const { polId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+
+  const deleted = db.delete('insurance_policies', (p) => p.id === polId && p.family_id === familyId);
+  if (deleted) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Insurance', 'FINANCE', `Removed policy ${polId}`);
+  }
+  res.json({ success: deleted });
 });
 
 export default router;
