@@ -451,9 +451,19 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
       {/* 2. CREATE FAMILY (REGISTER HEAD) MODE */}
       {mode === 'REGISTER_HEAD' && (
         <div className="space-y-3.5 animate-fade-in">
+          {/* Step Progress Indicator */}
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-slate-950 shadow-sm">
+              Step 1 of 2
+            </span>
+            <span className="text-[11px] font-semibold text-slate-400">Enter Family Details</span>
+            <ArrowRight className="w-3 h-3 text-slate-600" />
+            <span className="text-[11px] text-slate-500">2. Verify OTP</span>
+          </div>
+
           <div className="text-center space-y-0.5">
             <h2 className="text-base font-bold text-white">Create a New Family Account</h2>
-            <p className="text-[11px] text-slate-400">As Family Head, enter your details to verify your email and generate your Family Key</p>
+            <p className="text-[11px] text-slate-400">Enter your details below to receive a 6-digit verification code on your email</p>
           </div>
 
           {headError && (
@@ -547,6 +557,16 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
       {/* 2b. VERIFY HEAD EMAIL OTP SCREEN */}
       {mode === 'VERIFY_HEAD_OTP' && (
         <div className="space-y-4 animate-fade-in text-slate-200">
+          {/* Step Progress Indicator */}
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <span className="text-[11px] text-slate-500">1. Details</span>
+            <ArrowRight className="w-3 h-3 text-slate-600" />
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500 text-white shadow-sm">
+              Step 2 of 2
+            </span>
+            <span className="text-[11px] font-semibold text-amber-300">Enter OTP</span>
+          </div>
+
           <div className="text-center space-y-1">
             <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 mx-auto flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/10 mb-2">
               <Mail className="w-6 h-6 animate-bounce" />
