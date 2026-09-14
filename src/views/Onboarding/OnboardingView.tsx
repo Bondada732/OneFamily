@@ -412,6 +412,17 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
               <LogIn className="w-4 h-4" />
               <span>{isSubmitting ? 'Signing In...' : 'Sign In'}</span>
             </button>
+
+            {/* Switch to Create Family Link */}
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => { setMode('REGISTER_HEAD'); setHeadError(''); }}
+                className="text-xs text-amber-400 hover:text-amber-300 font-semibold transition-colors"
+              >
+                Want to start a new family? <span className="underline font-bold">Create Family</span>
+              </button>
+            </div>
           </form>
 
           {/* Quick Demo Logins Section */}
