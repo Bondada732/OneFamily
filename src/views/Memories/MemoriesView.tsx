@@ -4,7 +4,7 @@ import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { Memory, VoiceMemory } from '../../types/index.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
-import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar, Image as ImageIcon, Video, Upload, X, Film, Eye } from 'lucide-react';
+import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar, Image as ImageIcon, Video, Upload, X, Film, Eye, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 
 const PRESET_MEMORIES = [
   { url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800', label: 'Family Vacation' },
@@ -14,6 +14,59 @@ const PRESET_MEMORIES = [
   { url: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800', label: 'Road Trip' },
   { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800', label: 'Wedding / Function' },
 ];
+
+/**
+ * Client-side image compressor: scales high-res photos to max 1280px to prevent 413 Payload Too Large
+ */
+const compressImageFile = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX_WIDTH = 1280;
+        const MAX_HEIGHT = 1280;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        } else {
+          resolve(event.target?.result as string);
+        }
+      };
+      img.onerror = () => resolve(event.target?.result as string);
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 export const MemoriesView: React.FC = () => {
   const { family, activeLanguage, hasPermission, currentUser } = useAuth();
@@ -34,6 +87,9 @@ export const MemoriesView: React.FC = () => {
     'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800',
   ]);
   const [customMediaUrl, setCustomMediaUrl] = useState('');
+  const [isProcessingMedia, setIsProcessingMedia] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -67,22 +123,23 @@ export const MemoriesView: React.FC = () => {
     loadMemories();
   }, [family?.id, currentUser?.id]);
 
-  const handleMediaFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (uploadEvent) => {
-        if (uploadEvent.target?.result) {
-          const resultStr = uploadEvent.target.result as string;
-          setSelectedMedia((prev) => [...prev, resultStr]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    e.target.value = '';
+    setIsProcessingMedia(true);
+    setSaveError('');
+    try {
+      const promises = Array.from(files).map((file) => compressImageFile(file));
+      const results = await Promise.all(promises);
+      setSelectedMedia((prev) => [...prev, ...results]);
+    } catch (err) {
+      console.error('Failed to process media files:', err);
+      setSaveError('Failed to process uploaded photos. Please try again.');
+    } finally {
+      setIsProcessingMedia(false);
+      e.target.value = '';
+    }
   };
 
   const handleAddCustomUrl = () => {
@@ -102,9 +159,20 @@ export const MemoriesView: React.FC = () => {
 
   const handleSaveMemory = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newMemory.title.trim()) {
+      setSaveError('Please enter a title for the memory.');
+      return;
+    }
+    if (!family?.id) {
+      setSaveError('No active family session found. Please refresh or sign in again.');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError('');
     try {
       const mediaList = selectedMedia.length > 0 ? selectedMedia : ['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800'];
-      const created = await apiRequest(`/memories/${family?.id}/memories`, {
+      const created = await apiRequest(`/memories/${family.id}/memories`, {
         method: 'POST',
         body: JSON.stringify({
           ...newMemory,
@@ -113,13 +181,13 @@ export const MemoriesView: React.FC = () => {
         }),
       });
 
-      setMemories([
+      setMemories((prev) => [
         {
           ...created,
           photosList: mediaList,
           taggedMembersList: [currentUser?.name || family?.name || 'Our Family'],
         },
-        ...memories,
+        ...prev,
       ]);
       setShowAddMemory(false);
       setNewMemory({
@@ -130,8 +198,11 @@ export const MemoriesView: React.FC = () => {
         description: '',
       });
       setSelectedMedia(['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800']);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('Failed to save memory:', err);
+      setSaveError(err?.message || 'Failed to save memory. Please check details and try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -420,6 +491,20 @@ export const MemoriesView: React.FC = () => {
               className="hidden"
             />
 
+            {saveError && (
+              <div className="p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{saveError}</span>
+              </div>
+            )}
+
+            {isProcessingMedia && (
+              <div className="p-2.5 bg-indigo-500/20 border border-indigo-500/40 rounded-xl text-xs text-indigo-300 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                <span>Optimizing photos for crisp display and fast upload...</span>
+              </div>
+            )}
+
             <form onSubmit={handleSaveMemory} className="space-y-3.5">
               <div>
                 <label className="text-xs text-slate-300 font-semibold">Title *</label>
@@ -448,7 +533,8 @@ export const MemoriesView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="p-2.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors"
+                    disabled={isProcessingMedia || isSaving}
+                    className="p-2.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
                   >
                     <Upload className="w-4 h-4 text-indigo-300" />
                     <span>From Gallery</span>
@@ -456,7 +542,8 @@ export const MemoriesView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
-                    className="p-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors"
+                    disabled={isProcessingMedia || isSaving}
+                    className="p-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
                   >
                     <Camera className="w-4 h-4 text-amber-400" />
                     <span>Take Snap</span>
@@ -464,7 +551,8 @@ export const MemoriesView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => videoInputRef.current?.click()}
-                    className="p-2.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors"
+                    disabled={isProcessingMedia || isSaving}
+                    className="p-2.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
                   >
                     <Video className="w-4 h-4 text-purple-300" />
                     <span>Record Clip</span>
@@ -580,15 +668,24 @@ export const MemoriesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddMemory(false)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  disabled={isSaving}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  disabled={isSaving || isProcessingMedia}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
-                  Save Story
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Save Story</span>
+                  )}
                 </button>
               </div>
             </form>
