@@ -160,7 +160,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     headName: string
   ): Promise<{ success: boolean; message?: string; devOtp?: string; error?: string }> => {
     try {
-      setIsLoading(true);
       const res = await apiRequest('/auth/send-registration-otp', {
         method: 'POST',
         body: JSON.stringify({ email, familyName, headName }),
@@ -169,8 +168,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Send OTP failed:', err);
       return { success: false, error: err.message || 'Failed to send verification code' };
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -189,7 +186,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   ): Promise<{ success: boolean; familyKey?: string; error?: string }> => {
     try {
-      setIsLoading(true);
       const res = await apiRequest('/auth/verify-registration-otp', {
         method: 'POST',
         body: JSON.stringify({ otp, ...data }),
@@ -208,8 +204,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Verify OTP failed:', err);
       return { success: false, error: err.message || 'Failed to verify code' };
-    } finally {
-      setIsLoading(false);
     }
   };
 
