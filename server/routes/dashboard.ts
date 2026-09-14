@@ -20,6 +20,7 @@ router.get('/:id/dashboard', (req: AuthRequest, res) => {
 
   // 2. Financial Metrics (only calculated if user has finance access)
   let netWorth = 0;
+  let totalAssets = 0;
   let monthlySpending = 0;
   let monthlyBudget = 0;
   let savingsGoalPct = 0;
@@ -46,7 +47,7 @@ router.get('/:id/dashboard', (req: AuthRequest, res) => {
 
   if (hasInvestments) {
     const investments = db.find('investments', (i) => i.family_id === familyId);
-    const totalAssets = investments.reduce((sum, i) => sum + i.current_value, 0);
+    totalAssets = investments.reduce((sum, i) => sum + i.current_value, 0);
     const liabilities = db.find('liabilities', (l) => l.family_id === familyId);
     const totalLiabilities = liabilities.reduce((sum, l) => sum + l.outstanding_amount, 0);
     netWorth = totalAssets - totalLiabilities;
