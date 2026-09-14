@@ -254,7 +254,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   }
 
   const { snapshot, goals, recentMemories, today } = dashboard;
-  const rawNetWorth = snapshot.netWorth ?? 1248000;
+  const rawNetWorth = snapshot.netWorth || 0;
   const netWorthDisplay = Math.abs(rawNetWorth);
   const firstName = currentUser?.name?.split(' ')[0] || 'Family';
   const locationCity = family?.location?.split(',')[0] || 'Hyderabad';
@@ -426,12 +426,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             <div>
               <div className="text-[10px] font-bold text-rose-300/90 leading-tight">Monthly Spending</div>
               <div className="text-sm sm:text-base font-black text-rose-100 mt-1">
-                {isPrivacyMode ? '••••' : formatCurrency(snapshot.monthlySpending || 25850, false)}
+                {isPrivacyMode ? '••••' : formatCurrency(snapshot.monthlySpending || 0, false)}
               </div>
             </div>
             <div className="text-[10px] font-bold text-rose-400 mt-2 flex items-center gap-0.5">
-              <span>↓ 8%</span>
-              <span className="text-slate-400 text-[9px] font-normal">vs last mo</span>
+              <span>{(snapshot.monthlySpending || 0) > 0 ? '↓ 8%' : '₹0 spent'}</span>
+              <span className="text-slate-400 text-[9px] font-normal">{(snapshot.monthlySpending || 0) > 0 ? 'vs last mo' : 'this month'}</span>
             </div>
           </div>
 
@@ -443,12 +443,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             <div>
               <div className="text-[10px] font-bold text-emerald-300/90 leading-tight">Savings</div>
               <div className="text-sm sm:text-base font-black text-emerald-100 mt-1">
-                {isPrivacyMode ? '••••' : formatCurrency(240000, true)}
+                {isPrivacyMode ? '••••' : formatCurrency(snapshot.totalSavings || 0, true)}
               </div>
             </div>
             <div className="text-[10px] font-bold text-emerald-400 mt-2 flex items-center gap-0.5">
-              <span>↑ 15%</span>
-              <span className="text-slate-400 text-[9px] font-normal">this year</span>
+              <span>{(snapshot.totalSavings || 0) > 0 ? '↑ 15%' : '₹0 saved'}</span>
+              <span className="text-slate-400 text-[9px] font-normal">{(snapshot.totalSavings || 0) > 0 ? 'this year' : 'this year'}</span>
             </div>
           </div>
 
@@ -460,11 +460,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             <div>
               <div className="text-[10px] font-bold text-sky-300/90 leading-tight">Goals</div>
               <div className="text-sm sm:text-base font-black text-sky-100 mt-1">
-                {goals.length > 0 ? `${goals.filter(g => g.current_amount >= g.target_amount).length}/${goals.length}` : '2/5'}
+                {goals && goals.length > 0 ? `${goals.filter(g => g.current_amount >= g.target_amount).length}/${goals.length}` : '0/0'}
               </div>
             </div>
             <div className="text-[10px] font-bold text-sky-400 mt-2">
-              On Track
+              {goals && goals.length > 0 ? 'On Track' : '0 Active'}
             </div>
           </div>
         </div>

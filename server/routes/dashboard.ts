@@ -147,10 +147,11 @@ router.get('/:id/dashboard', (req: AuthRequest, res) => {
     role: user.role,
     snapshot: {
       membersCount: members.length,
-      netWorth: hasInvestments ? netWorth : null,
-      monthlySpending: hasFinance ? monthlySpending : null,
-      monthlyBudget: hasFinance ? monthlyBudget : null,
-      savingsGoalPct: hasFinance ? savingsGoalPct : null,
+      netWorth: hasInvestments ? netWorth : 0,
+      totalSavings: hasInvestments ? totalAssets : 0,
+      monthlySpending: hasFinance ? monthlySpending : 0,
+      monthlyBudget: hasFinance ? monthlyBudget : 0,
+      savingsGoalPct: hasFinance ? savingsGoalPct : 0,
     },
 
     attentionItems: filteredAttention,
