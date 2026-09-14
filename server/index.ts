@@ -25,11 +25,18 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Ensure seed data exists on startup
-if (db.getTable('users').length === 0) {
-  console.log('⚡ Initializing and seeding Sharma Family demo data...');
-  seedDatabase();
-}
+// Hydrate persistent data from Supabase Cloud on startup
+db.hydrateFromSupabase().then(() => {
+  if (db.getTable('users').length === 0) {
+    console.log('⚡ Initializing and seeding Sharma Family demo data...');
+    seedDatabase();
+  }
+}).catch((err) => {
+  console.warn('⚠️ Supabase hydration note:', err);
+  if (db.getTable('users').length === 0) {
+    seedDatabase();
+  }
+});
 
 // Root & Health Check Endpoints
 app.get('/', (req, res) => {

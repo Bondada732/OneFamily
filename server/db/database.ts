@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { syncRecordToSupabase } from './supabaseClient.js';
+import { syncRecordToSupabase, fetchAllFromSupabase, isSupabaseConfigured } from './supabaseClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -104,6 +104,74 @@ class DatabaseService {
       fs.writeFileSync(DATA_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
     } catch (err) {
       console.error('Failed to persist database:', err);
+    }
+  }
+
+  public async hydrateFromSupabase(): Promise<boolean> {
+    if (!isSupabaseConfigured()) {
+      console.log('ℹ️ Supabase not configured in environment. Using local file store.');
+      return false;
+    }
+
+    try {
+      console.log('🔄 Hydrating database from Supabase Cloud...');
+      const tables: (keyof DBStore)[] = [
+        'families',
+        'users',
+        'permissions',
+        'member_permissions',
+        'devices',
+        'audit_logs',
+        'expense_categories',
+        'expenses',
+        'budgets',
+        'investments',
+        'insurance_policies',
+        'liabilities',
+        'goals',
+        'calendar_events',
+        'reminders',
+        'document_categories',
+        'documents',
+        'emergency_contacts',
+        'emergency_profiles',
+        'memories',
+        'tasks',
+        'grocery_items',
+        'maintenance_items',
+        'notifications',
+        'ai_conversations',
+      ];
+
+      // Check if users exist in Supabase
+      const remoteUsers = await fetchAllFromSupabase('users');
+      if (remoteUsers.length === 0) {
+        console.log('ℹ️ Supabase tables empty. Using local store as base.');
+        return false;
+      }
+
+      for (const table of tables) {
+        const records = await fetchAllFromSupabase(table as string);
+        if (records && records.length > 0) {
+          this.data[table] = records.map((r: any) => {
+            const copy = { ...r };
+            if (copy.photos && typeof copy.photos === 'string' && copy.photos.startsWith('[')) {
+              try { copy.photos = JSON.parse(copy.photos); } catch {}
+            }
+            if (copy.tagged_members && typeof copy.tagged_members === 'string' && copy.tagged_members.startsWith('[')) {
+              try { copy.tagged_members = JSON.parse(copy.tagged_members); } catch {}
+            }
+            return copy;
+          }) as any;
+        }
+      }
+
+      this.save();
+      console.log(`✅ Successfully hydrated ${remoteUsers.length} users and all tables from Supabase Cloud!`);
+      return true;
+    } catch (err) {
+      console.error('⚠️ Failed to hydrate database from Supabase:', err);
+      return false;
     }
   }
 

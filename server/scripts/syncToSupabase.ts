@@ -139,11 +139,22 @@ async function syncAllToSupabase() {
           copy.is_approved = Boolean(copy.is_approved);
         }
 
+        // Remove columns that don't exist in Supabase SQL tables
+        if (t.name === 'users') {
+          delete copy.is_email_verified;
+        } else if (t.name === 'expense_categories') {
+          delete copy.created_at;
+        } else if (t.name === 'expenses') {
+          delete copy.updated_at;
+        } else if (t.name === 'emergency_profiles') {
+          delete copy.created_at;
+        }
+
         return copy;
       });
 
-      // Split into chunks of 100 to avoid payload size limits
-      const chunkSize = 100;
+      // Split into smaller chunks for large binary columns (like avatar_url) to avoid timeouts
+      const chunkSize = t.name === 'users' ? 1 : 50;
       for (let i = 0; i < sanitized.length; i += chunkSize) {
         const chunk = sanitized.slice(i, i + chunkSize);
         const { error } = await supabase

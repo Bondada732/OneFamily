@@ -41,6 +41,41 @@ export function getSupabaseClient(): SupabaseClient | null {
 }
 
 /**
+ * Remove non-schema fields and format data types before sending to Supabase
+ */
+export function sanitizeForSupabase(tableName: string, record: any): any {
+  if (!record || typeof record !== 'object') return record;
+  const copy: any = { ...record };
+
+  // Convert complex objects/arrays to string for text columns
+  if (copy.contributors && typeof copy.contributors !== 'string') {
+    copy.contributors = JSON.stringify(copy.contributors);
+  }
+  if (copy.photos && typeof copy.photos !== 'string') {
+    copy.photos = JSON.stringify(copy.photos);
+  }
+  if (copy.tagged_members && typeof copy.tagged_members !== 'string') {
+    copy.tagged_members = JSON.stringify(copy.tagged_members);
+  }
+  if (copy.tools_called && typeof copy.tools_called !== 'string') {
+    copy.tools_called = JSON.stringify(copy.tools_called);
+  }
+
+  // Remove columns that don't exist in the current Supabase SQL schema
+  if (tableName === 'users') {
+    delete copy.is_email_verified;
+  } else if (tableName === 'expense_categories') {
+    delete copy.created_at;
+  } else if (tableName === 'expenses') {
+    delete copy.updated_at;
+  } else if (tableName === 'emergency_profiles') {
+    delete copy.created_at;
+  }
+
+  return copy;
+}
+
+/**
  * Asynchronously sync an individual record action to Supabase
  */
 export async function syncRecordToSupabase(
@@ -51,10 +86,12 @@ export async function syncRecordToSupabase(
   if (!supabase) return false;
 
   try {
+    const sanitized = sanitizeForSupabase(tableName, record);
     if (action === 'insert' || action === 'update') {
+      const conflictKey = tableName === 'member_permissions' ? 'user_id,permission_code' : 'id';
       const { error } = await supabase
         .from(tableName)
-        .upsert(record, { onConflict: 'id' });
+        .upsert(sanitized, { onConflict: conflictKey });
 
       if (error) {
         console.warn(`[Supabase Sync] Error upserting into ${tableName}:`, error.message);
@@ -62,6 +99,13 @@ export async function syncRecordToSupabase(
       }
       return true;
     } else if (action === 'delete') {
+      if (tableName === 'member_permissions') {
+        const { error } = await supabase
+          .from(tableName)
+          .delete()
+          .match({ user_id: record.user_id, permission_code: record.permission_code });
+        return !error;
+      }
       const { error } = await supabase
         .from(tableName)
         .delete()
@@ -91,18 +135,44 @@ export async function syncBatchToSupabase(
   if (!records || records.length === 0) return { count: 0 };
 
   try {
-    const { data, error } = await supabase
-      .from(tableName)
-      .upsert(records, { onConflict: tableName === 'member_permissions' ? 'user_id,permission_code' : 'id' });
+    const sanitized = records.map((r) => sanitizeForSupabase(tableName, r));
+    const conflictKey = tableName === 'member_permissions' ? 'user_id,permission_code' : 'id';
+    
+    // Chunking to prevent large payload errors
+    const chunkSize = 100;
+    for (let i = 0; i < sanitized.length; i += chunkSize) {
+      const chunk = sanitized.slice(i, i + chunkSize);
+      const { error } = await supabase
+        .from(tableName)
+        .upsert(chunk, { onConflict: conflictKey });
 
-    if (error) {
-      console.error(`[Supabase Bulk Sync] Error for ${tableName}:`, error);
-      return { count: 0, error: error.message };
+      if (error) {
+        console.error(`[Supabase Bulk Sync] Error for ${tableName}:`, error);
+        return { count: 0, error: error.message };
+      }
     }
     return { count: records.length };
   } catch (err: any) {
     console.error(`[Supabase Bulk Sync] Exception for ${tableName}:`, err);
     return { count: 0, error: err?.message || 'Sync failed' };
+  }
+}
+
+/**
+ * Fetch all records for a table from Supabase
+ */
+export async function fetchAllFromSupabase(tableName: string): Promise<any[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase.from(tableName).select('*');
+    if (error) {
+      console.warn(`[Supabase Fetch] Error fetching ${tableName}:`, error.message);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn(`[Supabase Fetch] Exception fetching ${tableName}:`, err);
+    return [];
   }
 }
 
