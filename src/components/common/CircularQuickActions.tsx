@@ -139,57 +139,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
   ];
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -220, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 220, behavior: 'smooth' });
-    }
-  };
-
   return (
-    <div className="relative w-full py-1">
-      {/* Header bar with count and scrolling buttons */}
-      <div className="flex items-center justify-between px-1 mb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#16C7F2] shadow-[0_0_8px_#16C7F2] animate-pulse" />
-          <span className="text-xs font-black text-white tracking-wide uppercase">
-            Quick Actions
-          </span>
-          <span className="text-[10px] text-slate-400 font-medium">
-            (Swipe left & right)
-          </span>
-        </div>
-
-        {/* Scroll Control Buttons */}
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={scrollLeft}
-            className="w-7 h-7 rounded-full bg-[#0D152D] border border-slate-700/80 hover:border-[#00D2FF] hover:text-[#00D2FF] flex items-center justify-center text-slate-300 transition-all active:scale-90 shadow-md"
-            title="Scroll Left"
-          >
-            <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
-          </button>
-          <button
-            type="button"
-            onClick={scrollRight}
-            className="w-7 h-7 rounded-full bg-[#0D152D] border border-slate-700/80 hover:border-[#00D2FF] hover:text-[#00D2FF] flex items-center justify-center text-slate-300 transition-all active:scale-90 shadow-md"
-            title="Scroll Right"
-          >
-            <ChevronRight className="w-4 h-4 stroke-[2.5]" />
-          </button>
-        </div>
-      </div>
-
+    <div className="relative w-full py-0.5">
       {/* Single-Line Horizontal Neon Cards Track */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory py-2 px-1 scroll-smooth"
+        className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-1 scroll-smooth"
         style={{
           WebkitOverflowScrolling: 'touch',
         }}

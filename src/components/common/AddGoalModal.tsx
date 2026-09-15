@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Check,
@@ -153,22 +153,22 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#19C9A7]/40 rounded-[28px] p-4 sm:p-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(3,25,74,0.98)] space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+      <div className="w-full max-w-md bg-[#0B1226] border-2 border-[#10B981]/40 rounded-[28px] p-4 sm:p-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
         {/* Header */}
         <div className="flex items-center justify-between pb-1">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-[#19C9A7]/20 text-[#55D98A] border border-[#19C9A7]/40">
+            <div className="p-2 rounded-xl bg-[#10B981]/20 text-[#34D399] border border-[#10B981]/40">
               <Target className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-white tracking-tight">Set Financial Goal</h3>
-              <p className="text-[10px] text-[#B9D8FF]">Synced with Family Wealth & SIP planner</p>
+              <p className="text-[10px] text-slate-400">Synced with Family Wealth & SIP planner</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[#073B9E] text-[#B9D8FF] hover:text-white transition-colors"
+            className="p-1.5 rounded-full hover:bg-[#0D152D] text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

@@ -36,33 +36,56 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
   const displayName = family?.name || `${currentUser?.name?.split(' ')[0] || 'My'} Family`;
 
   return (
-    <header className="sticky top-0 z-40 bg-[#080D1A]/95 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 shadow-md shadow-black/50">
+    <header className="sticky top-0 z-40 bg-[#080D1A]/95 backdrop-blur-xl border-b border-slate-800/80 px-4 py-2.5 shadow-md shadow-black/50">
       <div className="flex items-center justify-between">
-        {/* Left: Family Profile Pill */}
-        <div className="relative">
+        {/* Left: KinoraOne Logo & Brand Name */}
+        <div className="flex items-center gap-2.5">
+          <img
+            src="/kinoraone-logo.png"
+            alt="KinoraOne"
+            className="w-8 h-8 rounded-xl object-cover shadow-md ring-1 ring-white/15 shrink-0"
+          />
+          <div>
+            <h1 className="text-base font-black text-white tracking-tight leading-none">
+              Kinora<span className="text-[#16C7F2]">One</span>
+            </h1>
+            <p className="text-[9.5px] text-slate-400 font-medium tracking-wide mt-0.5">
+              One Home • One Family
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Search, Notifications & Profile Menu Toggle */}
+        <div className="flex items-center gap-2 relative">
+          <button
+            onClick={onOpenSearch}
+            className="w-8 h-8 rounded-full bg-[#0D152D] hover:bg-[#131F3F] active:scale-95 border border-slate-700/70 flex items-center justify-center text-slate-200 hover:text-white transition-all shadow-sm"
+            title="Search"
+          >
+            <Search className="w-3.5 h-3.5 stroke-[2.2]" />
+          </button>
+
+          <button
+            onClick={onOpenNotifications}
+            className="relative w-8 h-8 rounded-full bg-[#0D152D] hover:bg-[#131F3F] active:scale-95 border border-slate-700/70 flex items-center justify-center text-slate-200 hover:text-white transition-all shadow-sm"
+            title="Notifications"
+          >
+            <Bell className="w-3.5 h-3.5 stroke-[2.2]" />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF4D6D] ring-2 ring-[#080D1A] animate-pulse"></span>
+          </button>
+
+          {/* Profile Menu Trigger */}
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-2.5 text-left group active:scale-98 transition-all"
+            className="relative active:scale-95 transition-all"
+            title="Account & Family Settings"
           >
-            <div className="relative">
-              <img
-                src={currentUser?.avatar_url || family?.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-                alt={currentUser?.name}
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-[#16C7F2]/60 group-hover:ring-[#16C7F2] shadow-md"
-              />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#10B981] ring-2 ring-[#080D1A]"></span>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-sm font-bold text-white tracking-tight group-hover:text-[#7EDCFF] transition-colors">
-                  {displayName}
-                </h1>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
-              </div>
-              <p className="text-[10px] text-slate-400 font-medium tracking-wide">
-                One Home • One Family • One Future
-              </p>
-            </div>
+            <img
+              src={currentUser?.avatar_url || family?.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+              alt={currentUser?.name}
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-[#16C7F2]/60 hover:ring-[#16C7F2] shadow-sm"
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#080D1A]"></span>
           </button>
 
           {/* Backdrop overlay to close when clicking outside */}
@@ -78,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
 
           {/* Profile & Family Settings Dropdown */}
           {showProfileMenu && (
-            <div className="absolute top-full left-0 mt-2 w-80 bg-[#0B1226] border border-slate-700/80 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.95)] p-3.5 z-50 text-[#F4F8FF] animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-white/10">
+            <div className="absolute top-full right-0 mt-2 w-80 bg-[#0B1226] border border-slate-700/80 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.95)] p-3.5 z-50 text-[#F4F8FF] animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-white/10">
               {/* User Profile Header */}
               <div className="p-3 bg-[#0E1730] rounded-2xl border border-slate-700/60 mb-2.5 shadow-md">
                 <div className="flex items-center gap-3">

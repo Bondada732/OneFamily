@@ -296,15 +296,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   if (isLoading || !dashboard) {
     return (
       <div className="p-4 space-y-4 animate-pulse">
-        <div className="h-10 w-48 bg-[#073B9E]/50 rounded-xl"></div>
-        <div className="h-44 bg-[#073B9E]/40 rounded-3xl"></div>
+        <div className="h-10 w-48 bg-[#0D152D] rounded-xl"></div>
+        <div className="h-44 bg-[#0D152D] rounded-3xl"></div>
         <div className="grid grid-cols-4 gap-2.5">
-          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
-          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
-          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
-          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
+          <div className="h-20 bg-[#0D152D] rounded-2xl"></div>
+          <div className="h-20 bg-[#0D152D] rounded-2xl"></div>
+          <div className="h-20 bg-[#0D152D] rounded-2xl"></div>
+          <div className="h-20 bg-[#0D152D] rounded-2xl"></div>
         </div>
-        <div className="h-32 bg-[#073B9E]/40 rounded-3xl"></div>
+        <div className="h-32 bg-[#0D152D] rounded-3xl"></div>
       </div>
     );
   }
@@ -316,32 +316,36 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const locationCity = family?.location?.split(',')[0] || 'India';
 
   return (
-    <div className="p-4 space-y-4 text-[#F4F8FF] pb-24 animate-in fade-in duration-300">
-      {/* 1. Greeting with KinoraOne App Logo Top Left & Weather Pill */}
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-3">
-          {/* KinoraOne App Logo */}
-          <img
-            src="/kinoraone-logo.png"
-            alt="KinoraOne"
-            className="w-11 h-11 rounded-2xl object-cover shadow-lg ring-1 ring-white/15 shrink-0"
-          />
+    <div className="p-3.5 space-y-3.5 text-[#F4F8FF] pb-24 animate-in fade-in duration-300">
+      {/* 2nd Line: Profile Avatar + Small Greeting + Temperature */}
+      <div className="flex items-center justify-between pt-0.5">
+        <div className="flex items-center gap-2.5">
+          {/* User Profile Avatar */}
+          <div className="relative shrink-0">
+            <img
+              src={currentUser?.avatar_url || family?.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+              alt={currentUser?.name || 'Rambabu'}
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-[#16C7F2]/60 shadow-md"
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#080D1A]"></span>
+          </div>
+
           <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+            <div className="flex items-center gap-1">
+              <span className="text-xs sm:text-sm font-semibold text-slate-200">
                 {getGreeting()},{' '}
-                <span className="text-white font-extrabold">{firstName}</span>
-              </h2>
-              <span className="text-sm">👋</span>
+                <strong className="text-white font-black">{firstName}</strong>
+              </span>
+              <span className="text-xs">👋</span>
             </div>
-            <p className="text-[10.5px] text-slate-400 italic mt-0.5">
+            <p className="text-[10px] text-slate-400 italic mt-0.5 leading-tight">
               "Small steps today, big dreams tomorrow."
             </p>
           </div>
         </div>
 
         {/* Weather Card */}
-        <div className="flex items-center gap-1.5 bg-[#0D152D] border border-amber-500/30 px-3 py-1.5 rounded-full shadow-sm shrink-0">
+        <div className="flex items-center gap-1.5 bg-[#0D152D] border border-amber-500/30 px-2.5 py-1 rounded-full shadow-sm shrink-0">
           <Sun className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-[10px] text-slate-300 font-medium">{locationCity}</span>
           <span className="text-xs font-bold text-white">28°C</span>

@@ -61,27 +61,27 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-[#061F5C] border-t sm:border-2 border-[#168BFF]/40 rounded-t-3xl sm:rounded-3xl p-6 text-[#F4F8FF] shadow-[0_20px_60px_rgba(3,25,74,0.95)] space-y-4 max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between pb-2 border-b border-[#168BFF]/20">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="w-full max-w-md bg-[#0B1226] border-t sm:border-2 border-slate-700/80 rounded-t-3xl sm:rounded-3xl p-6 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4 max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#073B9E]/60 text-[#16C7F2] rounded-xl border border-[#168BFF]/30">
+            <div className="p-2 bg-[#0D152D] text-[#16C7F2] rounded-xl border border-slate-700/60">
               <Bell className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">Family Notifications</h3>
-              <p className="text-xs text-[#B9D8FF]">Important reminders, bill dues & alerts</p>
+              <p className="text-xs text-slate-400">Important reminders, bill dues & alerts</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-[#073B9E] text-[#B9D8FF] hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-[#0D152D] text-slate-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
-          {loading && <div className="text-center py-6 text-xs text-[#B9D8FF]">Loading alerts...</div>}
+          {loading && <div className="text-center py-6 text-xs text-slate-400">Loading alerts...</div>}
           {!loading && notifications.length === 0 && (
-            <div className="text-center py-8 text-xs text-[#91A8C7]">No active alerts. All clear! 🎉</div>
+            <div className="text-center py-8 text-xs text-slate-500">No active alerts. All clear! 🎉</div>
           )}
 
           {notifications.map((notif) => (
@@ -90,8 +90,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
               onClick={() => markAsRead(notif.id, notif.link_tab)}
               className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                 notif.is_read
-                  ? 'bg-[#03194A]/60 border-[#168BFF]/15 opacity-70'
-                  : 'bg-[#073B9E]/40 border-[#168BFF]/35 shadow-md hover:border-[#16C7F2]/60'
+                  ? 'bg-[#050811]/60 border-slate-800/80 opacity-60'
+                  : 'bg-[#0D152D] border-slate-700/70 shadow-md hover:border-[#16C7F2]/60'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -103,7 +103,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
                       <span className="w-2 h-2 rounded-full bg-[#FFD21F] shrink-0"></span>
                     )}
                   </div>
-                  <p className="text-xs text-[#B9D8FF] mt-1 leading-relaxed">{notif.message}</p>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{notif.message}</p>
                   {notif.link_tab && (
                     <div className="flex items-center gap-1 text-[11px] text-[#16C7F2] font-semibold mt-2 hover:underline">
                       <span>View in {notif.link_tab}</span>

@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  /* KinoraOne Core Brand Palette */
-  --kinora-deep-navy: #061F5C;
-  --kinora-dark-royal-blue: #073B9E;
-  --kinora-primary-blue: #0869E8;
-  --kinora-bright-blue: #168BFF;
+  /* KinoraOne Core Brand Palette - Deep Obsidian Dark Theme */
+  --kinora-deep-navy: #050811;
+  --kinora-dark-royal-blue: #080D1A;
+  --kinora-primary-blue: #168BFF;
+  --kinora-bright-blue: #16C7F2;
   --kinora-cyan: #16C7F2;
   --kinora-teal: #19C9A7;
   --kinora-mint-green: #55D98A;
@@ -22,25 +22,25 @@
 
   /* Typography / Text Tokens */
   --kinora-text-primary: #FFFFFF;
-  --kinora-text-secondary: #B9D8FF;
-  --kinora-text-muted: #91A8C7;
+  --kinora-text-secondary: #CBD5E1;
+  --kinora-text-muted: #94A3B8;
   --kinora-text-tagline: #7EDCFF;
   --kinora-text-highlight: #16C7F2;
   --kinora-text-quote: #A9DFFF;
 
   /* Backgrounds & Glass */
-  --kinora-bg-main: #061F5C;
-  --kinora-bg-gradient: linear-gradient(180deg, #061F5C 0%, #052B78 45%, #03194A 100%);
-  --kinora-header-bg: #073B9E;
-  --kinora-nav-bg: rgba(3, 25, 74, 0.94);
-  --kinora-glass-bg: rgba(255, 255, 255, 0.04);
+  --kinora-bg-main: #050811;
+  --kinora-bg-gradient: #050811;
+  --kinora-header-bg: #080D1A;
+  --kinora-nav-bg: rgba(8, 13, 26, 0.95);
+  --kinora-glass-bg: rgba(13, 21, 45, 0.7);
   --kinora-glass-border: rgba(255, 255, 255, 0.10);
 }
 
 @layer base {
-  body {
-    background-color: var(--kinora-deep-navy);
-    background-image: var(--kinora-bg-gradient);
+  html, body {
+    background-color: #050811;
+    background-image: none;
     color: var(--kinora-text-primary);
     min-height: 100vh;
     @apply antialiased font-sans;
@@ -50,15 +50,15 @@
 
 /* Reusable KinoraOne Theme Classes */
 .kinora-bg-gradient {
-  background: linear-gradient(180deg, #061F5C 0%, #052B78 45%, #03194A 100%);
+  background: #050811;
 }
 
 .kinora-glow-wealth {
-  background: radial-gradient(circle at 50% 30%, rgba(22, 139, 255, 0.16), transparent 55%);
+  background: radial-gradient(circle at 50% 30%, rgba(22, 199, 242, 0.12), transparent 60%);
 }
 
 .kinora-wealth-gradient {
-  background: linear-gradient(135deg, #073B9E 0%, #0869E8 55%, #168BFF 100%);
+  background: linear-gradient(135deg, #080D1A 0%, #0D152D 100%);
 }
 
 .kinora-plus-btn {
