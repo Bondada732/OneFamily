@@ -65,14 +65,14 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-[#061F5C] border-t sm:border-2 border-[#168BFF]/40 rounded-t-3xl sm:rounded-3xl p-6 text-[#F4F8FF] shadow-[0_20px_60px_rgba(3,25,74,0.95)] space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[#168BFF]/20">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="w-full max-w-md bg-[#0B1226] border-t sm:border border-slate-700/80 rounded-t-[28px] sm:rounded-[28px] p-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div>
             <h3 className="text-lg font-bold text-white">Create & Record</h3>
-            <p className="text-xs text-[#B9D8FF]">What would you like to add to KinoraOne?</p>
+            <p className="text-xs text-slate-400">What would you like to add to KinoraOne?</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-[#073B9E] text-[#B9D8FF] hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-[#0E1730] text-slate-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -90,8 +90,8 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
                 }}
                 className={`flex flex-col text-left p-3.5 rounded-2xl border transition-all ${
                   act.allowed
-                    ? 'hover:scale-[1.02] active:scale-95 bg-[#073B9E]/40 border-[#168BFF]/30 hover:border-[#16C7F2]/60 shadow-sm'
-                    : 'opacity-40 cursor-not-allowed bg-[#03194A] border-[#168BFF]/10'
+                    ? 'hover:scale-[1.02] active:scale-95 bg-[#0D152D] border-slate-700/70 hover:border-[#16C7F2]/60 shadow-sm'
+                    : 'opacity-40 cursor-not-allowed bg-[#050811] border-slate-800'
                 }`}
               >
                 <div className={`w-9 h-9 rounded-xl border flex items-center justify-center mb-2 ${act.color}`}>

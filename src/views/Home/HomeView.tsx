@@ -6,11 +6,23 @@ import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { apiRequest } from '../../utils/api.js';
 import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
+import { AddWishModal } from '../../components/common/AddWishModal.js';
+import { AddGoalModal } from '../../components/common/AddGoalModal.js';
+import { AddIncomeModal } from '../../components/common/AddIncomeModal.js';
+import { AddVaultModal } from '../../components/common/AddVaultModal.js';
+import { AddTaskModal } from '../../components/common/AddTaskModal.js';
+import { AddMaintenanceModal } from '../../components/common/AddMaintenanceModal.js';
+import { AddEmergencyModal } from '../../components/common/AddEmergencyModal.js';
+import { CircularQuickActions } from '../../components/common/CircularQuickActions.js';
 import {
   Receipt,
   Gift,
   Target,
   Wallet,
+  FolderLock,
+  CheckSquare,
+  Wrench,
+  ShieldAlert,
   Eye,
   EyeOff,
   ChevronRight,
@@ -39,41 +51,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [showWishListModal, setShowWishListModal] = useState(false);
   const [showSetGoalModal, setShowSetGoalModal] = useState(false);
   const [showAddIncomeModal, setShowAddIncomeModal] = useState(false);
-
-  // Form states
-  const [expenseForm, setExpenseForm] = useState({
-    amount: '',
-    merchant: '',
-    category_id: 'cat_groceries',
-    category_name: 'Groceries & Kirana',
-    payment_method: 'UPI',
-    date: getLocalDateString(),
-    notes: '',
-  });
-
-  const [incomeForm, setIncomeForm] = useState({
-    source: '',
-    amount: '',
-    type: 'SALARY',
-    date: getLocalDateString(),
-    notes: '',
-  });
-
-  const [goalForm, setGoalForm] = useState({
-    title: '',
-    category: 'PROPERTY',
-    target_amount: '',
-    current_amount: '0',
-    monthly_contribution: '10000',
-    target_date: '2028-12-31',
-    priority: 'HIGH' as 'HIGH' | 'MEDIUM' | 'LOW',
-  });
+  const [showVaultModal, setShowVaultModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
 
   // Shared Wishlist items state
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
-  const [newWishTitle, setNewWishTitle] = useState('');
-  const [newWishAmount, setNewWishAmount] = useState('');
-  const [newWishCategory, setNewWishCategory] = useState('WISH');
 
   // Load shared wishlist items from backend database
   const loadWishlist = async () => {
@@ -121,84 +105,73 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     }
   };
 
-  const handleAddIncome = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!family?.id || !incomeForm.amount) return;
+  const handleAddIncome = async (incomeData: {
+    source: string;
+    amount: string;
+    type: string;
+    date: string;
+    notes: string;
+  }) => {
+    if (!family?.id || !incomeData.amount) return;
     try {
       await apiRequest(`/investments/${family.id}/investments`, {
         method: 'POST',
         body: JSON.stringify({
-          title: incomeForm.source || 'Monthly Salary & Income',
+          title: incomeData.source || 'Monthly Salary & Income',
           type: 'FIXED_DEPOSIT',
           institution: 'Bank Credit / Direct Deposit',
-          invested_amount: Number(incomeForm.amount) || 0,
-          current_value: Number(incomeForm.amount) || 0,
-          notes: incomeForm.notes,
+          invested_amount: Number(incomeData.amount) || 0,
+          current_value: Number(incomeData.amount) || 0,
+          notes: incomeData.notes,
         }),
       });
       setShowAddIncomeModal(false);
-      setIncomeForm({
-        source: '',
-        amount: '',
-        type: 'SALARY',
-        date: getLocalDateString(),
-        notes: '',
-      });
       refreshDashboard();
     } catch (err) {
       console.error('Failed to record income:', err);
     }
   };
 
-  const handleCreateGoal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!family?.id || !goalForm.title.trim()) return;
+  const handleCreateGoal = async (goalData: {
+    title: string;
+    category: string;
+    target_amount: number;
+    current_amount: number;
+    monthly_contribution: number;
+    target_date: string;
+    priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  }) => {
+    if (!family?.id || !goalData.title.trim()) return;
     try {
       await apiRequest(`/goals/${family.id}/goals`, {
         method: 'POST',
-        body: JSON.stringify({
-          title: goalForm.title.trim(),
-          category: goalForm.category,
-          target_amount: Number(goalForm.target_amount) || 0,
-          current_amount: Number(goalForm.current_amount) || 0,
-          monthly_contribution: Number(goalForm.monthly_contribution) || 10000,
-          target_date: goalForm.target_date || '2028-12-31',
-          priority: goalForm.priority,
-        }),
+        body: JSON.stringify(goalData),
       });
       setShowSetGoalModal(false);
-      setGoalForm({
-        title: '',
-        category: 'PROPERTY',
-        target_amount: '',
-        current_amount: '0',
-        monthly_contribution: '10000',
-        target_date: '2028-12-31',
-        priority: 'HIGH',
-      });
       refreshDashboard();
     } catch (err) {
       console.error('Failed to create goal:', err);
     }
   };
 
-  const handleAddWish = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newWishTitle.trim() || !family?.id) return;
+  const handleAddWish = async (wishData: {
+    item_name: string;
+    category: string;
+    estimated_cost: number;
+    notes?: string;
+  }) => {
+    if (!wishData.item_name.trim() || !family?.id) return;
     try {
       const created = await apiRequest(`/tasks/${family.id}/grocery`, {
         method: 'POST',
         body: JSON.stringify({
-          item_name: newWishTitle.trim(),
-          quantity: newWishAmount ? `₹${Number(newWishAmount).toLocaleString('en-IN')}` : '1 unit',
-          category: newWishCategory || 'WISH',
-          estimated_cost: Number(newWishAmount) || 0,
+          item_name: wishData.item_name.trim(),
+          quantity: wishData.estimated_cost ? `₹${Number(wishData.estimated_cost).toLocaleString('en-IN')}` : '1 unit',
+          category: wishData.category || 'WISH',
+          estimated_cost: Number(wishData.estimated_cost) || 0,
         }),
       });
       setWishlistItems((prev) => [...prev, created]);
-      setNewWishTitle('');
-      setNewWishAmount('');
-      setNewWishCategory('WISH');
     } catch (err) {
       console.error('Failed to add wish item:', err);
     }
@@ -228,6 +201,98 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     }
   };
 
+  const handleCreateVaultDoc = async (vaultData: {
+    title: string;
+    category: string;
+    document_number?: string;
+    holder_name?: string;
+    expiry_date?: string;
+    notes?: string;
+  }) => {
+    if (!family?.id || !vaultData.title.trim()) return;
+    try {
+      await apiRequest(`/documents/${family.id}/documents`, {
+        method: 'POST',
+        body: JSON.stringify(vaultData),
+      });
+      setShowVaultModal(false);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to add document to vault:', err);
+    }
+  };
+
+  const handleCreateTask = async (taskData: {
+    title: string;
+    category: string;
+    priority: 'HIGH' | 'MEDIUM' | 'LOW';
+    assigned_to_name?: string;
+    due_date?: string;
+    notes?: string;
+  }) => {
+    if (!family?.id || !taskData.title.trim()) return;
+    try {
+      await apiRequest(`/tasks/${family.id}/tasks`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: taskData.title,
+          category: taskData.category,
+          priority: taskData.priority,
+          assigned_to_name: taskData.assigned_to_name,
+          due_date: taskData.due_date,
+          status: 'PENDING',
+        }),
+      });
+      setShowTaskModal(false);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to create task:', err);
+    }
+  };
+
+  const handleCreateMaintenance = async (maintenanceData: {
+    item_name: string;
+    service_type: string;
+    cost?: number;
+    service_provider?: string;
+    contact_phone?: string;
+    next_service_due?: string;
+    notes?: string;
+  }) => {
+    if (!family?.id || !maintenanceData.item_name.trim()) return;
+    try {
+      await apiRequest(`/tasks/${family.id}/maintenance`, {
+        method: 'POST',
+        body: JSON.stringify(maintenanceData),
+      });
+      setShowMaintenanceModal(false);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to add maintenance record:', err);
+    }
+  };
+
+  const handleCreateEmergencyContact = async (contactData: {
+    contact_name: string;
+    phone: string;
+    relationship: string;
+    category?: string;
+    blood_group?: string;
+    notes?: string;
+  }) => {
+    if (!family?.id || !contactData.contact_name.trim() || !contactData.phone.trim()) return;
+    try {
+      await apiRequest(`/emergency/${family.id}/emergency/contacts`, {
+        method: 'POST',
+        body: JSON.stringify(contactData),
+      });
+      setShowEmergencyModal(false);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to add emergency contact:', err);
+    }
+  };
+
   if (isLoading || !dashboard) {
     return (
       <div className="p-4 space-y-4 animate-pulse">
@@ -252,59 +317,77 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
   return (
     <div className="p-4 space-y-4 text-[#F4F8FF] pb-24 animate-in fade-in duration-300">
-      {/* 1. Greeting & Weather Banner */}
+      {/* 1. Greeting with KinoraOne App Logo Top Left & Weather Pill */}
       <div className="flex items-center justify-between pt-1">
-        <div>
-          <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-1.5">
-            <span>{getGreeting()},</span>{' '}
-            <span className="text-[#16C7F2] font-black">{firstName}</span>{' '}
-            <span className="inline-block animate-wave origin-bottom-right">👋</span>
-          </h2>
-          <p className="text-[11px] text-[#A9DFFF] mt-0.5 italic">
-            "Small steps today, big dreams tomorrow."
-          </p>
+        <div className="flex items-center gap-3">
+          {/* KinoraOne App Logo */}
+          <img
+            src="/kinoraone-logo.png"
+            alt="KinoraOne"
+            className="w-11 h-11 rounded-2xl object-cover shadow-lg ring-1 ring-white/15 shrink-0"
+          />
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                {getGreeting()},{' '}
+                <span className="text-white font-extrabold">{firstName}</span>
+              </h2>
+              <span className="text-sm">👋</span>
+            </div>
+            <p className="text-[10.5px] text-slate-400 italic mt-0.5">
+              "Small steps today, big dreams tomorrow."
+            </p>
+          </div>
         </div>
 
         {/* Weather Card */}
-        <div className="flex items-center gap-2 bg-[rgba(7,59,158,0.55)] border border-[#168BFF]/45 px-3 py-1.5 rounded-2xl shadow-sm backdrop-blur-sm">
-          <div className="p-1 rounded-xl bg-[#FFD21F]/20 text-[#FFD21F]">
-            <Sun className="w-4 h-4 animate-spin-slow" />
-          </div>
-          <div className="text-right leading-none">
-            <div className="text-[10px] text-[#B9D8FF] font-medium">{locationCity}</div>
-            <div className="text-xs font-bold text-white mt-0.5">28°C</div>
-          </div>
+        <div className="flex items-center gap-1.5 bg-[#0D152D] border border-amber-500/30 px-3 py-1.5 rounded-full shadow-sm shrink-0">
+          <Sun className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-[10px] text-slate-300 font-medium">{locationCity}</span>
+          <span className="text-xs font-bold text-white">28°C</span>
         </div>
       </div>
 
-      {/* 2. Family Wealth Hero Card (KinoraOne Premium Multi-Stage Brand Gradient) */}
+      {/* 2. 8 Quick Action Tabs (Single-Row 3D Revolving Circular Carousel - 1x2 Inch Cards) */}
+      <CircularQuickActions
+        onAddExpense={() => setShowAddExpenseModal(true)}
+        onWishList={() => setShowWishListModal(true)}
+        onSetGoal={() => setShowSetGoalModal(true)}
+        onAddIncome={() => setShowAddIncomeModal(true)}
+        onVault={() => setShowVaultModal(true)}
+        onTasks={() => setShowTaskModal(true)}
+        onMaintenance={() => setShowMaintenanceModal(true)}
+        onEmergency={() => setShowEmergencyModal(true)}
+      />
+
+      {/* 3. Family Wealth Hero Card (Positioned BELOW Action Buttons, ABOVE Quick Overview) */}
       <div
         onClick={() => onNavigateTab('money')}
-        className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#073B9E] via-[#0869E8] to-[#168BFF] border border-[#168BFF]/80 p-4 shadow-[0_8px_30px_rgba(22,139,255,0.20)] cursor-pointer group hover:border-[#16C7F2] transition-all"
+        className="relative overflow-hidden rounded-[24px] bg-[#0D152D] border border-slate-800/90 p-4 shadow-xl cursor-pointer group hover:border-[#16C7F2]/50 transition-all"
       >
-        {/* Subtle radial glow overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(22,139,255,0.18),transparent_60%)] pointer-events-none" />
+        {/* Subtle glow overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(22,199,242,0.08),transparent_70%)] pointer-events-none" />
 
         <div className="flex items-center justify-between mb-2 relative z-10">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-xl bg-white/15 text-[#FFD21F] backdrop-blur-xs border border-white/20">
+            <div className="p-1.5 rounded-xl bg-amber-400/15 text-amber-400 border border-amber-400/25">
               <Sun className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-bold text-white tracking-wide">Family Wealth</span>
+            <span className="text-xs font-bold text-slate-200 tracking-wide">Family Wealth</span>
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 togglePrivacyMode();
               }}
-              className="p-1 rounded-md text-[#B9E9FF] hover:text-white transition-colors"
+              className="p-1 rounded-md text-slate-400 hover:text-white transition-colors"
               title="Toggle Privacy Mask"
             >
-              {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5 text-[#FFD21F]" /> : <Eye className="w-3.5 h-3.5 text-[#B9E9FF]" />}
+              {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-400" /> : <Eye className="w-3.5 h-3.5 text-slate-400" />}
             </button>
           </div>
 
-          <div className="w-6 h-6 rounded-full bg-white/15 group-hover:bg-white/25 border border-white/20 flex items-center justify-center text-white group-hover:translate-x-0.5 transition-all">
+          <div className="w-6 h-6 rounded-full bg-slate-800/80 group-hover:bg-slate-700/80 border border-slate-700/60 flex items-center justify-center text-slate-300 group-hover:translate-x-0.5 transition-all">
             <ChevronRight className="w-3.5 h-3.5" />
           </div>
         </div>
@@ -315,28 +398,25 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               {isPrivacyMode ? '••••••••' : formatCurrency(netWorthDisplay, false)}
             </div>
 
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[rgba(25,201,167,0.16)] border border-[#19C9A7]/50 text-[#55D98A] text-[11px] font-bold">
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-[#34D399] text-[11px] font-bold">
               <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
               <span>12% this month</span>
             </div>
           </div>
 
-          {/* Embedded Multi-Stage Brand Gradient Wave Sparkline Graph */}
+          {/* Embedded Sparkline Graph */}
           <div className="w-36 h-14 -mr-1">
             <svg viewBox="0 0 120 50" className="w-full h-full overflow-visible">
               <defs>
-                {/* Area Fill Gradient: Soft Transparent Brand Fill */}
                 <linearGradient id="kinoraGraphFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#168BFF" stopOpacity="0.30" />
-                  <stop offset="50%" stopColor="#16C7F2" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#073B9E" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#168BFF" stopOpacity="0.25" />
+                  <stop offset="60%" stopColor="#16C7F2" stopOpacity="0.08" />
+                  <stop offset="100%" stopColor="#0D152D" stopOpacity="0.0" />
                 </linearGradient>
-                {/* Multi-Stage Brand Stroke Gradient: Blue -> Cyan -> Teal -> Lime */}
                 <linearGradient id="kinoraGraphLine" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#168BFF" />
-                  <stop offset="35%" stopColor="#16C7F2" />
-                  <stop offset="70%" stopColor="#19C9A7" />
-                  <stop offset="100%" stopColor="#B9F36B" />
+                  <stop offset="50%" stopColor="#16C7F2" />
+                  <stop offset="100%" stopColor="#34D399" />
                 </linearGradient>
               </defs>
               <path
@@ -350,65 +430,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 strokeWidth="2.8"
                 strokeLinecap="round"
               />
-              {/* Final Growth Peak Indicator */}
-              <circle cx="120" cy="6" r="3.5" fill="#B9F36B" className="animate-ping" opacity="0.75" />
-              <circle cx="120" cy="6" r="3" fill="#B9F36B" />
+              <circle cx="120" cy="6" r="3" fill="#34D399" />
             </svg>
           </div>
         </div>
       </div>
 
-      {/* 3. 4 Quick Actions in KinoraOne Brand Palette Boxes */}
-      <div className="grid grid-cols-4 gap-2 pt-1">
-        {/* Action 1: Add Expense (Kinora Orange / Gold Accent) */}
-        <button
-          onClick={() => setShowAddExpenseModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(255,138,36,0.16)] to-[rgba(7,59,158,0.35)] border border-[rgba(255,138,36,0.55)] hover:border-[#FF8A24] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-[rgba(255,138,36,0.16)] border border-[#FF8A24]/40 flex items-center justify-center text-[#FFD21F] group-hover:bg-[#FF8A24] group-hover:text-white transition-all mb-1 shadow-sm">
-            <Receipt className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <span className="text-[11px] font-bold text-white text-center leading-tight">Add Expense</span>
-        </button>
-
-        {/* Action 2: Wish List (Kinora Cyan / Bright Blue Accent) */}
-        <button
-          onClick={() => setShowWishListModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(22,199,242,0.15)] to-[rgba(7,59,158,0.35)] border border-[rgba(22,199,242,0.50)] hover:border-[#16C7F2] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-[rgba(22,199,242,0.15)] border border-[#16C7F2]/40 flex items-center justify-center text-[#16C7F2] group-hover:bg-[#16C7F2] group-hover:text-white transition-all mb-1 shadow-sm">
-            <Gift className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <span className="text-[11px] font-bold text-white text-center leading-tight">Wish List</span>
-        </button>
-
-        {/* Action 3: Set Goal (Kinora Teal / Mint Green Accent) */}
-        <button
-          onClick={() => setShowSetGoalModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(25,201,167,0.15)] to-[rgba(7,59,158,0.35)] border border-[rgba(25,201,167,0.50)] hover:border-[#55D98A] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-[rgba(25,201,167,0.15)] border border-[#19C9A7]/40 flex items-center justify-center text-[#55D98A] group-hover:bg-[#55D98A] group-hover:text-white transition-all mb-1 shadow-sm">
-            <Target className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <span className="text-[11px] font-bold text-white text-center leading-tight">Set Goal</span>
-        </button>
-
-        {/* Action 4: Add Income (Kinora Bright Blue / Cyan Accent) */}
-        <button
-          onClick={() => setShowAddIncomeModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(22,139,255,0.16)] to-[rgba(7,59,158,0.35)] border border-[rgba(22,139,255,0.50)] hover:border-[#168BFF] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-[rgba(22,139,255,0.16)] border border-[#168BFF]/40 flex items-center justify-center text-[#7EDCFF] group-hover:bg-[#168BFF] group-hover:text-white transition-all mb-1 shadow-sm">
-            <Wallet className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <span className="text-[11px] font-bold text-white text-center leading-tight">Add Income</span>
-        </button>
-      </div>
-
-      {/* 4. Quick Overview (3 Premium Financial Summary Cards) */}
+      {/* 4. Quick Overview (3 Dark Cards Matching Image 1) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-white tracking-tight">Quick Overview</h3>
+          <h3 className="text-sm font-bold text-white tracking-tight">Quick Overview</h3>
           <button
             onClick={() => onNavigateTab('money')}
             className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
@@ -419,71 +450,63 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
 
         <div className="grid grid-cols-3 gap-2.5">
-          {/* Card 1: Monthly Spending (Orange/Yellow Accent) */}
+          {/* Card 1: Monthly Spending (Red/Pink Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-[22px] bg-gradient-to-br from-[rgba(255,185,31,0.14)] to-[rgba(255,138,36,0.08)] border border-[rgba(255,185,31,0.45)] shadow-lg shadow-[#061F5C]/40 flex flex-col justify-between hover:border-[#FFB91F] transition-all cursor-pointer group"
+            className="p-3.5 rounded-[22px] bg-[#0D152D] border border-[#FF4D6D]/30 hover:border-[#FF4D6D]/60 shadow-lg flex flex-col justify-between transition-all cursor-pointer group"
           >
             <div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 rounded-full bg-[#FFD21F]/20 text-[#FFD21F] flex items-center justify-center text-[10px] font-black">₹</div>
-                <div className="text-[10px] font-bold text-[#FFD21F] leading-tight">Monthly Spending</div>
-              </div>
+              <div className="text-[10px] font-bold text-[#FF8A70] leading-tight">Monthly Spending</div>
               <div className="text-sm sm:text-base font-black text-white mt-1.5">
                 {isPrivacyMode ? '••••' : formatCurrency(snapshot.monthlySpending || 0, false)}
               </div>
             </div>
             <div className="text-[10px] font-bold text-[#FF8A70] mt-2 flex items-center gap-0.5">
-              <span>{(snapshot.monthlySpending || 0) > 0 ? '↓ 8%' : '₹0 spent'}</span>
-              <span className="text-[#B9D8FF]/70 text-[9px] font-normal">{(snapshot.monthlySpending || 0) > 0 ? 'vs last mo' : 'this month'}</span>
+              <span>{(snapshot.monthlySpending || 0) > 0 ? '↓ 8%' : '₹0'}</span>
+              <span className="text-slate-400 text-[9px] font-normal">{(snapshot.monthlySpending || 0) > 0 ? 'vs last mo' : 'this month'}</span>
             </div>
           </div>
 
-          {/* Card 2: Savings (Teal/Green Accent) */}
+          {/* Card 2: Savings (Emerald Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-[22px] bg-gradient-to-br from-[rgba(25,201,167,0.15)] to-[rgba(85,217,138,0.08)] border border-[rgba(25,201,167,0.45)] shadow-lg shadow-[#061F5C]/40 flex flex-col justify-between hover:border-[#55D98A] transition-all cursor-pointer group"
+            className="p-3.5 rounded-[22px] bg-[#0D152D] border border-[#16C7F2]/30 hover:border-[#16C7F2]/60 shadow-lg flex flex-col justify-between transition-all cursor-pointer group"
           >
             <div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 rounded-full bg-[#55D98A]/20 text-[#55D98A] flex items-center justify-center text-[10px]">🌱</div>
-                <div className="text-[10px] font-bold text-[#55D98A] leading-tight">Savings</div>
-              </div>
+              <div className="text-[10px] font-bold text-[#34D399] leading-tight">Savings</div>
               <div className="text-sm sm:text-base font-black text-white mt-1.5">
                 {isPrivacyMode ? '••••' : formatCurrency(snapshot.totalSavings || 0, true)}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-[#55D98A] mt-2 flex items-center gap-0.5">
-              <span>{(snapshot.totalSavings || 0) > 0 ? '↑ 15%' : '₹0 saved'}</span>
-              <span className="text-[#B9D8FF]/70 text-[9px] font-normal">{(snapshot.totalSavings || 0) > 0 ? 'this year' : 'this year'}</span>
+            <div className="text-[10px] font-bold text-[#34D399] mt-2 flex items-center gap-0.5">
+              <span>{(snapshot.totalSavings || 0) > 0 ? '₹0' : '₹0'}</span>
+              <span className="text-slate-400 text-[9px] font-normal">saved</span>
+              <span className="text-slate-400 text-[9px] font-normal">year</span>
             </div>
           </div>
 
-          {/* Card 3: Goals (Blue/Cyan Accent) */}
+          {/* Card 3: Goals (Purple Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-[22px] bg-gradient-to-br from-[rgba(22,139,255,0.15)] to-[rgba(22,199,242,0.08)] border border-[rgba(22,199,242,0.45)] shadow-lg shadow-[#061F5C]/40 flex flex-col justify-between hover:border-[#16C7F2] transition-all cursor-pointer group"
+            className="p-3.5 rounded-[22px] bg-[#0D152D] border border-[#8B5CF6]/30 hover:border-[#8B5CF6]/60 shadow-lg flex flex-col justify-between transition-all cursor-pointer group"
           >
             <div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 rounded-full bg-[#16C7F2]/20 text-[#16C7F2] flex items-center justify-center text-[10px]">🎯</div>
-                <div className="text-[10px] font-bold text-[#7EDCFF] leading-tight">Goals</div>
-              </div>
+              <div className="text-[10px] font-bold text-slate-300 leading-tight">Goals</div>
               <div className="text-sm sm:text-base font-black text-white mt-1.5">
                 {goals && goals.length > 0 ? `${goals.filter(g => g.current_amount >= g.target_amount).length}/${goals.length}` : '0/0'}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-[#16C7F2] mt-2">
+            <div className="text-[10px] font-bold text-[#38BDF8] mt-2">
               {goals && goals.length > 0 ? 'On Track' : '0 Active'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 5. Upcoming Card (Kinora Trust & Family Theme) */}
+      {/* 5. Upcoming Card */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-white tracking-tight">Upcoming</h3>
+          <h3 className="text-sm font-bold text-white tracking-tight">Upcoming</h3>
           <button
             onClick={() => onNavigateTab('family')}
             className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
@@ -500,23 +523,23 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             return (
               <div
                 onClick={() => onNavigateTab('calendar')}
-                className="p-3.5 rounded-[22px] bg-[rgba(7,59,158,0.35)] border border-[rgba(22,139,255,0.25)] shadow-md flex items-center justify-between hover:border-[#168BFF]/60 transition-all cursor-pointer group backdrop-blur-xs"
+                className="p-3.5 rounded-[22px] bg-[#0D152D] border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#168BFF]/25 to-[#16C7F2]/25 border border-[#168BFF]/40 flex items-center justify-center text-[#16C7F2] shrink-0">
+                  <div className="w-11 h-11 rounded-2xl bg-[#168BFF]/15 border border-[#168BFF]/30 flex items-center justify-center text-[#16C7F2] shrink-0">
                     <Calendar className="w-6 h-6 stroke-[2]" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-white group-hover:text-[#7EDCFF] transition-colors">
                       {ev.title} 📅
                     </div>
-                    <div className="text-[10px] text-[#A9DFFF] mt-0.5">
+                    <div className="text-[10px] text-slate-400 mt-0.5">
                       {ev.start_date ? formatDate(ev.start_date) : 'Upcoming Event'}
                     </div>
                   </div>
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-[#168BFF]/20 border border-[#168BFF]/40 flex items-center justify-center text-[#7EDCFF] text-xs font-bold">
+                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 text-xs font-bold">
                   ➔
                 </div>
               </div>
@@ -549,17 +572,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           return (
             <div
               onClick={() => onNavigateTab('family')}
-              className="p-3.5 rounded-[22px] bg-[rgba(7,59,158,0.35)] border border-[rgba(22,139,255,0.25)] shadow-md flex items-center justify-between hover:border-[#168BFF]/60 transition-all cursor-pointer group backdrop-blur-xs"
+              className="p-3.5 rounded-[22px] bg-[#0D152D] border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
             >
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF8A24]/20 to-[#FFD21F]/20 border border-[#FF8A24]/40 flex items-center justify-center text-[#FFD21F] shrink-0">
+                <div className="w-11 h-11 rounded-2xl bg-[#FF8A24]/15 border border-[#FF8A24]/30 flex items-center justify-center text-[#FFD21F] shrink-0">
                   <Cake className="w-6 h-6 stroke-[2]" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-white group-hover:text-[#7EDCFF] transition-colors">
                     {nearest ? `${nearest.member.name.split(' ')[0]}'s Birthday 🎂` : "Family Birthday 🎂"}
                   </div>
-                  <div className="text-[10px] text-[#A9DFFF] mt-0.5">
+                  <div className="text-[10px] text-slate-400 mt-0.5">
                     {nearest
                       ? nearest.diffDays === 0
                         ? 'Today! Celebrate together 🎉'
@@ -606,7 +629,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               <div
                 key={mem.id}
                 onClick={() => onNavigateTab('memories')}
-                className="min-w-[140px] max-w-[140px] rounded-[20px] bg-[#073B9E]/40 border border-[#168BFF]/25 overflow-hidden shadow-md shrink-0 cursor-pointer group hover:border-[#16C7F2]/60 transition-all"
+                className="min-w-[140px] max-w-[140px] rounded-[20px] bg-[#0D152D] border border-slate-800/90 overflow-hidden shadow-md shrink-0 cursor-pointer group hover:border-[#16C7F2]/50 transition-all"
               >
                 <div className="h-24 overflow-hidden relative">
                   <img
@@ -614,7 +637,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                     alt={mem.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#061F5C]/95 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#080D1A]/95 via-transparent to-transparent" />
                   <span className="absolute bottom-1.5 left-2.5 text-[9px] font-bold text-white truncate max-w-[120px]">
                     {mem.location || mem.title}
                   </span>
@@ -635,347 +658,58 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       />
 
       {/* 2. Wish List Modal */}
-      {showWishListModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#16C7F2]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-[#16C7F2]/20 text-[#16C7F2] border border-[#16C7F2]/40">
-                  <Gift className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Family Wish List</h3>
-                  <p className="text-[10px] text-[#B9D8FF]">Stored in Family Hub • Shared with all members</p>
-                </div>
-              </div>
-              <button onClick={() => setShowWishListModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
-            </div>
-
-            {/* Add Wish Item Form */}
-            <form onSubmit={handleAddWish} className="p-3.5 bg-[#073B9E]/50 border border-[#168BFF]/35 rounded-2xl space-y-2.5">
-              <div className="text-xs font-bold text-[#FFD21F]">+ Add New Wish</div>
-              <div>
-                <input
-                  type="text"
-                  required
-                  placeholder="Wish item (e.g. Sony Wireless Headphones)"
-                  value={newWishTitle}
-                  onChange={(e) => setNewWishTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#03194A] border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={newWishCategory}
-                  onChange={(e) => setNewWishCategory(e.target.value)}
-                  className="px-3 py-2 bg-[#03194A] border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
-                >
-                  <option value="WISH">🎁 Wish / Gift</option>
-                  <option value="GADGET">📱 Gadget / Tech</option>
-                  <option value="SHOPPING">🛍️ Shopping / Clothes</option>
-                  <option value="BOOK">📚 Books / Study</option>
-                  <option value="GROCERY">🛒 Grocery / Food</option>
-                  <option value="HOME">🏡 Home & Living</option>
-                  <option value="OTHER">✨ Other</option>
-                </select>
-                <input
-                  type="number"
-                  placeholder="₹ Est. Cost (Optional)"
-                  value={newWishAmount}
-                  onChange={(e) => setNewWishAmount(e.target.value)}
-                  className="px-3 py-2 bg-[#03194A] border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-gradient-to-r from-[#168BFF] to-[#16C7F2] hover:opacity-95 text-white font-bold rounded-xl text-xs shadow-md shadow-[#168BFF]/30 active:scale-98 transition-all"
-              >
-                Add to Family Wish List
-              </button>
-            </form>
-
-            {/* Wish List items */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-[#B9D8FF]">
-                <span>Shared Wish List ({wishlistItems.length})</span>
-                <span className="text-[10px] text-[#91A8C7] font-normal">Tap check to mark fulfilled</span>
-              </div>
-              {wishlistItems.length === 0 ? (
-                <div className="p-6 text-center text-xs text-[#91A8C7]">No wishes added yet. Make a wish above! ✨</div>
-              ) : (
-                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                  {wishlistItems.map((wish) => (
-                    <div
-                      key={wish.id}
-                      className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                        wish.is_purchased
-                          ? 'bg-[#03194A]/60 border-[#168BFF]/15 opacity-60'
-                          : 'bg-[#073B9E]/50 border-[#168BFF]/35 shadow-sm'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0 mr-2">
-                        <button
-                          type="button"
-                          onClick={() => toggleWishFulfilled(wish.id)}
-                          className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
-                            wish.is_purchased
-                              ? 'bg-[#55D98A] border-[#55D98A] text-[#03194A]'
-                              : 'border-[#168BFF]/60 hover:border-[#16C7F2]'
-                          }`}
-                        >
-                          {wish.is_purchased && <CheckCircle2 className="w-3.5 h-3.5" />}
-                        </button>
-                        <div className="min-w-0">
-                          <div className={`text-xs font-bold truncate ${wish.is_purchased ? 'line-through text-[#91A8C7]' : 'text-white'}`}>
-                            {wish.item_name}
-                          </div>
-                          <div className="text-[10px] text-[#B9D8FF] truncate mt-0.5">
-                            Added by <span className="text-[#FFD21F] font-semibold">{wish.added_by_name || 'Family'}</span>
-                            {wish.estimated_cost ? (
-                              <span className="text-[#55D98A] font-bold ml-1.5">• ₹{Number(wish.estimated_cost).toLocaleString('en-IN')}</span>
-                            ) : wish.quantity && wish.quantity !== '1 unit' && (
-                              <span className="text-[#B9D8FF] ml-1.5">• {wish.quantity}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-[9px] bg-[#03194A] text-[#7EDCFF] px-2 py-0.5 rounded-full font-semibold border border-[#168BFF]/30">
-                          {wish.category || 'WISH'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => deleteWishItem(wish.id)}
-                          className="p-1.5 text-[#91A8C7] hover:text-[#FF4D6D] transition-colors"
-                          title="Delete wish"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <AddWishModal
+        isOpen={showWishListModal}
+        onClose={() => setShowWishListModal(false)}
+        onSubmit={handleAddWish}
+        wishlistItems={wishlistItems}
+        onToggleWish={toggleWishFulfilled}
+        onDeleteWish={deleteWishItem}
+      />
 
       {/* 3. Set Goal Modal */}
-      {showSetGoalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#19C9A7]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-[#19C9A7]/20 text-[#55D98A] border border-[#19C9A7]/40">
-                  <Target className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Set Family Financial Goal</h3>
-                  <p className="text-[10px] text-[#B9D8FF]">Synced with Money & Wealth Tracker</p>
-                </div>
-              </div>
-              <button onClick={() => setShowSetGoalModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
-            </div>
-
-            <form onSubmit={handleCreateGoal} className="space-y-3">
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold">Goal Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Buy Dream House / Europe Trip / Child MBA"
-                  value={goalForm.title}
-                  onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#55D98A]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Goal Category</label>
-                  <select
-                    value={goalForm.category}
-                    onChange={(e) => setGoalForm({ ...goalForm, category: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="PROPERTY">🏡 Property / Real Estate</option>
-                    <option value="EDUCATION">🎓 Children Education</option>
-                    <option value="EMERGENCY">🛡️ Emergency Fund</option>
-                    <option value="TRAVEL">✈️ Family Vacation / Travel</option>
-                    <option value="VEHICLE">🚗 Vehicle / Car / EV</option>
-                    <option value="RETIREMENT">👴 Retirement Corpus</option>
-                    <option value="FAMILY">👨‍👩‍👧‍👦 Family Dream / General</option>
-                    <option value="OTHER">✨ Other Milestone</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Priority</label>
-                  <select
-                    value={goalForm.priority}
-                    onChange={(e) => setGoalForm({ ...goalForm, priority: e.target.value as any })}
-                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="HIGH">🔥 High Priority</option>
-                    <option value="MEDIUM">⚡ Medium Priority</option>
-                    <option value="LOW">🌱 Low Priority</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold">Target Amount (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="e.g. 5000000"
-                    value={goalForm.target_amount}
-                    onChange={(e) => setGoalForm({ ...goalForm, target_amount: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-sm font-bold text-[#55D98A] outline-none focus:border-[#55D98A]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold">Saved So Far (₹)</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 100000"
-                    value={goalForm.current_amount}
-                    onChange={(e) => setGoalForm({ ...goalForm, current_amount: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-sm font-bold text-[#FFD21F] outline-none focus:border-[#55D98A]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Monthly SIP / Save (₹)</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 10000"
-                    value={goalForm.monthly_contribution}
-                    onChange={(e) => setGoalForm({ ...goalForm, monthly_contribution: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#55D98A]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Target Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={goalForm.target_date}
-                    onChange={(e) => setGoalForm({ ...goalForm, target_date: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#55D98A]"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-[#19C9A7] to-[#55D98A] hover:opacity-95 text-white font-bold rounded-xl shadow-lg shadow-[#19C9A7]/30 text-xs transition-all active:scale-98 mt-2"
-              >
-                Create Financial Goal
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <AddGoalModal
+        isOpen={showSetGoalModal}
+        onClose={() => setShowSetGoalModal(false)}
+        onSubmit={handleCreateGoal}
+      />
 
       {/* 4. Add Income Modal */}
-      {showAddIncomeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#168BFF]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-[#168BFF]/20 text-[#7EDCFF] border border-[#168BFF]/40">
-                  <Wallet className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Add Family Income / Deposit</h3>
-                  <p className="text-[10px] text-[#B9D8FF]">Credits directly to Family Wealth balance</p>
-                </div>
-              </div>
-              <button onClick={() => setShowAddIncomeModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
-            </div>
+      <AddIncomeModal
+        isOpen={showAddIncomeModal}
+        onClose={() => setShowAddIncomeModal(false)}
+        onSubmit={handleAddIncome}
+      />
 
-            <form onSubmit={handleAddIncome} className="space-y-3">
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold">Income Amount (₹ INR) *</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="e.g. 150000"
-                  value={incomeForm.amount}
-                  onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-lg font-bold text-[#55D98A] outline-none focus:border-[#168BFF]"
-                />
-              </div>
+      {/* 5. Vault Modal */}
+      <AddVaultModal
+        isOpen={showVaultModal}
+        onClose={() => setShowVaultModal(false)}
+        onSubmit={handleCreateVaultDoc}
+        familyMembers={familyMembers?.map((m) => ({ id: m.id, name: m.name }))}
+      />
 
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold">Income Source / Employer *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Monthly Salary / Freelance / Business"
-                  value={incomeForm.source}
-                  onChange={(e) => setIncomeForm({ ...incomeForm, source: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#168BFF]"
-                />
-              </div>
+      {/* 6. Tasks Modal */}
+      <AddTaskModal
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        onSubmit={handleCreateTask}
+        familyMembers={familyMembers?.map((m) => ({ id: m.id, name: m.name }))}
+      />
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Income Type</label>
-                  <select
-                    value={incomeForm.type}
-                    onChange={(e) => setIncomeForm({ ...incomeForm, type: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="SALARY">Primary Salary</option>
-                    <option value="BUSINESS">Business Income</option>
-                    <option value="DIVIDEND">Investments / Dividends</option>
-                    <option value="RENTAL">Rental Income</option>
-                    <option value="GIFT">Cash Gift / Bonus</option>
-                  </select>
-                </div>
+      {/* 7. Maintenance Modal */}
+      <AddMaintenanceModal
+        isOpen={showMaintenanceModal}
+        onClose={() => setShowMaintenanceModal(false)}
+        onSubmit={handleCreateMaintenance}
+      />
 
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Received Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={incomeForm.date}
-                    onChange={(e) => setIncomeForm({ ...incomeForm, date: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold">Notes (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. September Salary credited to HDFC"
-                  value={incomeForm.notes}
-                  onChange={(e) => setIncomeForm({ ...incomeForm, notes: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-[#0869E8] to-[#168BFF] hover:opacity-95 text-white font-bold rounded-xl shadow-lg shadow-[#0869E8]/30 text-xs transition-all active:scale-98 mt-2"
-              >
-                Deposit & Credit to Family Wealth
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* 8. Emergency Modal */}
+      <AddEmergencyModal
+        isOpen={showEmergencyModal}
+        onClose={() => setShowEmergencyModal(false)}
+        onSubmit={handleCreateEmergencyContact}
+      />
     </div>
   );
 };

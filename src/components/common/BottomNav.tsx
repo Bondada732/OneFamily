@@ -27,7 +27,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 max-w-md mx-auto">
-      <nav className="relative bg-[rgba(3,25,74,0.94)] backdrop-blur-2xl border-t border-[#168BFF]/25 px-4 py-2 flex items-center justify-between shadow-[0_-10px_30px_rgba(3,25,74,0.8)]">
+      <nav className="relative bg-[#080D1A]/95 backdrop-blur-2xl border-t border-slate-800/80 px-4 py-2 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
         {/* Left 2 items */}
         <div className="flex items-center gap-6">
           {leftNavItems.map((item) => {
@@ -43,7 +43,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
                     ? isHome
                       ? 'text-[#FFD21F] font-bold scale-105 filter drop-shadow-[0_0_8px_rgba(255,210,31,0.35)]'
                       : 'text-[#16C7F2] font-bold scale-105 filter drop-shadow-[0_0_8px_rgba(22,199,242,0.35)]'
-                    : 'text-[#91A8C7] hover:text-[#B9D8FF]'
+                    : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
@@ -53,11 +53,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
           })}
         </div>
 
-        {/* Floating Signature KinoraOne Center '+' Action Button */}
+        {/* Floating Center '+' Action Button */}
         <div className="relative -top-5 flex justify-center">
           <button
             onClick={onOpenQuickAction}
-            className="w-13 h-13 p-3.5 rounded-full bg-gradient-to-br from-[#168BFF] via-[#16C7F2] via-[#19C9A7] to-[#FFD21F] text-white shadow-[0_8px_30px_rgba(22,139,255,0.45)] border border-white/25 flex items-center justify-center hover:scale-110 active:scale-95 transition-all ring-4 ring-[#03194A]"
+            className="w-13 h-13 p-3.5 rounded-full bg-gradient-to-br from-[#168BFF] via-[#16C7F2] to-[#8B5CF6] text-white shadow-[0_8px_25px_rgba(22,139,255,0.45)] border border-white/20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all ring-4 ring-[#080D1A]"
             title="Create & Record"
           >
             <Plus className="w-6 h-6 stroke-[3] text-white" />

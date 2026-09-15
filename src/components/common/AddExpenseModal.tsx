@@ -86,7 +86,7 @@ const QUICK_PRESET_TAGS = [
 ];
 
 const PAYMENT_MODES = [
-  { id: 'UPI', label: 'UPI (GPay / PhonePe)' },
+  { id: 'UPI', label: 'UPI' },
   { id: 'CASH', label: 'Cash' },
   { id: 'CREDIT_CARD', label: 'Credit Card' },
   { id: 'DEBIT_CARD', label: 'Debit Card' },
