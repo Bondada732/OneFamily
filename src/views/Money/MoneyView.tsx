@@ -6,6 +6,7 @@ import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { apiRequest } from '../../utils/api.js';
 import { Expense, BudgetReport, Investment, Liability, Goal } from '../../types/index.js';
+import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
 import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -169,26 +170,24 @@ export const MoneyView: React.FC = () => {
     );
   }
 
-  const handleCreateExpense = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newExpense.amount || !family?.id) return;
+  const handleCreateExpense = async (expenseData: {
+    amount: string;
+    merchant: string;
+    category_id: string;
+    category_name: string;
+    payment_method: string;
+    date: string;
+    notes: string;
+  }) => {
+    if (!expenseData.amount || !family?.id) return;
 
     try {
       const created = await apiRequest(`/expenses/${family.id}/expenses`, {
         method: 'POST',
-        body: JSON.stringify(newExpense),
+        body: JSON.stringify(expenseData),
       });
       setExpenses((prev) => [created, ...prev]);
       setShowAddExpense(false);
-      setNewExpense({
-        amount: '',
-        category_id: categoryOptions[0]?.id || 'cat_groceries',
-        category_name: categoryOptions[0]?.name || 'Groceries & Kirana',
-        merchant: '',
-        payment_method: 'UPI',
-        notes: '',
-        date: getLocalDateString(),
-      });
       const budData = await apiRequest(`/budget/${family.id}/budget`);
       setBudgetReports(budData.categories || []);
       refreshDashboard();
@@ -1153,164 +1152,12 @@ export const MoneyView: React.FC = () => {
         </div>
       )}
 
-      {/* Add Expense Modal */}
-      {showAddExpense && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Record Family Expense</h3>
-              <button onClick={() => setShowAddExpense(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
-            </div>
-            <form onSubmit={handleCreateExpense} className="space-y-3">
-              <div>
-                <label className="text-xs text-slate-300 font-semibold">Amount (₹ INR) *</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="e.g. 2400"
-                  value={newExpense.amount}
-                  onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-amber-400 outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-slate-300 font-semibold">Merchant / Payee *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ratnadeep Supermarket"
-                  value={newExpense.merchant}
-                  onChange={(e) => setNewExpense({ ...newExpense, merchant: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs text-slate-300 font-semibold">Category *</label>
-                    {canEditFinance && (
-                      <button
-                        type="button"
-                        onClick={() => setShowManageCategories(true)}
-                        className="text-[10px] text-amber-400 hover:underline font-semibold"
-                      >
-                        + Manage
-                      </button>
-                    )}
-                  </div>
-                  <select
-                    value={newExpense.category_id}
-                    onChange={(e) => {
-                      const sel = e.target.value;
-                      const cat = categoryOptions.find((b: any) => (b.id || b.categoryId) === sel);
-                      setNewExpense({
-                        ...newExpense,
-                        category_id: sel,
-                        category_name: cat ? (cat.name || cat.categoryName) : 'Miscellaneous',
-                      });
-                    }}
-                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    {categoryOptions.map((b: any) => (
-                      <option key={b.id || b.categoryId} value={b.id || b.categoryId}>
-                        {b.name || b.categoryName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Payment Mode</label>
-                  <select
-                    value={newExpense.payment_method}
-                    onChange={(e) => setNewExpense({ ...newExpense, payment_method: e.target.value as any })}
-                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="UPI">UPI (GPay / PhonePe)</option>
-                    <option value="CREDIT_CARD">Credit Card</option>
-                    <option value="DEBIT_CARD">Debit Card</option>
-                    <option value="CASH">Cash</option>
-                    <option value="BANK_TRANSFER">Bank Transfer</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs text-slate-300 font-semibold">Expense Date *</label>
-                  <div className="flex gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setNewExpense({ ...newExpense, date: getLocalDateString() })}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
-                        newExpense.date === getLocalDateString()
-                          ? 'bg-amber-500 text-slate-900 shadow-sm'
-                          : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'
-                      }`}
-                    >
-                      Today
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const d = new Date();
-                        d.setDate(d.getDate() - 1);
-                        setNewExpense({ ...newExpense, date: getLocalDateString(d) });
-                      }}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
-                        newExpense.date === (() => {
-                          const d = new Date();
-                          d.setDate(d.getDate() - 1);
-                          return getLocalDateString(d);
-                        })()
-                          ? 'bg-amber-500 text-slate-900 shadow-sm'
-                          : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'
-                      }`}
-                    >
-                      Yesterday
-                    </button>
-                  </div>
-                </div>
-                <input
-                  type="date"
-                  required
-                  value={newExpense.date}
-                  onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-slate-300 font-semibold">Notes (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Monthly groceries, snacks, household items"
-                  value={newExpense.notes}
-                  onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setShowAddExpense(false)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
-                >
-                  Save Expense
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Add Expense Modal (Interactive Category Cards & Quick Preset Pills) */}
+      <AddExpenseModal
+        isOpen={showAddExpense}
+        onClose={() => setShowAddExpense(false)}
+        onSubmit={handleCreateExpense}
+      />
 
       {/* Manage Categories Modal */}
       {showManageCategories && (

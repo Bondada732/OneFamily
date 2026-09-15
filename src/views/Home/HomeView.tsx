@@ -5,6 +5,7 @@ import { useSecurity } from '../../context/SecurityContext.js';
 import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { apiRequest } from '../../utils/api.js';
+import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
 import {
   Receipt,
   Gift,
@@ -98,24 +99,22 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     return 'Good Evening';
   };
 
-  const handleCreateExpense = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!family?.id || !expenseForm.amount) return;
+  const handleCreateExpense = async (expenseData: {
+    amount: string;
+    merchant: string;
+    category_id: string;
+    category_name: string;
+    payment_method: string;
+    date: string;
+    notes: string;
+  }) => {
+    if (!family?.id || !expenseData.amount) return;
     try {
       await apiRequest(`/expenses/${family.id}/expenses`, {
         method: 'POST',
-        body: JSON.stringify(expenseForm),
+        body: JSON.stringify(expenseData),
       });
       setShowAddExpenseModal(false);
-      setExpenseForm({
-        amount: '',
-        merchant: '',
-        category_id: 'cat_groceries',
-        category_name: 'Groceries & Kirana',
-        payment_method: 'UPI',
-        date: getLocalDateString(),
-        notes: '',
-      });
       refreshDashboard();
     } catch (err) {
       console.error('Failed to create expense:', err);
@@ -628,126 +627,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
       {/* ================= MODALS (WITH KINORAONE THEME SYSTEM) ================= */}
 
-      {/* 1. Add Expense Modal */}
-      {showAddExpenseModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#FF8A24]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-[#FF8A24]/20 text-[#FFD21F] border border-[#FF8A24]/40">
-                  <Receipt className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Record Family Expense</h3>
-                  <p className="text-[10px] text-[#B9D8FF]">Synced with Family Wealth & Budget</p>
-                </div>
-              </div>
-              <button onClick={() => setShowAddExpenseModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
-            </div>
-
-            <form onSubmit={handleCreateExpense} className="space-y-3">
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold">Amount (₹ INR) *</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="e.g. 2400"
-                  value={expenseForm.amount}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-lg font-bold text-[#FFD21F] outline-none focus:border-[#FFD21F]"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold">Merchant / Payee *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ratnadeep Supermarket / Swiggy"
-                  value={expenseForm.merchant}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, merchant: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Category</label>
-                  <select
-                    value={expenseForm.category_name}
-                    onChange={(e) => {
-                      const selectedName = e.target.value;
-                      setExpenseForm({
-                        ...expenseForm,
-                        category_name: selectedName,
-                      });
-                    }}
-                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="Groceries & Kirana">Groceries & Kirana</option>
-                    <option value="Food & Dining / Swiggy">Food & Dining / Swiggy</option>
-                    <option value="Utilities & Bills">Utilities & Bills</option>
-                    <option value="Rent & Maintenance">Rent & Maintenance</option>
-                    <option value="Education & School">Education & School</option>
-                    <option value="Transport & Fuel">Transport & Fuel</option>
-                    <option value="Healthcare & Pharmacy">Healthcare & Pharmacy</option>
-                    <option value="Shopping & Apparel">Shopping & Apparel</option>
-                    <option value="Entertainment & OTT">Entertainment & OTT</option>
-                    <option value="Travel & Trips">Travel & Trips</option>
-                    <option value="Investments / SIP">Investments / SIP</option>
-                    <option value="Loan EMI & Debts">Loan EMI & Debts</option>
-                    <option value="Miscellaneous & Pooja">Miscellaneous & Pooja</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Payment Mode</label>
-                  <select
-                    value={expenseForm.payment_method}
-                    onChange={(e) => setExpenseForm({ ...expenseForm, payment_method: e.target.value as any })}
-                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="UPI">UPI (GPay / PhonePe)</option>
-                    <option value="CREDIT_CARD">Credit Card</option>
-                    <option value="DEBIT_CARD">Debit Card</option>
-                    <option value="CASH">Cash</option>
-                    <option value="BANK_TRANSFER">Bank NetBanking</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Expense Date</label>
-                <input
-                  type="date"
-                  required
-                  value={expenseForm.date}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Notes / Items (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Monthly ration & snacks"
-                  value={expenseForm.notes}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-[#FF8A24] via-[#FFB91F] to-[#FF6F32] hover:opacity-95 text-white font-bold rounded-xl shadow-lg shadow-[#FF8A24]/30 text-xs transition-all active:scale-98 mt-2"
-              >
-                Save Expense Record
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* 1. Add Expense Modal (Interactive Icon Grid & Preset Pills) */}
+      <AddExpenseModal
+        isOpen={showAddExpenseModal}
+        onClose={() => setShowAddExpenseModal(false)}
+        onSubmit={handleCreateExpense}
+      />
 
       {/* 2. Wish List Modal */}
       {showWishListModal && (
