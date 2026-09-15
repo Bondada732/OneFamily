@@ -4,7 +4,7 @@ import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { FamilyMember, TaskItem, GroceryItem, MaintenanceItem, EmergencyContact, EmergencyProfile } from '../../types/index.js';
-import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X } from 'lucide-react';
+import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
 
 const AVATAR_PRESETS = [
   { url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', label: 'Father / Head' },
@@ -43,6 +43,8 @@ export const FamilyView: React.FC = () => {
   // Modals & form states
   const [showAddMember, setShowAddMember] = useState(false);
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(null);
+  const [isDeletingMember, setIsDeletingMember] = useState(false);
   const [memberProfileForm, setMemberProfileForm] = useState({
     name: '',
     avatar_url: '',
@@ -463,6 +465,26 @@ export const FamilyView: React.FC = () => {
       alert(err.message || 'Approval failed');
     } finally {
       setIsApprovingSubmitting(false);
+    }
+  };
+
+  const handleConfirmRemoveMember = async () => {
+    if (!memberToDelete || !family?.id) return;
+    try {
+      setIsDeletingMember(true);
+      await apiRequest(`/families/${family.id}/members/${memberToDelete.id}`, {
+        method: 'DELETE',
+      });
+      setMemberToDelete(null);
+      if (editingMember?.id === memberToDelete.id) {
+        setEditingMember(null);
+      }
+      await refreshUser();
+    } catch (err: any) {
+      console.error('Failed to remove member:', err);
+      alert(err?.message || 'Failed to remove member');
+    } finally {
+      setIsDeletingMember(false);
     }
   };
 
@@ -962,6 +984,15 @@ export const FamilyView: React.FC = () => {
                         title="Manage Permissions"
                       >
                         <Lock className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {currentUser?.role === 'FAMILY_HEAD' && member.id !== currentUser?.id && (
+                      <button
+                        onClick={() => setMemberToDelete(member)}
+                        className="p-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-xl text-xs border border-rose-500/30 transition-colors"
+                        title="Remove Member from Family"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -2155,6 +2186,23 @@ export const FamilyView: React.FC = () => {
                   Save Profile
                 </button>
               </div>
+
+              {currentUser?.role === 'FAMILY_HEAD' && editingMember.id !== currentUser?.id && (
+                <div className="pt-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const toDelete = editingMember;
+                      setEditingMember(null);
+                      setMemberToDelete(toDelete);
+                    }}
+                    className="w-full py-2.5 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Remove Member from Family</span>
+                  </button>
+                </div>
+              )}
             </form>
           </div>
         </div>
@@ -3104,6 +3152,56 @@ export const FamilyView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Member Confirmation Modal (Strictly Family Head) */}
+      {memberToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm bg-slate-900 border border-rose-500/40 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-white">Remove {memberToDelete.name}?</h3>
+              <p className="text-xs text-slate-300">
+                Are you sure you want to remove <strong className="text-white">{memberToDelete.name}</strong> ({memberToDelete.relationship || memberToDelete.role}) from the family?
+              </p>
+              <p className="text-[11px] text-rose-400/90 pt-1">
+                This will revoke their access to family finances, digital vault, and timeline.
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setMemberToDelete(null)}
+                disabled={isDeletingMember}
+                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRemoveMember}
+                disabled={isDeletingMember}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-rose-600/30 disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {isDeletingMember ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Removing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Remove Member</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

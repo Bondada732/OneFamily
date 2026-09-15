@@ -224,6 +224,50 @@ router.delete('/:id/members/:userId/reject', requirePermission('FAMILY_MANAGE'),
   res.json({ success: true, message: `Registration for ${member.name} has been rejected.` });
 });
 
+// Remove / Delete Family Member (Strictly Family Head only)
+router.delete('/:id/members/:userId', (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { userId } = req.params;
+  const requester = req.user!;
+
+  if (requester.role !== 'FAMILY_HEAD') {
+    return res.status(403).json({ error: 'Permission Denied: Only the Family Head can remove members from the family.' });
+  }
+
+  if (requester.id === userId) {
+    return res.status(400).json({ error: 'Family Head cannot remove themselves.' });
+  }
+
+  const member = db.findOne('users', (u) => u.id === userId && u.family_id === familyId);
+  if (!member) {
+    return res.status(404).json({ error: 'Member not found in this family.' });
+  }
+
+  // 1. Delete member permissions
+  db.delete('member_permissions', (mp) => mp.user_id === userId);
+  // 2. Delete devices
+  db.delete('devices', (d) => d.user_id === userId);
+  // 3. Delete emergency profiles
+  db.delete('emergency_profiles', (ep) => ep.user_id === userId);
+  // 4. Delete user record
+  db.delete('users', (u) => u.id === userId && u.family_id === familyId);
+
+  logActivity(
+    familyId,
+    requester.id,
+    requester.name,
+    'Removed Family Member',
+    'ADMIN',
+    `Removed ${member.name} (${member.role}, ${member.relationship || 'Member'}) from the family.`
+  );
+
+  res.json({
+    success: true,
+    message: `Family member ${member.name} has been successfully removed.`,
+    removedUserId: userId,
+  });
+});
+
 // Family Tree hierarchy data
 router.get('/:id/tree', (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId;
