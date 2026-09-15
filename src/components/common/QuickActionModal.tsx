@@ -19,7 +19,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       label: 'Record Expense',
       description: 'UPI, receipt scan or manual entry',
       icon: Receipt,
-      color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+      color: 'bg-[rgba(255,138,36,0.18)] text-[#FFD21F] border-[#FF8A24]/40',
       allowed: hasPermission('FINANCE_EDIT'),
     },
     {
@@ -27,7 +27,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       label: 'Set Family Goal',
       description: 'Vacation, emergency fund, education',
       icon: Target,
-      color: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+      color: 'bg-[rgba(25,201,167,0.18)] text-[#55D98A] border-[#19C9A7]/40',
       allowed: hasPermission('FINANCE_EDIT'),
     },
     {
@@ -35,7 +35,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       label: 'Store Document',
       description: 'Aadhaar, PAN, insurance with OCR',
       icon: FileUp,
-      color: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+      color: 'bg-[rgba(22,139,255,0.18)] text-[#16C7F2] border-[#168BFF]/40',
       allowed: hasPermission('DOCUMENT_UPLOAD'),
     },
     {
@@ -43,7 +43,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       label: 'Add Family Task',
       description: 'Chores, bills, grocery items',
       icon: CheckSquare,
-      color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+      color: 'bg-[rgba(22,199,242,0.18)] text-[#7EDCFF] border-[#16C7F2]/40',
       allowed: hasPermission('TASK_EDIT'),
     },
     {
@@ -51,28 +51,28 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       label: 'Save Memory / Photo',
       description: 'Family trips, birthdays, stories',
       icon: Camera,
-      color: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+      color: 'bg-[rgba(255,185,31,0.18)] text-[#FFD21F] border-[#FFB91F]/40',
       allowed: hasPermission('MEMORY_UPLOAD'),
     },
     {
       id: 'ASK_AI' as const,
       label: 'Ask FamilyAI',
-      description: 'Insights, checklists, gift planning',
+      description: 'Insights, checklists, wealth advice',
       icon: Sparkles,
-      color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      color: 'bg-[rgba(22,139,255,0.18)] text-[#B9F36B] border-[#16C7F2]/40',
       allowed: true,
     },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl p-6 text-slate-100 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md bg-[#061F5C] border-t sm:border-2 border-[#168BFF]/40 rounded-t-3xl sm:rounded-3xl p-6 text-[#F4F8FF] shadow-[0_20px_60px_rgba(3,25,74,0.95)] space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#168BFF]/20">
           <div>
             <h3 className="text-lg font-bold text-white">Create & Record</h3>
-            <p className="text-xs text-slate-400">What would you like to add to One Family?</p>
+            <p className="text-xs text-[#B9D8FF]">What would you like to add to KinoraOne?</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-[#073B9E] text-[#B9D8FF] hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -90,17 +90,17 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
                 }}
                 className={`flex flex-col text-left p-3.5 rounded-2xl border transition-all ${
                   act.allowed
-                    ? 'hover:scale-[1.02] active:scale-95 bg-slate-800/80 border-slate-700/80 hover:border-slate-600'
-                    : 'opacity-40 cursor-not-allowed bg-slate-850 border-slate-800'
+                    ? 'hover:scale-[1.02] active:scale-95 bg-[#073B9E]/40 border-[#168BFF]/30 hover:border-[#16C7F2]/60 shadow-sm'
+                    : 'opacity-40 cursor-not-allowed bg-[#03194A] border-[#168BFF]/10'
                 }`}
               >
                 <div className={`w-9 h-9 rounded-xl border flex items-center justify-center mb-2 ${act.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <div className="font-bold text-xs text-slate-100">{act.label}</div>
-                <div className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{act.description}</div>
+                <div className="font-bold text-xs text-white">{act.label}</div>
+                <div className="text-[10px] text-[#B9D8FF]/80 line-clamp-1 mt-0.5">{act.description}</div>
                 {!act.allowed && (
-                  <span className="text-[9px] text-rose-400 font-semibold mt-1">No Permission</span>
+                  <span className="text-[9px] text-[#FF4D6D] font-semibold mt-1">No Permission</span>
                 )}
               </button>
             );

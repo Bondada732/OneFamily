@@ -30,6 +30,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.395.0",
     "nodemailer": "^10.0.9",
+    "puppeteer-core": "^24.43.1",
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.3.0",
     "ws": "^8.21.3",

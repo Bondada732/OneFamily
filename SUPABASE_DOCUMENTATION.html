@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ONE FAMILY (Famora) — Supabase Database Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --primary-light: #eef2ff;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--slate-800);
+      background-color: #ffffff;
+      line-height: 1.6;
+      font-size: 13.5px;
+      padding: 40px;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 20mm 15mm 20mm 15mm;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+      .page-break {
+        page-break-before: always;
+        break-before: page;
+      }
+      .no-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      a {
+        text-decoration: none;
+        color: var(--primary);
+      }
+    }
+
+    /* Cover / Hero Header */
+    .header-banner {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+      color: #ffffff;
+      padding: 36px 32px;
+      border-radius: 16px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.2);
+    }
+
+    .header-banner .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header-banner h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .header-banner p {
+      font-size: 14px;
+      color: #cbd5e1;
+      max-width: 90%;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .meta-item .meta-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+    }
+
+    .meta-item .meta-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-top: 2px;
+      word-break: break-all;
+    }
+
+    /* Section Headings */
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin: 28px 0 14px 0;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin: 20px 0 10px 0;
+    }
+
+    h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--slate-800);
+      margin: 14px 0 6px 0;
+    }
+
+    p {
+      margin-bottom: 10px;
+      color: var(--slate-700);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 18px 0;
+      font-size: 12px;
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    thead th {
+      background: var(--slate-100);
+      color: var(--slate-800);
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--slate-200);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    tbody td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--slate-100);
+      color: var(--slate-700);
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: var(--slate-50);
+    }
+
+    /* Code & Tags */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      background: var(--slate-100);
+      color: var(--primary-dark);
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--slate-200);
+    }
+
+    pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 14px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 10px 0 16px 0;
+      line-height: 1.5;
+    }
+
+    .badge-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-pk { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    .badge-fk { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-uq { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .badge-req { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+    /* Cards & Containers */
+    .card {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 4px;
+    }
+
+    .info-banner {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin: 12px 0 16px 0;
+      font-size: 12.5px;
+      color: #1e40af;
+    }
+
+    .table-container {
+      margin-bottom: 18px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 14px;
+      border-top: 1px solid var(--slate-200);
+      font-size: 11px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover Header -->
+  <div class="header-banner">
+    <div class="badge">Official Technical Documentation</div>
+    <h1>ONE FAMILY (Famora)</h1>
+    <p>Comprehensive Supabase PostgreSQL Cloud Database Reference, Multi-Tenant Architecture & Data Dictionary</p>
+    
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="meta-label">Project Name</div>
+        <div class="meta-value">OneFamily (Famora)</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Database Engine</div>
+        <div class="meta-value">PostgreSQL 15+</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Total Tables</div>
+        <div class="meta-value">25 Tables</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Live Deployment</div>
+        <div class="meta-value">onefamily-ydkb.onrender.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 1: Credentials -->
+  <h2>1. Cloud Credentials & Connection Parameters</h2>
+  <p>The ONE FAMILY platform is powered by a high-availability PostgreSQL cluster hosted on Supabase Cloud.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Parameter</th>
+        <th style="width: 35%;">Configuration Value</th>
+        <th style="width: 40%;">Description / Usage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Project Name</strong></td>
+        <td><code>OneFamily</code> / <code>Famora</code></td>
+        <td>Root project workspace identifier</td>
+      </tr>
+      <tr>
+        <td><strong>Project Ref ID</strong></td>
+        <td><code>imofsunuyhaqmjxxkshy</code></td>
+        <td>Unique cloud cluster subdomain</td>
+      </tr>
+      <tr>
+        <td><strong>REST API Endpoint</strong></td>
+        <td><code>https://imofsunuyhaqmjxxkshy.supabase.co/rest/v1/</code></td>
+        <td>PostgREST automated CRUD API</td>
+      </tr>
+      <tr>
+        <td><strong>Public Base URL</strong></td>
+        <td><code>https://imofsunuyhaqmjxxkshy.supabase.co</code></td>
+        <td>Root Supabase server endpoint</td>
+      </tr>
+      <tr>
+        <td><strong>Anon / Public API Key</strong></td>
+        <td><code>sb_publishable_bMCHUQpEqI_dN1ba-H5Psg_OCiyrWa2</code></td>
+        <td>Client-side safe publishable key</td>
+      </tr>
+      <tr>
+        <td><strong>Service Role Key</strong></td>
+        <td>Configured via <code>SUPABASE_SERVICE_ROLE_KEY</code> in <code>.env</code></td>
+        <td>Elevated backend key bypassing RLS for bi-directional server synchronization</td>
+      </tr>
+      <tr>
+        <td><strong>Production App URL</strong></td>
+        <td><code>https://onefamily-ydkb.onrender.com</code></td>
+        <td>Live Render production deployment</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Section 2: Multi-Tenancy -->
+  <h2>2. Multi-Tenancy & Security Architecture</h2>
+  <div class="info-banner">
+    <strong>Multi-Tenant Isolation Guarantee:</strong> Every entity table references <code>family_id</code> with <code>ON DELETE CASCADE</code> referencing <code>families(id)</code>. This partitions all financial, medical, and document records by household and guarantees complete data isolation.
+  </div>
+
+  <div class="card no-break">
+    <div class="card-title">Role-Based Access Control (RBAC) Hierarchy</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Administrative Scope</th>
+          <th>Feature Access Permissions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge-tag badge-pk">FAMILY_HEAD</span></td>
+          <td>Full Super-Admin</td>
+          <td>Manage family billing, invite/remove members, grant permissions, view full finances & vault</td>
+        </tr>
+        <tr>
+          <td><span class="badge-tag badge-fk">SPOUSE</span></td>
+          <td>Co-Administrator</td>
+          <td>Full financial tracking, health profile management, vault access, family calendar & tasks</td>
+        </tr>
+        <tr>
+          <td><span class="badge-tag badge-uq">ADULT</span></td>
+          <td>Standard Member</td>
+          <td>Log personal expenses, view household schedules, grocery checklists, chore tasks</td>
+        </tr>
+        <tr>
+          <td><span class="badge-tag" style="background:#f3e8ff; color:#6b21a8;">CHILD</span></td>
+          <td>Restricted Member</td>
+          <td>Assigned chores, savings goals/allowance tracking, personal school calendar</td>
+        </tr>
+        <tr>
+          <td><span class="badge-tag" style="background:#e2e8f0; color:#334155;">VIEWER</span></td>
+          <td>Read-Only Guest</td>
+          <td>View shared family memories, selected calendar events, emergency contacts</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- Section 3: Data Dictionary -->
+  <h2>3. Complete Table-by-Table Data Dictionary (All 25 Tables)</h2>
+
+  <!-- Group A -->
+  <h3>Group A: Family Core & Access Management (Tables 1–6)</h3>
+
+  <div class="table-container no-break">
+    <h4>1. <code>families</code> — Root Household Entity</h4>
+    <p>Represents individual family workspaces with localization and branding preferences.</p>
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Data Type</th><th>Constraints</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>TEXT</td><td><span class="badge-tag badge-pk">PK</span></td><td>Unique family UUID / ID</td></tr>
+        <tr><td><code>name</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Display name (e.g. "Bondada Family")</td></tr>
+        <tr><td><code>family_key</code></td><td>TEXT</td><td><span class="badge-tag badge-uq">UNIQUE</span></td><td>Human-friendly joining code (e.g. "RAM-VA34")</td></tr>
+        <tr><td><code>photo_url</code></td><td>TEXT</td><td>NULL</td><td>Family cover photo / emblem URL</td></tr>
+        <tr><td><code>location</code></td><td>TEXT</td><td>NULL</td><td>Primary city / residence</td></tr>
+        <tr><td><code>currency</code></td><td>TEXT</td><td>DEFAULT 'INR'</td><td>Base currency ISO code</td></tr>
+        <tr><td><code>language</code></td><td>TEXT</td><td>DEFAULT 'en'</td><td>Default language interface</td></tr>
+        <tr><td><code>created_at</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>ISO 8601 creation timestamp</td></tr>
+        <tr><td><code>updated_at</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>ISO 8601 update timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-container no-break">
+    <h4>2. <code>users</code> — Member Profiles & Credentials</h4>
+    <p>Individual member credentials, relationship roles, security PINs, and avatars.</p>
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Data Type</th><th>Constraints</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>TEXT</td><td><span class="badge-tag badge-pk">PK</span></td><td>Unique user identifier</td></tr>
+        <tr><td><code>family_id</code></td><td>TEXT</td><td><span class="badge-tag badge-fk">FK</span> CASCADE</td><td>Foreign Key &rarr; <code>families(id)</code></td></tr>
+        <tr><td><code>email</code></td><td>TEXT</td><td><span class="badge-tag badge-uq">UNIQUE</span></td><td>User login email address</td></tr>
+        <tr><td><code>phone</code></td><td>TEXT</td><td>NULL</td><td>Contact mobile number</td></tr>
+        <tr><td><code>name</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Full member name</td></tr>
+        <tr><td><code>password_hash</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Encrypted authentication password</td></tr>
+        <tr><td><code>pin_code</code></td><td>TEXT</td><td>NULL</td><td>4-digit quick security PIN</td></tr>
+        <tr><td><code>avatar_url</code></td><td>TEXT</td><td>NULL</td><td>Member profile photo URL</td></tr>
+        <tr><td><code>role</code></td><td>TEXT</td><td>DEFAULT 'ADULT'</td><td><code>FAMILY_HEAD</code>, <code>SPOUSE</code>, <code>ADULT</code>, <code>CHILD</code>, <code>VIEWER</code></td></tr>
+        <tr><td><code>relationship</code></td><td>TEXT</td><td>NULL</td><td>Role to head (Father, Mother, Son, Daughter)</td></tr>
+        <tr><td><code>birth_date</code></td><td>TEXT</td><td>NULL</td><td>Birth date (YYYY-MM-DD)</td></tr>
+        <tr><td><code>created_at</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Member registration timestamp</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-container no-break">
+    <h4>3. <code>permissions</code> & 4. <code>member_permissions</code> — Granular RBAC Registry</h4>
+    <p>Master permission codes and junction assignments per user.</p>
+    <table>
+      <thead>
+        <tr><th>Table</th><th>Primary Key</th><th>Foreign Keys</th><th>Key Columns</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>permissions</code></td>
+          <td><code>id</code> (TEXT)</td>
+          <td>—</td>
+          <td><code>code</code> (UNIQUE), <code>name</code>, <code>category</code></td>
+        </tr>
+        <tr>
+          <td><code>member_permissions</code></td>
+          <td>Composite <code>(user_id, permission_code)</code></td>
+          <td><code>user_id</code> &rarr; <code>users(id)</code> CASCADE</td>
+          <td><code>user_id</code>, <code>permission_code</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-container no-break">
+    <h4>5. <code>devices</code> & 6. <code>audit_logs</code> — Security Sessions & Audit Trails</h4>
+    <table>
+      <thead>
+        <tr><th>Table</th><th>Primary Key</th><th>Foreign Keys</th><th>Key Columns</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>devices</code></td>
+          <td><code>id</code> (TEXT)</td>
+          <td><code>user_id</code> &rarr; <code>users(id)</code> CASCADE</td>
+          <td><code>device_name</code>, <code>browser</code>, <code>os</code>, <code>ip_address</code>, <code>last_active</code>, <code>is_current</code></td>
+        </tr>
+        <tr>
+          <td><code>audit_logs</code></td>
+          <td><code>id</code> (TEXT)</td>
+          <td><code>family_id</code> &rarr; <code>families(id)</code> CASCADE</td>
+          <td><code>user_id</code>, <code>user_name</code>, <code>action</code>, <code>category</code>, <code>details</code>, <code>created_at</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- Group B -->
+  <h3>Group B: Family Financial Hub (Tables 7–13)</h3>
+
+  <div class="table-container no-break">
+    <h4>7. <code>expense_categories</code> & 8. <code>expenses</code> — Cash Flow & Split Tracking</h4>
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Data Type</th><th>Constraints</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>id</code></td><td>TEXT</td><td><span class="badge-tag badge-pk">PK</span></td><td>Unique expense ID</td></tr>
+        <tr><td><code>family_id</code></td><td>TEXT</td><td><span class="badge-tag badge-fk">FK</span> CASCADE</td><td>Foreign Key &rarr; <code>families(id)</code></td></tr>
+        <tr><td><code>user_id</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Member who made/logged expense</td></tr>
+        <tr><td><code>paid_by_name</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Member name snapshot</td></tr>
+        <tr><td><code>category_name</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Category label (Groceries, Utilities, etc.)</td></tr>
+        <tr><td><code>amount</code></td><td>REAL</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Numerical transaction amount</td></tr>
+        <tr><td><code>payment_method</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td><code>UPI</code>, <code>CASH</code>, <code>CREDIT_CARD</code>, <code>DEBIT_CARD</code>, <code>BANK_TRANSFER</code>, <code>WALLET</code></td></tr>
+        <tr><td><code>split_type</code></td><td>TEXT</td><td>DEFAULT 'EQUAL'</td><td><code>NONE</code>, <code>EQUAL</code>, <code>CUSTOM</code></td></tr>
+        <tr><td><code>date</code></td><td>TEXT</td><td><span class="badge-tag badge-req">NOT NULL</span></td><td>Transaction date (YYYY-MM-DD)</td></tr>
+        <tr><td><code>receipt_url</code></td><td>TEXT</td><td>NULL</td><td>Attached bill / receipt scan URL</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-container no-break">
+    <h4>9. <code>budgets</code>, 10. <code>investments</code>, 11. <code>insurance_policies</code>, 12. <code>liabilities</code>, 13. <code>goals</code></h4>
+    <table>
+      <thead>
+        <tr><th>Table</th><th>Scope & Purpose</th><th>Key Attributes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>budgets</code></td>
+          <td>Monthly category spending caps</td>
+          <td><code>monthly_limit</code>, <code>month_year</code>, <code>category_id</code></td>
+        </tr>
+        <tr>
+          <td><code>investments</code></td>
+          <td>Mutual funds, Stocks, SIPs, Gold, FDs, PPF</td>
+          <td><code>type</code>, <code>invested_amount</code>, <code>current_value</code>, <code>gain_loss</code>, <code>nominee</code></td>
+        </tr>
+        <tr>
+          <td><code>insurance_policies</code></td>
+          <td>Life, Health, Motor & Home insurance</td>
+          <td><code>policy_type</code>, <code>provider</code>, <code>sum_insured</code>, <code>premium_amount</code>, <code>renewal_date</code></td>
+        </tr>
+        <tr>
+          <td><code>liabilities</code></td>
+          <td>Home loans, Car EMIs, Credit debt</td>
+          <td><code>type</code>, <code>lender</code>, <code>total_loan</code>, <code>outstanding_amount</code>, <code>monthly_emi</code></td>
+        </tr>
+        <tr>
+          <td><code>goals</code></td>
+          <td>Target savings for house, vacation, education</td>
+          <td><code>target_amount</code>, <code>current_amount</code>, <code>monthly_contribution</code>, <code>contributors</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- Group C & D & E -->
+  <h3>Group C, D & E: Vault, Health, Operations & AI (Tables 14–25)</h3>
+
+  <div class="table-container no-break">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 20%;">Table</th>
+          <th style="width: 30%;">Module Category</th>
+          <th style="width: 50%;">Key Columns & Stored Capabilities</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>calendar_events</code></td>
+          <td>Shared Calendar</td>
+          <td><code>title</code>, <code>type</code> (BIRTHDAY, ANNIVERSARY, MEDICAL), <code>start_date</code>, <code>assigned_member_name</code></td>
+        </tr>
+        <tr>
+          <td><code>reminders</code></td>
+          <td>Smart Notifications</td>
+          <td><code>title</code>, <code>due_date</code>, <code>category</code>, <code>lead_days</code>, <code>is_dismissed</code></td>
+        </tr>
+        <tr>
+          <td><code>document_categories</code></td>
+          <td>Vault Organization</td>
+          <td><code>name</code> (KYC, Medical, Property, Tax), <code>icon</code>, <code>is_sensitive</code></td>
+        </tr>
+        <tr>
+          <td><code>documents</code></td>
+          <td>Encrypted Vault Files</td>
+          <td><code>title</code>, <code>document_number</code>, <code>expiry_date</code>, <code>file_url</code>, <code>ocr_extracted_text</code></td>
+        </tr>
+        <tr>
+          <td><code>emergency_contacts</code></td>
+          <td>SOS Directory</td>
+          <td><code>name</code>, <code>relationship</code>, <code>phone</code>, <code>type</code> (DOCTOR, HOSPITAL, POLICE, AMBULANCE)</td>
+        </tr>
+        <tr>
+          <td><code>emergency_profiles</code></td>
+          <td>Medical Health Cards</td>
+          <td><code>blood_group</code>, <code>allergies</code>, <code>chronic_conditions</code>, <code>medications</code>, <code>primary_doctor</code></td>
+        </tr>
+        <tr>
+          <td><code>memories</code></td>
+          <td>Photo Timeline</td>
+          <td><code>title</code>, <code>date</code>, <code>album</code>, <code>photos</code> (JSON array), <code>tagged_members</code> (JSON array)</td>
+        </tr>
+        <tr>
+          <td><code>voice_memories</code></td>
+          <td>Elder Audio Wisdom</td>
+          <td><code>audio_url</code>, <code>transcript</code>, <code>translation_hindi</code>, <code>translation_telugu</code>, <code>duration_seconds</code></td>
+        </tr>
+        <tr>
+          <td><code>tasks</code></td>
+          <td>Household Chores</td>
+          <td><code>title</code>, <code>category</code>, <code>priority</code>, <code>status</code> (PENDING, COMPLETED), <code>assigned_to_name</code></td>
+        </tr>
+        <tr>
+          <td><code>grocery_items</code></td>
+          <td>Shared Shopping List</td>
+          <td><code>item_name</code>, <code>quantity</code>, <code>category</code> (PRODUCE, DAIRY), <code>is_purchased</code></td>
+        </tr>
+        <tr>
+          <td><code>maintenance_items</code></td>
+          <td>Appliance & Vehicle Care</td>
+          <td><code>item_name</code>, <code>service_type</code> (AC, CAR, RO), <code>last_service_date</code>, <code>next_service_due</code></td>
+        </tr>
+        <tr>
+          <td><code>notifications</code></td>
+          <td>System Alerts</td>
+          <td><code>title</code>, <code>message</code>, <code>type</code> (URGENT, WARNING, SUCCESS), <code>is_read</code></td>
+        </tr>
+        <tr>
+          <td><code>ai_conversations</code></td>
+          <td>FamilyAI Assistant</td>
+          <td><code>user_query</code>, <code>ai_response</code>, <code>tools_called</code>, <code>role_at_time</code>, <code>created_at</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 4: Sync Architecture -->
+  <h2>4. Cloud Sync & Boot Hydration Architecture</h2>
+  <div class="card no-break">
+    <pre>
+┌──────────────────────────────────────────────────────────────┐
+│                  Supabase PostgreSQL Cloud                   │
+│           (https://imofsunuyhaqmjxxkshy.supabase.co)         │
+└──────────────────────────────────────────────────────────────┘
+                       ▲                 │
+          (Real-time   │                 │ (Initial Boot
+          Upsert/Del)  │                 │  Hydration)
+                       │                 ▼
+┌──────────────────────────────────────────────────────────────┐
+│                  Node.js / Express Backend                   │
+│               (https://onefamily-ydkb.onrender.com)          │
+│         - db.hydrateFromSupabase() on start                  │
+│         - syncRecordToSupabase() on mutation                 │
+└──────────────────────────────────────────────────────────────┘
+                       ▲
+                       │ (REST APIs / JWT Session)
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│                React 19 Frontend Web & Mobile                │
+└──────────────────────────────────────────────────────────────┘
+    </pre>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- Section 5: Query Cheat Sheet -->
+  <h2>5. Helpful SQL & API Query Cheat Sheet</h2>
+
+  <div class="card no-break">
+    <div class="card-title">1. Query all active family members by User Email</div>
+    <pre><code>SELECT 
+    u.id AS member_id,
+    u.name,
+    u.email,
+    u.role,
+    u.relationship,
+    f.name AS family_name,
+    f.family_key
+FROM users u
+JOIN families f ON u.family_id = f.id
+WHERE u.family_id = (
+    SELECT family_id FROM users WHERE email = 'rambabub789@gmail.com' LIMIT 1
+)
+ORDER BY 
+    CASE 
+        WHEN u.role = 'FAMILY_HEAD' THEN 1
+        WHEN u.role = 'SPOUSE' THEN 2
+        ELSE 3
+    END;</code></pre>
+  </div>
+
+  <div class="card no-break">
+    <div class="card-title">2. Category-wise Monthly Expense Breakdown</div>
+    <pre><code>SELECT 
+    category_name,
+    COUNT(*) AS transaction_count,
+    SUM(amount) AS total_spent
+FROM expenses
+WHERE family_id = 'fam_1789400030588'
+  AND date LIKE '2026-09%'
+GROUP BY category_name
+ORDER BY total_spent DESC;</code></pre>
+  </div>
+
+  <div class="card no-break">
+    <div class="card-title">3. Member Emergency Medical Cards</div>
+    <pre><code>SELECT 
+    ep.full_name,
+    ep.blood_group,
+    ep.allergies,
+    ep.chronic_conditions,
+    ep.medications,
+    ep.primary_doctor,
+    ep.special_instructions
+FROM emergency_profiles ep
+WHERE ep.family_id = 'fam_1789400030588';</code></pre>
+  </div>
+
+  <div class="footer">
+    ONE FAMILY (Famora) &bull; Cloud Database Architecture & Technical Reference &bull; Generated September 2026
+  </div>
+
+</body>
+</html>

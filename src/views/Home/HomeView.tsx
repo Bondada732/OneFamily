@@ -6,7 +6,6 @@ import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { apiRequest } from '../../utils/api.js';
 import {
-  TrendingUp,
   Receipt,
   Gift,
   Target,
@@ -15,19 +14,12 @@ import {
   EyeOff,
   ChevronRight,
   Sun,
-  CloudSun,
   Cake,
   Calendar,
   Sparkles,
-  Plus,
-  X,
   CheckCircle2,
-  ArrowDownLeft,
   ArrowUpRight,
-  CreditCard,
-  Building,
-  Heart,
-  Tag,
+  ArrowDownLeft,
   Trash2,
 } from 'lucide-react';
 
@@ -47,7 +39,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [showSetGoalModal, setShowSetGoalModal] = useState(false);
   const [showAddIncomeModal, setShowAddIncomeModal] = useState(false);
 
-  // Form states (matching MoneyView and FamilyView schema)
+  // Form states
   const [expenseForm, setExpenseForm] = useState({
     amount: '',
     merchant: '',
@@ -76,7 +68,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     priority: 'HIGH' as 'HIGH' | 'MEDIUM' | 'LOW',
   });
 
-  // Shared Wishlist items state (fetched directly from backend tasks/grocery API)
+  // Shared Wishlist items state
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [newWishTitle, setNewWishTitle] = useState('');
   const [newWishAmount, setNewWishAmount] = useState('');
@@ -240,15 +232,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   if (isLoading || !dashboard) {
     return (
       <div className="p-4 space-y-4 animate-pulse">
-        <div className="h-10 w-48 bg-slate-800 rounded-xl"></div>
-        <div className="h-44 bg-slate-800 rounded-3xl"></div>
+        <div className="h-10 w-48 bg-[#073B9E]/50 rounded-xl"></div>
+        <div className="h-44 bg-[#073B9E]/40 rounded-3xl"></div>
         <div className="grid grid-cols-4 gap-2.5">
-          <div className="h-20 bg-slate-800 rounded-2xl"></div>
-          <div className="h-20 bg-slate-800 rounded-2xl"></div>
-          <div className="h-20 bg-slate-800 rounded-2xl"></div>
-          <div className="h-20 bg-slate-800 rounded-2xl"></div>
+          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
+          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
+          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
+          <div className="h-20 bg-[#073B9E]/30 rounded-2xl"></div>
         </div>
-        <div className="h-32 bg-slate-800 rounded-3xl"></div>
+        <div className="h-32 bg-[#073B9E]/40 rounded-3xl"></div>
       </div>
     );
   }
@@ -256,265 +248,283 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const { snapshot, goals, recentMemories, today } = dashboard;
   const rawNetWorth = snapshot.netWorth || 0;
   const netWorthDisplay = Math.abs(rawNetWorth);
-  const firstName = currentUser?.name?.split(' ')[0] || 'Family';
-  const locationCity = family?.location?.split(',')[0] || 'Hyderabad';
+  const firstName = currentUser?.name?.split(' ')[0] || 'Rambabu';
+  const locationCity = family?.location?.split(',')[0] || 'India';
 
   return (
-    <div className="p-4 space-y-4 text-slate-100 pb-20 animate-in fade-in duration-300">
+    <div className="p-4 space-y-4 text-[#F4F8FF] pb-24 animate-in fade-in duration-300">
       {/* 1. Greeting & Weather Banner */}
       <div className="flex items-center justify-between pt-1">
         <div>
           <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-1.5">
-            {getGreeting()}, {firstName} <span className="inline-block animate-wave origin-bottom-right">👋</span>
+            <span>{getGreeting()},</span>{' '}
+            <span className="text-[#16C7F2] font-black">{firstName}</span>{' '}
+            <span className="inline-block animate-wave origin-bottom-right">👋</span>
           </h2>
-          <p className="text-[11px] text-slate-400 mt-0.5 italic">
+          <p className="text-[11px] text-[#A9DFFF] mt-0.5 italic">
             "Small steps today, big dreams tomorrow."
           </p>
         </div>
 
-        {/* Weather Badge */}
-        <div className="flex items-center gap-2 bg-slate-850/80 border border-slate-700/60 px-3 py-1.5 rounded-2xl shadow-sm">
-          <div className="p-1 rounded-xl bg-amber-400/20 text-amber-400">
+        {/* Weather Card */}
+        <div className="flex items-center gap-2 bg-[rgba(7,59,158,0.55)] border border-[#168BFF]/45 px-3 py-1.5 rounded-2xl shadow-sm backdrop-blur-sm">
+          <div className="p-1 rounded-xl bg-[#FFD21F]/20 text-[#FFD21F]">
             <Sun className="w-4 h-4 animate-spin-slow" />
           </div>
           <div className="text-right leading-none">
-            <div className="text-[10px] text-slate-400 font-medium">{locationCity}</div>
+            <div className="text-[10px] text-[#B9D8FF] font-medium">{locationCity}</div>
             <div className="text-xs font-bold text-white mt-0.5">28°C</div>
           </div>
         </div>
       </div>
 
-      {/* 2. Family Wealth Hero Card (Compact + Colorful Sparkline Graph) */}
+      {/* 2. Family Wealth Hero Card (KinoraOne Premium Multi-Stage Brand Gradient) */}
       <div
         onClick={() => onNavigateTab('money')}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#131d3b] via-[#0f1730] to-[#0a1024] border border-indigo-500/30 p-4 shadow-xl shadow-indigo-950/40 cursor-pointer group hover:border-indigo-400/60 transition-all"
+        className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#073B9E] via-[#0869E8] to-[#168BFF] border border-[#168BFF]/80 p-4 shadow-[0_8px_30px_rgba(22,139,255,0.20)] cursor-pointer group hover:border-[#16C7F2] transition-all"
       >
-        <div className="flex items-center justify-between mb-2">
+        {/* Subtle radial glow overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(22,139,255,0.18),transparent_60%)] pointer-events-none" />
+
+        <div className="flex items-center justify-between mb-2 relative z-10">
           <div className="flex items-center gap-2">
-            <div className="p-1 rounded-lg bg-amber-400/20 text-amber-400">
+            <div className="p-1.5 rounded-xl bg-white/15 text-[#FFD21F] backdrop-blur-xs border border-white/20">
               <Sun className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-bold text-slate-200 tracking-wide">Family Wealth</span>
+            <span className="text-xs font-bold text-white tracking-wide">Family Wealth</span>
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 togglePrivacyMode();
               }}
-              className="p-1 rounded-md text-slate-400 hover:text-white transition-colors"
+              className="p-1 rounded-md text-[#B9E9FF] hover:text-white transition-colors"
               title="Toggle Privacy Mask"
             >
-              {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-400" /> : <Eye className="w-3.5 h-3.5" />}
+              {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5 text-[#FFD21F]" /> : <Eye className="w-3.5 h-3.5 text-[#B9E9FF]" />}
             </button>
           </div>
 
-          <div className="w-6 h-6 rounded-full bg-slate-800/80 group-hover:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-all">
+          <div className="w-6 h-6 rounded-full bg-white/15 group-hover:bg-white/25 border border-white/20 flex items-center justify-center text-white group-hover:translate-x-0.5 transition-all">
             <ChevronRight className="w-3.5 h-3.5" />
           </div>
         </div>
 
-        <div className="flex items-end justify-between">
-          <div className="space-y-1.5 z-10">
+        <div className="flex items-end justify-between relative z-10">
+          <div className="space-y-1.5">
             <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-sans">
               {isPrivacyMode ? '••••••••' : formatCurrency(netWorthDisplay, false)}
             </div>
 
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
-              <ArrowUpRight className="w-3 h-3" />
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[rgba(25,201,167,0.16)] border border-[#19C9A7]/50 text-[#55D98A] text-[11px] font-bold">
+              <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
               <span>12% this month</span>
             </div>
           </div>
 
-          {/* Embedded Colorful Wave Sparkline Graph */}
+          {/* Embedded Multi-Stage Brand Gradient Wave Sparkline Graph */}
           <div className="w-36 h-14 -mr-1">
             <svg viewBox="0 0 120 50" className="w-full h-full overflow-visible">
               <defs>
-                <linearGradient id="wealthGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#818cf8" stopOpacity="0.0" />
+                {/* Area Fill Gradient: Soft Transparent Brand Fill */}
+                <linearGradient id="kinoraGraphFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#168BFF" stopOpacity="0.30" />
+                  <stop offset="50%" stopColor="#16C7F2" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#073B9E" stopOpacity="0.0" />
                 </linearGradient>
-                <linearGradient id="wealthLine" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#38bdf8" />
-                  <stop offset="50%" stopColor="#818cf8" />
-                  <stop offset="100%" stopColor="#34d399" />
+                {/* Multi-Stage Brand Stroke Gradient: Blue -> Cyan -> Teal -> Lime */}
+                <linearGradient id="kinoraGraphLine" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#168BFF" />
+                  <stop offset="35%" stopColor="#16C7F2" />
+                  <stop offset="70%" stopColor="#19C9A7" />
+                  <stop offset="100%" stopColor="#B9F36B" />
                 </linearGradient>
               </defs>
               <path
                 d="M 0 38 Q 20 42, 40 26 T 80 18 T 120 6 L 120 50 L 0 50 Z"
-                fill="url(#wealthGrad)"
+                fill="url(#kinoraGraphFill)"
               />
               <path
                 d="M 0 38 Q 20 42, 40 26 T 80 18 T 120 6"
                 fill="none"
-                stroke="url(#wealthLine)"
-                strokeWidth="2.5"
+                stroke="url(#kinoraGraphLine)"
+                strokeWidth="2.8"
                 strokeLinecap="round"
               />
-              <circle cx="120" cy="6" r="3" fill="#34d399" className="animate-ping" />
-              <circle cx="120" cy="6" r="2.5" fill="#34d399" />
+              {/* Final Growth Peak Indicator */}
+              <circle cx="120" cy="6" r="3.5" fill="#B9F36B" className="animate-ping" opacity="0.75" />
+              <circle cx="120" cy="6" r="3" fill="#B9F36B" />
             </svg>
           </div>
         </div>
       </div>
 
-      {/* 3. 4 Quick Actions in Distinct Colorful Boxes (Mockup Style) */}
+      {/* 3. 4 Quick Actions in KinoraOne Brand Palette Boxes */}
       <div className="grid grid-cols-4 gap-2 pt-1">
-        {/* Action 1: Add Expense (Rose Box) */}
+        {/* Action 1: Add Expense (Kinora Orange / Gold Accent) */}
         <button
           onClick={() => setShowAddExpenseModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-rose-950/40 to-slate-900 border border-rose-500/30 hover:border-rose-400 active:scale-95 transition-all shadow-md shadow-rose-950/30 group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(255,138,36,0.16)] to-[rgba(7,59,158,0.35)] border border-[rgba(255,138,36,0.55)] hover:border-[#FF8A24] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
         >
-          <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all mb-1 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(255,138,36,0.16)] border border-[#FF8A24]/40 flex items-center justify-center text-[#FFD21F] group-hover:bg-[#FF8A24] group-hover:text-white transition-all mb-1 shadow-sm">
             <Receipt className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Add Expense</span>
+          <span className="text-[11px] font-bold text-white text-center leading-tight">Add Expense</span>
         </button>
 
-        {/* Action 2: Wish List (Cyan Box - Replaces Transfer) */}
+        {/* Action 2: Wish List (Kinora Cyan / Bright Blue Accent) */}
         <button
           onClick={() => setShowWishListModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-cyan-950/40 to-slate-900 border border-cyan-500/30 hover:border-cyan-400 active:scale-95 transition-all shadow-md shadow-cyan-950/30 group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(22,199,242,0.15)] to-[rgba(7,59,158,0.35)] border border-[rgba(22,199,242,0.50)] hover:border-[#16C7F2] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
         >
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all mb-1 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(22,199,242,0.15)] border border-[#16C7F2]/40 flex items-center justify-center text-[#16C7F2] group-hover:bg-[#16C7F2] group-hover:text-white transition-all mb-1 shadow-sm">
             <Gift className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Wish List</span>
+          <span className="text-[11px] font-bold text-white text-center leading-tight">Wish List</span>
         </button>
 
-        {/* Action 3: Set Goal (Emerald Box) */}
+        {/* Action 3: Set Goal (Kinora Teal / Mint Green Accent) */}
         <button
           onClick={() => setShowSetGoalModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-emerald-950/40 to-slate-900 border border-emerald-500/30 hover:border-emerald-400 active:scale-95 transition-all shadow-md shadow-emerald-950/30 group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(25,201,167,0.15)] to-[rgba(7,59,158,0.35)] border border-[rgba(25,201,167,0.50)] hover:border-[#55D98A] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
         >
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all mb-1 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(25,201,167,0.15)] border border-[#19C9A7]/40 flex items-center justify-center text-[#55D98A] group-hover:bg-[#55D98A] group-hover:text-white transition-all mb-1 shadow-sm">
             <Target className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Set Goal</span>
+          <span className="text-[11px] font-bold text-white text-center leading-tight">Set Goal</span>
         </button>
 
-        {/* Action 4: Add Income (Purple Box - Replaces Add Money) */}
+        {/* Action 4: Add Income (Kinora Bright Blue / Cyan Accent) */}
         <button
           onClick={() => setShowAddIncomeModal(true)}
-          className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-gradient-to-b from-purple-950/40 to-slate-900 border border-purple-500/30 hover:border-purple-400 active:scale-95 transition-all shadow-md shadow-purple-950/30 group"
+          className="flex flex-col items-center justify-center p-2.5 rounded-[20px] bg-gradient-to-b from-[rgba(22,139,255,0.16)] to-[rgba(7,59,158,0.35)] border border-[rgba(22,139,255,0.50)] hover:border-[#168BFF] active:scale-95 transition-all shadow-md shadow-[rgba(6,31,92,0.4)] group"
         >
-          <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all mb-1 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-[rgba(22,139,255,0.16)] border border-[#168BFF]/40 flex items-center justify-center text-[#7EDCFF] group-hover:bg-[#168BFF] group-hover:text-white transition-all mb-1 shadow-sm">
             <Wallet className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="text-[11px] font-bold text-slate-200 text-center leading-tight">Add Income</span>
+          <span className="text-[11px] font-bold text-white text-center leading-tight">Add Income</span>
         </button>
       </div>
 
-      {/* 4. Quick Overview (3 Distinctly Colored Themed Boxes from Mock) */}
+      {/* 4. Quick Overview (3 Premium Financial Summary Cards) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-white tracking-tight">Quick Overview</h3>
           <button
             onClick={() => onNavigateTab('money')}
-            className="text-[11px] text-sky-400 hover:text-sky-300 font-bold flex items-center gap-0.5"
+            className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
           >
             <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3.5 h-3.5 text-[#16C7F2]" />
           </button>
         </div>
 
         <div className="grid grid-cols-3 gap-2.5">
-          {/* Box 1: Monthly Spending (Rose Themed Box) */}
+          {/* Card 1: Monthly Spending (Orange/Yellow Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-950/50 via-slate-900 to-slate-900 border border-rose-500/30 shadow-lg shadow-rose-950/20 flex flex-col justify-between hover:border-rose-400/60 transition-all cursor-pointer group"
+            className="p-3.5 rounded-[22px] bg-gradient-to-br from-[rgba(255,185,31,0.14)] to-[rgba(255,138,36,0.08)] border border-[rgba(255,185,31,0.45)] shadow-lg shadow-[#061F5C]/40 flex flex-col justify-between hover:border-[#FFB91F] transition-all cursor-pointer group"
           >
             <div>
-              <div className="text-[10px] font-bold text-rose-300/90 leading-tight">Monthly Spending</div>
-              <div className="text-sm sm:text-base font-black text-rose-100 mt-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-[#FFD21F]/20 text-[#FFD21F] flex items-center justify-center text-[10px] font-black">₹</div>
+                <div className="text-[10px] font-bold text-[#FFD21F] leading-tight">Monthly Spending</div>
+              </div>
+              <div className="text-sm sm:text-base font-black text-white mt-1.5">
                 {isPrivacyMode ? '••••' : formatCurrency(snapshot.monthlySpending || 0, false)}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-rose-400 mt-2 flex items-center gap-0.5">
+            <div className="text-[10px] font-bold text-[#FF8A70] mt-2 flex items-center gap-0.5">
               <span>{(snapshot.monthlySpending || 0) > 0 ? '↓ 8%' : '₹0 spent'}</span>
-              <span className="text-slate-400 text-[9px] font-normal">{(snapshot.monthlySpending || 0) > 0 ? 'vs last mo' : 'this month'}</span>
+              <span className="text-[#B9D8FF]/70 text-[9px] font-normal">{(snapshot.monthlySpending || 0) > 0 ? 'vs last mo' : 'this month'}</span>
             </div>
           </div>
 
-          {/* Box 2: Savings (Emerald Themed Box) */}
+          {/* Card 2: Savings (Teal/Green Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-950/50 via-slate-900 to-slate-900 border border-emerald-500/30 shadow-lg shadow-emerald-950/20 flex flex-col justify-between hover:border-emerald-400/60 transition-all cursor-pointer group"
+            className="p-3.5 rounded-[22px] bg-gradient-to-br from-[rgba(25,201,167,0.15)] to-[rgba(85,217,138,0.08)] border border-[rgba(25,201,167,0.45)] shadow-lg shadow-[#061F5C]/40 flex flex-col justify-between hover:border-[#55D98A] transition-all cursor-pointer group"
           >
             <div>
-              <div className="text-[10px] font-bold text-emerald-300/90 leading-tight">Savings</div>
-              <div className="text-sm sm:text-base font-black text-emerald-100 mt-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-[#55D98A]/20 text-[#55D98A] flex items-center justify-center text-[10px]">🌱</div>
+                <div className="text-[10px] font-bold text-[#55D98A] leading-tight">Savings</div>
+              </div>
+              <div className="text-sm sm:text-base font-black text-white mt-1.5">
                 {isPrivacyMode ? '••••' : formatCurrency(snapshot.totalSavings || 0, true)}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-emerald-400 mt-2 flex items-center gap-0.5">
+            <div className="text-[10px] font-bold text-[#55D98A] mt-2 flex items-center gap-0.5">
               <span>{(snapshot.totalSavings || 0) > 0 ? '↑ 15%' : '₹0 saved'}</span>
-              <span className="text-slate-400 text-[9px] font-normal">{(snapshot.totalSavings || 0) > 0 ? 'this year' : 'this year'}</span>
+              <span className="text-[#B9D8FF]/70 text-[9px] font-normal">{(snapshot.totalSavings || 0) > 0 ? 'this year' : 'this year'}</span>
             </div>
           </div>
 
-          {/* Box 3: Goals (Sky/Indigo Themed Box) */}
+          {/* Card 3: Goals (Blue/Cyan Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-2xl bg-gradient-to-br from-sky-950/50 via-slate-900 to-slate-900 border border-sky-500/30 shadow-lg shadow-sky-950/20 flex flex-col justify-between hover:border-sky-400/60 transition-all cursor-pointer group"
+            className="p-3.5 rounded-[22px] bg-gradient-to-br from-[rgba(22,139,255,0.15)] to-[rgba(22,199,242,0.08)] border border-[rgba(22,199,242,0.45)] shadow-lg shadow-[#061F5C]/40 flex flex-col justify-between hover:border-[#16C7F2] transition-all cursor-pointer group"
           >
             <div>
-              <div className="text-[10px] font-bold text-sky-300/90 leading-tight">Goals</div>
-              <div className="text-sm sm:text-base font-black text-sky-100 mt-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-[#16C7F2]/20 text-[#16C7F2] flex items-center justify-center text-[10px]">🎯</div>
+                <div className="text-[10px] font-bold text-[#7EDCFF] leading-tight">Goals</div>
+              </div>
+              <div className="text-sm sm:text-base font-black text-white mt-1.5">
                 {goals && goals.length > 0 ? `${goals.filter(g => g.current_amount >= g.target_amount).length}/${goals.length}` : '0/0'}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-sky-400 mt-2">
+            <div className="text-[10px] font-bold text-[#16C7F2] mt-2">
               {goals && goals.length > 0 ? 'On Track' : '0 Active'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 5. Upcoming Card (Mockup Style) */}
+      {/* 5. Upcoming Card (Kinora Trust & Family Theme) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-white tracking-tight">Upcoming</h3>
           <button
             onClick={() => onNavigateTab('family')}
-            className="text-[11px] text-sky-400 hover:text-sky-300 font-bold flex items-center gap-0.5"
+            className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
           >
             <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3.5 h-3.5 text-[#16C7F2]" />
           </button>
         </div>
 
         {(() => {
-          // Dynamic calculation of nearest family birthday or event
           const calendarEvents = dashboard?.today?.events || [];
           if (calendarEvents.length > 0) {
             const ev = calendarEvents[0];
             return (
               <div
                 onClick={() => onNavigateTab('calendar')}
-                className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
+                className="p-3.5 rounded-[22px] bg-[rgba(7,59,158,0.35)] border border-[rgba(22,139,255,0.25)] shadow-md flex items-center justify-between hover:border-[#168BFF]/60 transition-all cursor-pointer group backdrop-blur-xs"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-sky-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-                    <Calendar className="w-6 h-6" />
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#168BFF]/25 to-[#16C7F2]/25 border border-[#168BFF]/40 flex items-center justify-center text-[#16C7F2] shrink-0">
+                    <Calendar className="w-6 h-6 stroke-[2]" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors">
+                    <div className="text-xs font-bold text-white group-hover:text-[#7EDCFF] transition-colors">
                       {ev.title} 📅
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-[10px] text-[#A9DFFF] mt-0.5">
                       {ev.start_date ? formatDate(ev.start_date) : 'Upcoming Event'}
                     </div>
                   </div>
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300 text-xs font-bold">
+                <div className="w-8 h-8 rounded-full bg-[#168BFF]/20 border border-[#168BFF]/40 flex items-center justify-center text-[#7EDCFF] text-xs font-bold">
                   ➔
                 </div>
               </div>
             );
           }
 
-          // Check real family member birthdays
+          // Birthday calculation
           const today = new Date();
           const currentYear = today.getFullYear();
 
@@ -540,17 +550,17 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           return (
             <div
               onClick={() => onNavigateTab('family')}
-              className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
+              className="p-3.5 rounded-[22px] bg-[rgba(7,59,158,0.35)] border border-[rgba(22,139,255,0.25)] shadow-md flex items-center justify-between hover:border-[#168BFF]/60 transition-all cursor-pointer group backdrop-blur-xs"
             >
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0">
-                  <Cake className="w-6 h-6" />
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF8A24]/20 to-[#FFD21F]/20 border border-[#FF8A24]/40 flex items-center justify-center text-[#FFD21F] shrink-0">
+                  <Cake className="w-6 h-6 stroke-[2]" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white group-hover:text-pink-300 transition-colors">
+                  <div className="text-xs font-bold text-white group-hover:text-[#7EDCFF] transition-colors">
                     {nearest ? `${nearest.member.name.split(' ')[0]}'s Birthday 🎂` : "Family Birthday 🎂"}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">
+                  <div className="text-[10px] text-[#A9DFFF] mt-0.5">
                     {nearest
                       ? nearest.diffDays === 0
                         ? 'Today! Celebrate together 🎉'
@@ -563,7 +573,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               <img
                 src={nearest?.member?.avatar_url || currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
                 alt={nearest?.member?.name || 'Member'}
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-pink-500/40 shadow-sm"
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-[#16C7F2]/60 shadow-sm"
               />
             </div>
           );
@@ -576,10 +586,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           <h3 className="text-sm font-black text-white tracking-tight">Family Moments</h3>
           <button
             onClick={() => onNavigateTab('memories')}
-            className="text-[11px] text-sky-400 hover:text-sky-300 font-bold flex items-center gap-0.5"
+            className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
           >
             <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3.5 h-3.5 text-[#16C7F2]" />
           </button>
         </div>
 
@@ -597,7 +607,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               <div
                 key={mem.id}
                 onClick={() => onNavigateTab('memories')}
-                className="min-w-[140px] max-w-[140px] rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden shadow-md shrink-0 cursor-pointer group"
+                className="min-w-[140px] max-w-[140px] rounded-[20px] bg-[#073B9E]/40 border border-[#168BFF]/25 overflow-hidden shadow-md shrink-0 cursor-pointer group hover:border-[#16C7F2]/60 transition-all"
               >
                 <div className="h-24 overflow-hidden relative">
                   <img
@@ -605,8 +615,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                     alt={mem.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent" />
-                  <span className="absolute bottom-1 left-2 text-[9px] font-bold text-white truncate max-w-[120px]">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#061F5C]/95 via-transparent to-transparent" />
+                  <span className="absolute bottom-1.5 left-2.5 text-[9px] font-bold text-white truncate max-w-[120px]">
                     {mem.location || mem.title}
                   </span>
                 </div>
@@ -616,53 +626,53 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       </div>
 
-      {/* ================= MODALS (UNIFIED WITH MONEY & FAMILY SECTIONS) ================= */}
+      {/* ================= MODALS (WITH KINORAONE THEME SYSTEM) ================= */}
 
-      {/* 1. Add Expense Modal (Exact same functionality as Money Section) */}
+      {/* 1. Add Expense Modal */}
       {showAddExpenseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#FF8A24]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400">
+                <div className="p-2 rounded-xl bg-[#FF8A24]/20 text-[#FFD21F] border border-[#FF8A24]/40">
                   <Receipt className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Record Family Expense</h3>
-                  <p className="text-[10px] text-slate-400">Synced with Family Wealth & Budget</p>
+                  <p className="text-[10px] text-[#B9D8FF]">Synced with Family Wealth & Budget</p>
                 </div>
               </div>
-              <button onClick={() => setShowAddExpenseModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
+              <button onClick={() => setShowAddExpenseModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
             </div>
 
             <form onSubmit={handleCreateExpense} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Amount (₹ INR) *</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold">Amount (₹ INR) *</label>
                 <input
                   type="number"
                   required
                   placeholder="e.g. 2400"
                   value={expenseForm.amount}
                   onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-amber-400 outline-none focus:border-amber-400"
+                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-lg font-bold text-[#FFD21F] outline-none focus:border-[#FFD21F]"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Merchant / Payee *</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold">Merchant / Payee *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Ratnadeep Supermarket / Swiggy"
                   value={expenseForm.merchant}
                   onChange={(e) => setExpenseForm({ ...expenseForm, merchant: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Category</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Category</label>
                   <select
                     value={expenseForm.category_name}
                     onChange={(e) => {
@@ -672,7 +682,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                         category_name: selectedName,
                       });
                     }}
-                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                   >
                     <option value="Groceries & Kirana">Groceries & Kirana</option>
                     <option value="Food & Dining / Swiggy">Food & Dining / Swiggy</option>
@@ -691,11 +701,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Payment Mode</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Payment Mode</label>
                   <select
                     value={expenseForm.payment_method}
                     onChange={(e) => setExpenseForm({ ...expenseForm, payment_method: e.target.value as any })}
-                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                   >
                     <option value="UPI">UPI (GPay / PhonePe)</option>
                     <option value="CREDIT_CARD">Credit Card</option>
@@ -707,30 +717,30 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold mb-1 block">Expense Date</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Expense Date</label>
                 <input
                   type="date"
                   required
                   value={expenseForm.date}
                   onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold mb-1 block">Notes / Items (Optional)</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Notes / Items (Optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. Monthly ration & snacks"
                   value={expenseForm.notes}
                   onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white font-bold rounded-xl shadow-lg shadow-rose-500/30 text-xs transition-all active:scale-98 mt-2"
+                className="w-full py-3 bg-gradient-to-r from-[#FF8A24] via-[#FFB91F] to-[#FF6F32] hover:opacity-95 text-white font-bold rounded-xl shadow-lg shadow-[#FF8A24]/30 text-xs transition-all active:scale-98 mt-2"
               >
                 Save Expense Record
               </button>
@@ -739,26 +749,26 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       )}
 
-      {/* 2. Wish List Modal (Unified directly with Family Hub's Wish List backend) */}
+      {/* 2. Wish List Modal */}
       {showWishListModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#16C7F2]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">
+                <div className="p-2 rounded-xl bg-[#16C7F2]/20 text-[#16C7F2] border border-[#16C7F2]/40">
                   <Gift className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Family Wish List</h3>
-                  <p className="text-[10px] text-slate-400">Stored in Family Hub • Shared with all members</p>
+                  <p className="text-[10px] text-[#B9D8FF]">Stored in Family Hub • Shared with all members</p>
                 </div>
               </div>
-              <button onClick={() => setShowWishListModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
+              <button onClick={() => setShowWishListModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
             </div>
 
             {/* Add Wish Item Form */}
-            <form onSubmit={handleAddWish} className="p-3.5 bg-slate-800/70 border border-slate-700/60 rounded-2xl space-y-2.5">
-              <div className="text-xs font-bold text-amber-400">+ Add New Wish</div>
+            <form onSubmit={handleAddWish} className="p-3.5 bg-[#073B9E]/50 border border-[#168BFF]/35 rounded-2xl space-y-2.5">
+              <div className="text-xs font-bold text-[#FFD21F]">+ Add New Wish</div>
               <div>
                 <input
                   type="text"
@@ -766,14 +776,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                   placeholder="Wish item (e.g. Sony Wireless Headphones)"
                   value={newWishTitle}
                   onChange={(e) => setNewWishTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                  className="w-full px-3 py-2 bg-[#03194A] border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={newWishCategory}
                   onChange={(e) => setNewWishCategory(e.target.value)}
-                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                  className="px-3 py-2 bg-[#03194A] border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
                 >
                   <option value="WISH">🎁 Wish / Gift</option>
                   <option value="GADGET">📱 Gadget / Tech</option>
@@ -788,12 +798,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                   placeholder="₹ Est. Cost (Optional)"
                   value={newWishAmount}
                   onChange={(e) => setNewWishAmount(e.target.value)}
-                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-cyan-400"
+                  className="px-3 py-2 bg-[#03194A] border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full py-2.5 bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-white font-bold rounded-xl text-xs shadow-md shadow-cyan-500/20 active:scale-98 transition-all"
+                className="w-full py-2.5 bg-gradient-to-r from-[#168BFF] to-[#16C7F2] hover:opacity-95 text-white font-bold rounded-xl text-xs shadow-md shadow-[#168BFF]/30 active:scale-98 transition-all"
               >
                 Add to Family Wish List
               </button>
@@ -801,12 +811,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
             {/* Wish List items */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+              <div className="flex items-center justify-between text-xs font-bold text-[#B9D8FF]">
                 <span>Shared Wish List ({wishlistItems.length})</span>
-                <span className="text-[10px] text-slate-400 font-normal">Tap check to mark fulfilled</span>
+                <span className="text-[10px] text-[#91A8C7] font-normal">Tap check to mark fulfilled</span>
               </div>
               {wishlistItems.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-400">No wishes added yet. Make a wish above! ✨</div>
+                <div className="p-6 text-center text-xs text-[#91A8C7]">No wishes added yet. Make a wish above! ✨</div>
               ) : (
                 <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                   {wishlistItems.map((wish) => (
@@ -814,8 +824,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                       key={wish.id}
                       className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
                         wish.is_purchased
-                          ? 'bg-slate-900/50 border-slate-800 opacity-60'
-                          : 'bg-slate-800/90 border-slate-700/80 shadow-sm'
+                          ? 'bg-[#03194A]/60 border-[#168BFF]/15 opacity-60'
+                          : 'bg-[#073B9E]/50 border-[#168BFF]/35 shadow-sm'
                       }`}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0 mr-2">
@@ -824,35 +834,35 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                           onClick={() => toggleWishFulfilled(wish.id)}
                           className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
                             wish.is_purchased
-                              ? 'bg-emerald-500 border-emerald-400 text-slate-950'
-                              : 'border-slate-600 hover:border-cyan-400'
+                              ? 'bg-[#55D98A] border-[#55D98A] text-[#03194A]'
+                              : 'border-[#168BFF]/60 hover:border-[#16C7F2]'
                           }`}
                         >
                           {wish.is_purchased && <CheckCircle2 className="w-3.5 h-3.5" />}
                         </button>
                         <div className="min-w-0">
-                          <div className={`text-xs font-bold truncate ${wish.is_purchased ? 'line-through text-slate-400' : 'text-white'}`}>
+                          <div className={`text-xs font-bold truncate ${wish.is_purchased ? 'line-through text-[#91A8C7]' : 'text-white'}`}>
                             {wish.item_name}
                           </div>
-                          <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                            Added by <span className="text-amber-300 font-semibold">{wish.added_by_name || 'Family'}</span>
+                          <div className="text-[10px] text-[#B9D8FF] truncate mt-0.5">
+                            Added by <span className="text-[#FFD21F] font-semibold">{wish.added_by_name || 'Family'}</span>
                             {wish.estimated_cost ? (
-                              <span className="text-emerald-400 font-bold ml-1.5">• ₹{Number(wish.estimated_cost).toLocaleString('en-IN')}</span>
+                              <span className="text-[#55D98A] font-bold ml-1.5">• ₹{Number(wish.estimated_cost).toLocaleString('en-IN')}</span>
                             ) : wish.quantity && wish.quantity !== '1 unit' && (
-                              <span className="text-slate-300 ml-1.5">• {wish.quantity}</span>
+                              <span className="text-[#B9D8FF] ml-1.5">• {wish.quantity}</span>
                             )}
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-[9px] bg-slate-700/80 text-slate-300 px-2 py-0.5 rounded-full font-semibold">
+                        <span className="text-[9px] bg-[#03194A] text-[#7EDCFF] px-2 py-0.5 rounded-full font-semibold border border-[#168BFF]/30">
                           {wish.category || 'WISH'}
                         </span>
                         <button
                           type="button"
                           onClick={() => deleteWishItem(wish.id)}
-                          className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                          className="p-1.5 text-[#91A8C7] hover:text-[#FF4D6D] transition-colors"
                           title="Delete wish"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -867,43 +877,43 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       )}
 
-      {/* 3. Set Goal Modal (Exact same functionality as Money Section Goals) */}
+      {/* 3. Set Goal Modal */}
       {showSetGoalModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#19C9A7]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                <div className="p-2 rounded-xl bg-[#19C9A7]/20 text-[#55D98A] border border-[#19C9A7]/40">
                   <Target className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Set Family Financial Goal</h3>
-                  <p className="text-[10px] text-slate-400">Synced with Money & Wealth Tracker</p>
+                  <p className="text-[10px] text-[#B9D8FF]">Synced with Money & Wealth Tracker</p>
                 </div>
               </div>
-              <button onClick={() => setShowSetGoalModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
+              <button onClick={() => setShowSetGoalModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
             </div>
 
             <form onSubmit={handleCreateGoal} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Goal Name *</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold">Goal Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Buy Dream House / Europe Trip / Child MBA"
                   value={goalForm.title}
                   onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#55D98A]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Goal Category</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Goal Category</label>
                   <select
                     value={goalForm.category}
                     onChange={(e) => setGoalForm({ ...goalForm, category: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                   >
                     <option value="PROPERTY">🏡 Property / Real Estate</option>
                     <option value="EDUCATION">🎓 Children Education</option>
@@ -917,11 +927,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Priority</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Priority</label>
                   <select
                     value={goalForm.priority}
                     onChange={(e) => setGoalForm({ ...goalForm, priority: e.target.value as any })}
-                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                   >
                     <option value="HIGH">🔥 High Priority</option>
                     <option value="MEDIUM">⚡ Medium Priority</option>
@@ -932,56 +942,56 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Target Amount (₹) *</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold">Target Amount (₹) *</label>
                   <input
                     type="number"
                     required
                     placeholder="e.g. 5000000"
                     value={goalForm.target_amount}
                     onChange={(e) => setGoalForm({ ...goalForm, target_amount: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-bold text-emerald-400 outline-none focus:border-emerald-400"
+                    className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-sm font-bold text-[#55D98A] outline-none focus:border-[#55D98A]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Saved So Far (₹)</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold">Saved So Far (₹)</label>
                   <input
                     type="number"
                     placeholder="e.g. 100000"
                     value={goalForm.current_amount}
                     onChange={(e) => setGoalForm({ ...goalForm, current_amount: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-bold text-amber-400 outline-none focus:border-emerald-400"
+                    className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-sm font-bold text-[#FFD21F] outline-none focus:border-[#55D98A]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Monthly SIP / Save (₹)</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Monthly SIP / Save (₹)</label>
                   <input
                     type="number"
                     placeholder="e.g. 10000"
                     value={goalForm.monthly_contribution}
                     onChange={(e) => setGoalForm({ ...goalForm, monthly_contribution: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                    className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#55D98A]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Target Date</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Target Date</label>
                   <input
                     type="date"
                     required
                     value={goalForm.target_date}
                     onChange={(e) => setGoalForm({ ...goalForm, target_date: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-400"
+                    className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#55D98A]"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 text-xs transition-all active:scale-98 mt-2"
+                className="w-full py-3 bg-gradient-to-r from-[#19C9A7] to-[#55D98A] hover:opacity-95 text-white font-bold rounded-xl shadow-lg shadow-[#19C9A7]/30 text-xs transition-all active:scale-98 mt-2"
               >
                 Create Financial Goal
               </button>
@@ -990,55 +1000,55 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       )}
 
-      {/* 4. Add Income Modal (Synced with Wealth / Investments) */}
+      {/* 4. Add Income Modal */}
       {showAddIncomeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="w-full max-w-md bg-[#061F5C] border-2 border-[#168BFF]/40 rounded-3xl p-5 text-[#F4F8FF] shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#168BFF]/20 pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                <div className="p-2 rounded-xl bg-[#168BFF]/20 text-[#7EDCFF] border border-[#168BFF]/40">
                   <Wallet className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Add Family Income / Deposit</h3>
-                  <p className="text-[10px] text-slate-400">Credits directly to Family Wealth balance</p>
+                  <p className="text-[10px] text-[#B9D8FF]">Credits directly to Family Wealth balance</p>
                 </div>
               </div>
-              <button onClick={() => setShowAddIncomeModal(false)} className="text-slate-400 hover:text-white text-sm">✕</button>
+              <button onClick={() => setShowAddIncomeModal(false)} className="text-[#B9D8FF] hover:text-white text-sm">✕</button>
             </div>
 
             <form onSubmit={handleAddIncome} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Income Amount (₹ INR) *</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold">Income Amount (₹ INR) *</label>
                 <input
                   type="number"
                   required
                   placeholder="e.g. 150000"
                   value={incomeForm.amount}
                   onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-lg font-bold text-emerald-400 outline-none focus:border-purple-400"
+                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-lg font-bold text-[#55D98A] outline-none focus:border-[#168BFF]"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Income Source / Employer *</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold">Income Source / Employer *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Monthly Salary / Freelance / Business"
                   value={incomeForm.source}
                   onChange={(e) => setIncomeForm({ ...incomeForm, source: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-purple-400"
+                  className="w-full mt-1 px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none focus:border-[#168BFF]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Income Type</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Income Type</label>
                   <select
                     value={incomeForm.type}
                     onChange={(e) => setIncomeForm({ ...incomeForm, type: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className="w-full px-3 py-2.5 bg-[#073B9E]/60 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                   >
                     <option value="SALARY">Primary Salary</option>
                     <option value="BUSINESS">Business Income</option>
@@ -1049,31 +1059,31 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold mb-1 block">Received Date</label>
+                  <label className="text-xs text-[#B9D8FF] font-semibold mb-1 block">Received Date</label>
                   <input
                     type="date"
                     required
                     value={incomeForm.date}
                     onChange={(e) => setIncomeForm({ ...incomeForm, date: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Notes (Optional)</label>
+                <label className="text-xs text-[#B9D8FF] font-semibold">Notes (Optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. September Salary credited to HDFC"
                   value={incomeForm.notes}
                   onChange={(e) => setIncomeForm({ ...incomeForm, notes: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#073B9E]/40 border border-[#168BFF]/40 rounded-xl text-xs text-white outline-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-purple-600/30 text-xs transition-all active:scale-98 mt-2"
+                className="w-full py-3 bg-gradient-to-r from-[#0869E8] to-[#168BFF] hover:opacity-95 text-white font-bold rounded-xl shadow-lg shadow-[#0869E8]/30 text-xs transition-all active:scale-98 mt-2"
               >
                 Deposit & Credit to Family Wealth
               </button>

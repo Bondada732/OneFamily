@@ -27,37 +27,40 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 max-w-md mx-auto">
-      <nav className="relative bg-slate-950/95 backdrop-blur-2xl border-t border-slate-800/80 px-4 py-2 flex items-center justify-between shadow-2xl">
+      <nav className="relative bg-[rgba(3,25,74,0.94)] backdrop-blur-2xl border-t border-[#168BFF]/25 px-4 py-2 flex items-center justify-between shadow-[0_-10px_30px_rgba(3,25,74,0.8)]">
         {/* Left 2 items */}
         <div className="flex items-center gap-6">
           {leftNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
+            const isHome = item.id === 'home';
             return (
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
                 className={`flex flex-col items-center justify-center min-w-[52px] py-1 transition-all ${
                   isActive
-                    ? 'text-amber-400 font-bold scale-105'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? isHome
+                      ? 'text-[#FFD21F] font-bold scale-105 filter drop-shadow-[0_0_8px_rgba(255,210,31,0.35)]'
+                      : 'text-[#16C7F2] font-bold scale-105 filter drop-shadow-[0_0_8px_rgba(22,199,242,0.35)]'
+                    : 'text-[#91A8C7] hover:text-[#B9D8FF]'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                <span className="text-[10px] mt-1 font-medium tracking-tight">{item.label}</span>
+                <span className="text-[10px] mt-1 font-semibold tracking-tight">{item.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Floating Center '+' Action Button */}
+        {/* Floating Signature KinoraOne Center '+' Action Button */}
         <div className="relative -top-5 flex justify-center">
           <button
             onClick={onOpenQuickAction}
-            className="w-13 h-13 p-3.5 rounded-full bg-gradient-to-tr from-amber-500 via-indigo-600 to-indigo-500 text-white shadow-xl shadow-indigo-600/50 flex items-center justify-center hover:scale-110 active:scale-95 transition-all ring-4 ring-slate-950"
+            className="w-13 h-13 p-3.5 rounded-full bg-gradient-to-br from-[#168BFF] via-[#16C7F2] via-[#19C9A7] to-[#FFD21F] text-white shadow-[0_8px_30px_rgba(22,139,255,0.45)] border border-white/25 flex items-center justify-center hover:scale-110 active:scale-95 transition-all ring-4 ring-[#03194A]"
             title="Create & Record"
           >
-            <Plus className="w-6 h-6 stroke-[3]" />
+            <Plus className="w-6 h-6 stroke-[3] text-white" />
           </button>
         </div>
 
@@ -72,12 +75,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
                 onClick={() => onSelectTab(item.id)}
                 className={`flex flex-col items-center justify-center min-w-[52px] py-1 transition-all ${
                   isActive
-                    ? 'text-amber-400 font-bold scale-105'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'text-[#16C7F2] font-bold scale-105 filter drop-shadow-[0_0_8px_rgba(22,199,242,0.35)]'
+                    : 'text-[#91A8C7] hover:text-[#B9D8FF]'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                <span className="text-[10px] mt-1 font-medium tracking-tight">{item.label}</span>
+                <span className="text-[10px] mt-1 font-semibold tracking-tight">{item.label}</span>
               </button>
             );
           })}

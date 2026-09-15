@@ -50,38 +50,38 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
   const getNotifIcon = (type: string) => {
     switch (type) {
       case 'URGENT':
-        return <ShieldAlert className="w-4 h-4 text-rose-400" />;
+        return <ShieldAlert className="w-4 h-4 text-[#FF4D6D]" />;
       case 'WARNING':
-        return <AlertTriangle className="w-4 h-4 text-amber-400" />;
+        return <AlertTriangle className="w-4 h-4 text-[#FFD21F]" />;
       case 'SUCCESS':
-        return <CheckCircle2 className="w-4 h-4 text-emerald-400" />;
+        return <CheckCircle2 className="w-4 h-4 text-[#55D98A]" />;
       default:
-        return <Info className="w-4 h-4 text-indigo-400" />;
+        return <Info className="w-4 h-4 text-[#16C7F2]" />;
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl p-6 text-slate-100 shadow-2xl space-y-4 max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md bg-[#061F5C] border-t sm:border-2 border-[#168BFF]/40 rounded-t-3xl sm:rounded-3xl p-6 text-[#F4F8FF] shadow-[0_20px_60px_rgba(3,25,74,0.95)] space-y-4 max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between pb-2 border-b border-[#168BFF]/20">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-indigo-600/20 text-indigo-400 rounded-xl border border-indigo-500/30">
+            <div className="p-2 bg-[#073B9E]/60 text-[#16C7F2] rounded-xl border border-[#168BFF]/30">
               <Bell className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white">Family Notifications</h3>
-              <p className="text-xs text-slate-400">Important reminders, bill dues & alerts</p>
+              <p className="text-xs text-[#B9D8FF]">Important reminders, bill dues & alerts</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-[#073B9E] text-[#B9D8FF] hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
-          {loading && <div className="text-center py-6 text-xs text-slate-400">Loading alerts...</div>}
+          {loading && <div className="text-center py-6 text-xs text-[#B9D8FF]">Loading alerts...</div>}
           {!loading && notifications.length === 0 && (
-            <div className="text-center py-8 text-xs text-slate-400">No active alerts. All clear! 🎉</div>
+            <div className="text-center py-8 text-xs text-[#91A8C7]">No active alerts. All clear! 🎉</div>
           )}
 
           {notifications.map((notif) => (
@@ -90,22 +90,22 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
               onClick={() => markAsRead(notif.id, notif.link_tab)}
               className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                 notif.is_read
-                  ? 'bg-slate-800/40 border-slate-800/60 opacity-70'
-                  : 'bg-slate-800/90 border-slate-700 shadow-md hover:border-slate-600'
+                  ? 'bg-[#03194A]/60 border-[#168BFF]/15 opacity-70'
+                  : 'bg-[#073B9E]/40 border-[#168BFF]/35 shadow-md hover:border-[#16C7F2]/60'
               }`}
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 shrink-0">{getNotifIcon(notif.type)}</div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-100">{notif.title}</span>
+                    <span className="font-bold text-xs text-white">{notif.title}</span>
                     {!notif.is_read && (
-                      <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#FFD21F] shrink-0"></span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{notif.message}</p>
+                  <p className="text-xs text-[#B9D8FF] mt-1 leading-relaxed">{notif.message}</p>
                   {notif.link_tab && (
-                    <div className="flex items-center gap-1 text-[11px] text-indigo-400 font-semibold mt-2 hover:underline">
+                    <div className="flex items-center gap-1 text-[11px] text-[#16C7F2] font-semibold mt-2 hover:underline">
                       <span>View in {notif.link_tab}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>

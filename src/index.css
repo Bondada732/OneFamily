@@ -2,11 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* KinoraOne Core Brand Palette */
+  --kinora-deep-navy: #061F5C;
+  --kinora-dark-royal-blue: #073B9E;
+  --kinora-primary-blue: #0869E8;
+  --kinora-bright-blue: #168BFF;
+  --kinora-cyan: #16C7F2;
+  --kinora-teal: #19C9A7;
+  --kinora-mint-green: #55D98A;
+  --kinora-lime: #B9F36B;
+  --kinora-yellow: #FFD21F;
+  --kinora-golden-yellow: #FFB91F;
+  --kinora-orange: #FF8A24;
+  --kinora-warm-orange: #FF6F32;
+  --kinora-danger: #FF4D6D;
+  --kinora-white: #FFFFFF;
+  --kinora-soft-white: #F4F8FF;
+
+  /* Typography / Text Tokens */
+  --kinora-text-primary: #FFFFFF;
+  --kinora-text-secondary: #B9D8FF;
+  --kinora-text-muted: #91A8C7;
+  --kinora-text-tagline: #7EDCFF;
+  --kinora-text-highlight: #16C7F2;
+  --kinora-text-quote: #A9DFFF;
+
+  /* Backgrounds & Glass */
+  --kinora-bg-main: #061F5C;
+  --kinora-bg-gradient: linear-gradient(180deg, #061F5C 0%, #052B78 45%, #03194A 100%);
+  --kinora-header-bg: #073B9E;
+  --kinora-nav-bg: rgba(3, 25, 74, 0.94);
+  --kinora-glass-bg: rgba(255, 255, 255, 0.04);
+  --kinora-glass-border: rgba(255, 255, 255, 0.10);
+}
+
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased font-sans;
+    background-color: var(--kinora-deep-navy);
+    background-image: var(--kinora-bg-gradient);
+    color: var(--kinora-text-primary);
+    min-height: 100vh;
+    @apply antialiased font-sans;
     -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Reusable KinoraOne Theme Classes */
+.kinora-bg-gradient {
+  background: linear-gradient(180deg, #061F5C 0%, #052B78 45%, #03194A 100%);
+}
+
+.kinora-glow-wealth {
+  background: radial-gradient(circle at 50% 30%, rgba(22, 139, 255, 0.16), transparent 55%);
+}
+
+.kinora-wealth-gradient {
+  background: linear-gradient(135deg, #073B9E 0%, #0869E8 55%, #168BFF 100%);
+}
+
+.kinora-plus-btn {
+  background: linear-gradient(135deg, #168BFF 0%, #16C7F2 45%, #19C9A7 70%, #FFD21F 100%);
+  box-shadow: 0 8px 30px rgba(22, 139, 255, 0.35);
+}
+
+.kinora-active-tab-glow {
+  filter: drop-shadow(0 0 8px rgba(255, 210, 31, 0.35));
 }
 
 /* Custom smooth animations & scrollbar utilities */
@@ -36,4 +97,3 @@ html, body, #root, * {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
-
