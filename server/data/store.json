@@ -7642,6 +7642,26 @@
       "category": "FINANCE",
       "details": "Created goal \"emergency fund\" targeting ₹200000",
       "created_at": "2026-09-15T19:45:25.718Z"
+    },
+    {
+      "id": "aud_1789528363913_my77r",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-16T03:12:43.913Z"
+    },
+    {
+      "id": "aud_1789528364611_609zv",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-16T03:12:44.611Z"
     }
   ],
   "expense_categories": [

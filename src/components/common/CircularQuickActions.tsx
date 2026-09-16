@@ -137,63 +137,82 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
   ];
 
-  // Dynamically calculate the curved arc trajectory on scroll and resize
+  // Buttery smooth 120fps curve math with ZERO layout thrashing (No getBoundingClientRect in scroll loop!)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    let animFrameId: number;
+    let animFrameId: number | null = null;
+    let cachedClientWidth = container.clientWidth || 360;
+    const CARD_WIDTH = 96;
+    const CARD_GAP = 16;
+    const PADDING_LEFT = 16;
+    const PITCH = CARD_WIDTH + CARD_GAP; // 112px
 
-    const updateCurvature = () => {
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const radius = rect.width * 0.48;
+    const updateMeasurements = () => {
+      if (container) {
+        cachedClientWidth = container.clientWidth;
+      }
+    };
 
-      cardRefs.current.forEach((card) => {
-        if (!card) return;
-        const cardRect = card.getBoundingClientRect();
-        const cardCenter = cardRect.left + cardRect.width / 2;
+    const applyCurvature = () => {
+      const scrollLeft = container.scrollLeft;
+      const centerX = scrollLeft + cachedClientWidth / 2;
+      const radius = cachedClientWidth * 0.46;
+
+      for (let i = 0; i < items.length; i++) {
+        const card = cardRefs.current[i];
+        if (!card) continue;
+
+        // Pure arithmetic coordinate calculation - ZERO DOM queries!
+        const cardCenter = PADDING_LEFT + i * PITCH + CARD_WIDTH / 2;
         const diff = (cardCenter - centerX) / radius;
-        const clamped = Math.max(-1.6, Math.min(1.6, diff));
+        const clamped = Math.max(-1.5, Math.min(1.5, diff));
 
-        // Parabolic arc curve equation: center cards are lifted, sides curve downward
-        const translateY = Math.pow(clamped, 2) * 14;
-        const rotateZ = clamped * 6.5; // degrees tilt along arc tangent
+        // Parabolic arc curve equation: Center cards elevated, sides gracefully curve downward
+        const translateY = clamped * clamped * 15;
+        const rotateZ = clamped * 6.5; // degrees tilt along curve arc
         const rotateY = clamped * -10; // 3D cylinder curvature
         const scale = 1.02 - Math.abs(clamped) * 0.05;
 
-        card.style.transform = `translate3d(0, ${translateY}px, 0) rotateZ(${rotateZ}deg) rotateY(${rotateY}deg) scale(${scale})`;
-      });
+        card.style.transform = `translate3d(0, ${translateY.toFixed(1)}px, 0) rotateZ(${rotateZ.toFixed(1)}deg) rotateY(${rotateY.toFixed(1)}deg) scale(${scale.toFixed(2)})`;
+      }
+      animFrameId = null;
     };
 
     const handleScroll = () => {
-      cancelAnimationFrame(animFrameId);
-      animFrameId = requestAnimationFrame(updateCurvature);
+      if (animFrameId === null) {
+        animFrameId = requestAnimationFrame(applyCurvature);
+      }
     };
 
-    // Initial calculation
-    updateCurvature();
+    // Initial render
+    updateMeasurements();
+    applyCurvature();
 
     container.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
+    window.addEventListener('resize', () => {
+      updateMeasurements();
+      handleScroll();
+    }, { passive: true });
 
     return () => {
-      cancelAnimationFrame(animFrameId);
+      if (animFrameId !== null) cancelAnimationFrame(animFrameId);
       container.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
     };
-  }, []);
+  }, [items.length]);
 
   return (
-    <div className="relative w-full pt-1 pb-4 overflow-hidden">
-      {/* Curved Arc Track with 3D perspective */}
+    <div className="relative w-full pt-1 pb-2 overflow-hidden">
+      {/* Curved Arc Track with GPU-accelerated touch physics */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none snap-x snap-mandatory pt-2 pb-5 px-4 scroll-smooth"
+        className="flex gap-4 overflow-x-auto scrollbar-none pt-2 pb-6 px-4 overscroll-x-contain"
         style={{
           WebkitOverflowScrolling: 'touch',
-          perspective: '1200px',
+          perspective: '1000px',
           perspectiveOrigin: '50% 50%',
+          touchAction: 'pan-x',
         }}
       >
         {items.map((item, idx) => {
@@ -209,16 +228,19 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
                 e.stopPropagation();
                 item.onClick();
               }}
-              className="relative shrink-0 snap-center rounded-[28px] p-0 overflow-hidden cursor-pointer transition-transform duration-150 will-change-transform active:scale-95 text-left focus:outline-none group select-none shadow-2xl"
+              className="relative shrink-0 rounded-[28px] p-0 overflow-hidden cursor-pointer active:scale-95 text-left focus:outline-none group select-none shadow-2xl"
               style={{
                 width: '96px',
                 minWidth: '96px',
                 height: '152px',
                 border: `2px solid ${item.neonColor}`,
-                boxShadow: `${item.glowShadow}, 0 12px 30px -6px rgba(0, 0, 0, 0.85)`,
+                boxShadow: `${item.glowShadow}, 0 10px 25px -5px rgba(0, 0, 0, 0.85)`,
                 background: item.bgGradient,
                 borderRadius: '28px',
                 transformOrigin: '50% 120%',
+                willChange: 'transform',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
               }}
             >
               {/* Curved Glass Reflection Sheen */}
@@ -245,7 +267,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
 
                 {/* Center Glowing Icon with Curved Box */}
                 <div
-                  className="w-11 h-11 rounded-[18px] flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-lg"
+                  className="w-11 h-11 rounded-[18px] flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-lg"
                   style={{
                     backgroundColor: 'rgba(5, 8, 17, 0.85)',
                     border: `1.5px solid ${item.neonColor}`,
