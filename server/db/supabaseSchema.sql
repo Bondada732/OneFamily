@@ -347,6 +347,8 @@ CREATE TABLE grocery_items (
   item_name TEXT NOT NULL,
   quantity TEXT NOT NULL,
   category TEXT NOT NULL,
+  estimated_cost NUMERIC(12, 2) DEFAULT 0,
+  notes TEXT,
   is_purchased BOOLEAN DEFAULT FALSE,
   added_by_name TEXT NOT NULL,
   created_at TEXT NOT NULL

@@ -89,9 +89,18 @@ export async function syncRecordToSupabase(
     const sanitized = sanitizeForSupabase(tableName, record);
     if (action === 'insert' || action === 'update') {
       const conflictKey = tableName === 'member_permissions' ? 'user_id,permission_code' : 'id';
-      const { error } = await supabase
+      let { error } = await supabase
         .from(tableName)
         .upsert(sanitized, { onConflict: conflictKey });
+
+      if (error && tableName === 'grocery_items' && (error.message.includes('estimated_cost') || error.message.includes('notes'))) {
+        // Fallback for grocery_items if optional columns do not exist yet in Supabase
+        const fallback = { ...sanitized };
+        delete fallback.estimated_cost;
+        delete fallback.notes;
+        const retryRes = await supabase.from(tableName).upsert(fallback, { onConflict: conflictKey });
+        error = retryRes.error;
+      }
 
       if (error) {
         console.warn(`[Supabase Sync] Error upserting into ${tableName}:`, error.message);
