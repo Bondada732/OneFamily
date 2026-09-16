@@ -352,113 +352,86 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         onEmergency={() => setShowEmergencyModal(true)}
       />
 
-      {/* 2.5. Family Wishlist Section (Positioned ABOVE Family Wealth) */}
-      <div className="space-y-2.5 pt-1">
-        <div className="flex items-center justify-between px-0.5">
+      {/* 2.5. Family Wishlist Section in Bullet Points (Positioned ABOVE Family Wealth) */}
+      <div className="space-y-1.5 pt-1 px-1">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-[#00D2FF]/15 border border-[#00D2FF]/35 flex items-center justify-center text-[#00D2FF] shadow-sm">
-              <Gift className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
-                Family Wishlist
-                {wishlistItems.length > 0 && (
-                  <span className="text-[10px] bg-[#00D2FF]/20 text-[#00D2FF] font-bold px-2 py-0.2 rounded-full border border-[#00D2FF]/30">
-                    {wishlistItems.length}
-                  </span>
-                )}
-              </h3>
-            </div>
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="text-[#00D2FF]">✦</span>
+              <span>Family Wishlist</span>
+              {wishlistItems.length > 0 && (
+                <span className="text-[10px] text-[#00D2FF] font-bold">
+                  ({wishlistItems.length})
+                </span>
+              )}
+            </h3>
           </div>
 
           <button
+            type="button"
             onClick={() => setShowWishListModal(true)}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#00D2FF]/15 hover:bg-[#00D2FF]/25 border border-[#00D2FF]/40 text-[#00D2FF] text-[11px] font-bold transition-all active:scale-95 shadow-sm"
+            className="text-[11px] text-[#00D2FF] hover:text-[#7EDCFF] font-bold transition-colors"
           >
-            <span>+ Add Wish</span>
+            + Add Wish
           </button>
         </div>
 
-        {/* Wishlist Items Cards */}
+        {/* Wishlist Items in Pure Bullet Points */}
         {wishlistItems && wishlistItems.length > 0 ? (
-          <div className="flex gap-2.5 overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5">
+          <ul className="space-y-1.5 pl-1 text-xs">
             {wishlistItems.map((wish) => {
               const isFulfilled = wish.completed || wish.status === 'COMPLETED';
+              const costDisplay = wish.estimated_cost
+                ? `₹${Number(wish.estimated_cost).toLocaleString('en-IN')}`
+                : wish.quantity && wish.quantity !== '1 unit'
+                ? wish.quantity
+                : '';
+
               return (
-                <div
+                <li
                   key={wish.id}
-                  className={`relative shrink-0 snap-start w-52 p-3 rounded-[20px] bg-[#0D152D] border transition-all shadow-lg flex flex-col justify-between group ${
-                    isFulfilled
-                      ? 'border-emerald-500/40 bg-emerald-950/10 opacity-75'
-                      : 'border-slate-800/90 hover:border-[#00D2FF]/50'
-                  }`}
+                  className="flex items-center justify-between group py-0.5"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <span className="inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00D2FF]/15 text-[#00D2FF] border border-[#00D2FF]/25 mb-1.5">
-                        {wish.category || 'WISH'}
-                      </span>
-                      <h4 className={`text-xs font-bold truncate ${isFulfilled ? 'line-through text-slate-400' : 'text-white'}`}>
-                        {wish.item_name || wish.title}
-                      </h4>
-                    </div>
-
-                    <button
-                      type="button"
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span
                       onClick={() => toggleWishFulfilled(wish.id)}
-                      className={`p-1 rounded-lg border transition-colors shrink-0 ${
-                        isFulfilled
-                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                          : 'bg-slate-800/70 text-slate-400 hover:text-white border-slate-700/60'
+                      className={`cursor-pointer select-none text-base leading-none transition-colors ${
+                        isFulfilled ? 'text-emerald-400' : 'text-[#00D2FF]'
                       }`}
-                      title={isFulfilled ? 'Mark unfulfilled' : 'Mark fulfilled'}
                     >
-                      <CheckCircle2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-800/80">
-                    <span className="text-xs font-black text-[#00E676] font-mono">
-                      {wish.estimated_cost
-                        ? `₹${Number(wish.estimated_cost).toLocaleString('en-IN')}`
-                        : wish.quantity || '₹0'}
+                      •
                     </span>
-
-                    <button
-                      type="button"
-                      onClick={() => deleteWishItem(wish.id)}
-                      className="p-1 rounded-md text-slate-500 hover:text-[#FF4D6D] hover:bg-[#FF4D6D]/15 transition-colors"
-                      title="Remove wish"
+                    <span
+                      onClick={() => toggleWishFulfilled(wish.id)}
+                      className={`truncate cursor-pointer font-medium transition-colors ${
+                        isFulfilled ? 'line-through text-slate-500' : 'text-slate-100 hover:text-white'
+                      }`}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      {wish.item_name || wish.title}
+                    </span>
+                    {costDisplay && (
+                      <span className={`text-[11px] font-bold shrink-0 ${isFulfilled ? 'text-slate-500' : 'text-[#00E676]'}`}>
+                        ({costDisplay})
+                      </span>
+                    )}
                   </div>
-                </div>
+
+                  <button
+                    type="button"
+                    onClick={() => deleteWishItem(wish.id)}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all ml-2"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </li>
               );
             })}
-          </div>
+          </ul>
         ) : (
-          <div
-            onClick={() => setShowWishListModal(true)}
-            className="p-3.5 rounded-[22px] bg-[#0D152D]/80 border border-dashed border-slate-700/70 hover:border-[#00D2FF]/60 transition-all cursor-pointer flex items-center justify-between group shadow-sm"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#00D2FF]/10 border border-[#00D2FF]/25 flex items-center justify-center text-[#00D2FF]">
-                <Gift className="w-4 h-4 stroke-[2.2]" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white group-hover:text-[#00D2FF] transition-colors">
-                  No wishlist items yet
-                </p>
-                <p className="text-[10px] text-slate-400">
-                  Tap to add your family's dream gadgets, vacations, or goals
-                </p>
-              </div>
-            </div>
-            <span className="text-xs text-[#00D2FF] font-bold px-2 py-1 rounded-lg bg-[#00D2FF]/10 border border-[#00D2FF]/25">
-              + Add
-            </span>
-          </div>
+          <p className="text-xs text-slate-400 pl-1">
+            • No wishlist items yet. Tap <button onClick={() => setShowWishListModal(true)} className="text-[#00D2FF] underline font-medium">+ Add Wish</button> to add dreams for your family.
+          </p>
         )}
       </div>
 
