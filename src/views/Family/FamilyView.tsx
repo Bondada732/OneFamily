@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
@@ -62,8 +62,35 @@ export const FamilyView: React.FC = () => {
   const [newTaskPriority, setNewTaskPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
   const [newGroceryName, setNewGroceryName] = useState('');
   const [newGroceryCategory, setNewGroceryCategory] = useState('WISH');
+  const [customGroceryCat, setCustomGroceryCat] = useState('');
   const [newGroceryQty, setNewGroceryQty] = useState('1 unit');
   const [newGroceryPrice, setNewGroceryPrice] = useState('');
+
+  // Dynamic list of unique categories across default + custom wishlist items
+  const availableWishCategories = useMemo(() => {
+    const base = [
+      { id: 'WISH', name: '🎁 Wish / Gift' },
+      { id: 'GADGET', name: '📱 Gadget / Tech' },
+      { id: 'SHOPPING', name: '🛍️ Shopping / Clothes' },
+      { id: 'BOOK', name: '📚 Books / Study' },
+      { id: 'GROCERY', name: '🛒 Grocery / Food' },
+      { id: 'HOME', name: '🏡 Home & Living' },
+      { id: 'VEHICLE', name: '🚗 Vehicle & Bike' },
+      { id: 'TRAVEL', name: '✈️ Trip & Vacation' },
+      { id: 'APPLIANCE', name: '📺 TV & Appliance' },
+    ];
+    const map = new Map<string, string>();
+    base.forEach((b) => map.set(b.id, b.name));
+
+    groceryItems.forEach((item) => {
+      if (item.category && !map.has(item.category) && !base.some((b) => b.id.toUpperCase() === item.category.toUpperCase())) {
+        const cleanName = item.category.startsWith('CAT_') ? 'Custom' : item.category;
+        map.set(item.category, `✨ ${cleanName}`);
+      }
+    });
+
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [groceryItems]);
 
   // Editing Modals State (Family Head or TASK_EDIT permitted)
   const [editingTask, setEditingTask] = useState<TaskItem | null>(null);
@@ -268,12 +295,16 @@ export const FamilyView: React.FC = () => {
     if (!newGroceryName.trim() || !family?.id) return;
 
     try {
+      const categoryToUse = (newGroceryCategory === '__CUSTOM__' && customGroceryCat.trim()
+        ? customGroceryCat.trim()
+        : newGroceryCategory) || 'WISH';
+
       const created = await apiRequest(`/tasks/${family.id}/grocery`, {
         method: 'POST',
         body: JSON.stringify({
           item_name: newGroceryName.trim(),
           quantity: newGroceryPrice ? `₹${Number(newGroceryPrice).toLocaleString('en-IN')}` : (newGroceryQty || '1 unit'),
-          category: newGroceryCategory || 'WISH',
+          category: categoryToUse,
           estimated_cost: Number(newGroceryPrice) || 0,
         }),
       });
@@ -282,6 +313,7 @@ export const FamilyView: React.FC = () => {
       setNewGroceryQty('1 unit');
       setNewGroceryPrice('');
       setNewGroceryCategory('WISH');
+      setCustomGroceryCat('');
       setShowAddGrocery(false);
     } catch (err) {
       console.error(err);
@@ -1184,7 +1216,7 @@ export const FamilyView: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-semibold">
-                      {item.category || 'WISH'}
+                      {item.category?.startsWith('CAT_') ? 'Custom' : (item.category || 'WISH')}
                     </span>
                     {canEditTasks && (
                       <button
@@ -2390,13 +2422,12 @@ export const FamilyView: React.FC = () => {
                     onChange={(e) => setNewGroceryCategory(e.target.value)}
                     className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
                   >
-                    <option value="WISH">🎁 Wish / Gift</option>
-                    <option value="GADGET">📱 Gadget / Tech</option>
-                    <option value="SHOPPING">🛍️ Shopping / Clothes</option>
-                    <option value="BOOK">📚 Books / Study</option>
-                    <option value="GROCERY">🛒 Grocery / Food</option>
-                    <option value="HOME">🏡 Home & Living</option>
-                    <option value="OTHER">✨ Other</option>
+                    {availableWishCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                    <option value="__CUSTOM__">➕ Add Custom Category...</option>
                   </select>
                 </div>
                 <div>
@@ -2410,6 +2441,20 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {newGroceryCategory === '__CUSTOM__' && (
+                <div className="animate-fade-in">
+                  <label className="text-xs text-amber-300 font-semibold">Custom Category Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Gaming, Gold Jewelry, Gym Equipment"
+                    value={customGroceryCat}
+                    onChange={(e) => setCustomGroceryCat(e.target.value)}
+                    className="w-full mt-1 px-3.5 py-2 bg-slate-800 border border-amber-400/60 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="text-xs text-slate-300 font-semibold">Note / Detail (Optional)</label>
@@ -3009,11 +3054,11 @@ export const FamilyView: React.FC = () => {
                     onChange={(e) => setEditingGrocery({ ...editingGrocery, category: e.target.value })}
                     className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
                   >
-                    <option value="WISH">Family Wish / Gift</option>
-                    <option value="GROCERY">Grocery / Kirana</option>
-                    <option value="HOME">Home Essentials</option>
-                    <option value="GADGET">Gadget / Tech</option>
-                    <option value="CLOTHING">Clothing & Apparel</option>
+                    {availableWishCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

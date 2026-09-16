@@ -82,6 +82,54 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
   const [customName, setCustomName] = useState('');
   const [categoriesList, setCategoriesList] = useState<WishCategoryItem[]>(WISH_CATEGORIES);
 
+  // Dynamically load custom categories from existing wishlistItems and localStorage
+  React.useEffect(() => {
+    const customCatsMap = new Map<string, WishCategoryItem>();
+
+    // 1. Scan existing wishlist items for custom categories
+    if (Array.isArray(wishlistItems)) {
+      wishlistItems.forEach((item) => {
+        if (item.category) {
+          const match = WISH_CATEGORIES.find(
+            (c) => c.id.toUpperCase() === item.category.toUpperCase() || c.name.toLowerCase() === item.category.toLowerCase()
+          );
+          if (!match && !customCatsMap.has(item.category)) {
+            const displayName = item.category.startsWith('CAT_') ? 'Custom Wish' : item.category;
+            customCatsMap.set(item.category, {
+              id: item.category,
+              name: displayName,
+              icon: Tag,
+              color: '#16C7F2',
+              bgColor: 'rgba(22, 199, 242, 0.16)',
+              borderColor: 'rgba(22, 199, 242, 0.50)',
+            });
+          }
+        }
+      });
+    }
+
+    // 2. Scan localStorage for custom wishlist categories
+    try {
+      const saved = JSON.parse(localStorage.getItem('onefamily_custom_wish_categories') || '[]');
+      if (Array.isArray(saved)) {
+        saved.forEach((catName: string) => {
+          if (catName && !customCatsMap.has(catName) && !WISH_CATEGORIES.some((c) => c.name.toLowerCase() === catName.toLowerCase() || c.id.toLowerCase() === catName.toLowerCase())) {
+            customCatsMap.set(catName, {
+              id: catName,
+              name: catName,
+              icon: Tag,
+              color: '#19C9A7',
+              bgColor: 'rgba(25, 201, 167, 0.16)',
+              borderColor: 'rgba(25, 201, 167, 0.50)',
+            });
+          }
+        });
+      }
+    } catch {}
+
+    setCategoriesList([...WISH_CATEGORIES, ...Array.from(customCatsMap.values())]);
+  }, [wishlistItems]);
+
   if (!isOpen) return null;
 
   const handleSelectTag = (tag: typeof QUICK_WISH_TAGS[0]) => {
@@ -102,18 +150,38 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
 
   const handleAddCustomCategory = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customName.trim()) return;
-    const newCat: WishCategoryItem = {
-      id: `CAT_${Date.now()}`,
-      name: customName.trim(),
-      icon: Tag,
-      color: '#16C7F2',
-      bgColor: 'rgba(22, 199, 242, 0.16)',
-      borderColor: 'rgba(22, 199, 242, 0.50)',
-    };
-    setCategoriesList((prev) => [...prev, newCat]);
-    setSelectedCategory(newCat.id);
-    setSelectedCatName(newCat.name);
+    const cleanName = customName.trim();
+    if (!cleanName) return;
+
+    const existing = categoriesList.find(
+      (c) => c.name.toLowerCase() === cleanName.toLowerCase() || c.id.toLowerCase() === cleanName.toLowerCase()
+    );
+
+    if (existing) {
+      setSelectedCategory(existing.id);
+      setSelectedCatName(existing.name);
+    } else {
+      const newCat: WishCategoryItem = {
+        id: cleanName,
+        name: cleanName,
+        icon: Tag,
+        color: '#19C9A7',
+        bgColor: 'rgba(25, 201, 167, 0.16)',
+        borderColor: 'rgba(25, 201, 167, 0.50)',
+      };
+      setCategoriesList((prev) => [...prev, newCat]);
+      setSelectedCategory(newCat.id);
+      setSelectedCatName(newCat.name);
+
+      // Save custom category to localStorage so it is remembered
+      try {
+        const saved = JSON.parse(localStorage.getItem('onefamily_custom_wish_categories') || '[]');
+        if (!saved.includes(cleanName)) {
+          localStorage.setItem('onefamily_custom_wish_categories', JSON.stringify([...saved, cleanName]));
+        }
+      } catch {}
+    }
+
     setCustomName('');
     setShowCustomInput(false);
   };
@@ -124,9 +192,14 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
 
     try {
       setIsSubmitting(true);
+      // Ensure the category name is stored properly in the database
+      const categoryToSave = selectedCategory.startsWith('CAT_') && selectedCatName 
+        ? selectedCatName 
+        : (selectedCategory || 'WISH');
+
       await onSubmit({
         item_name: title.trim(),
-        category: selectedCategory,
+        category: categoryToSave,
         estimated_cost: Number(estimatedCost) || 0,
       });
       setTitle('');
@@ -356,7 +429,7 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
 
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-[9px] bg-[#03194A] text-[#7EDCFF] px-2 py-0.5 rounded-full font-semibold border border-[#168BFF]/30">
-                      {wish.category || 'WISH'}
+                      {categoriesList.find((c) => c.id.toUpperCase() === (wish.category || '').toUpperCase() || c.name.toLowerCase() === (wish.category || '').toLowerCase())?.name || (wish.category && wish.category.startsWith('CAT_') ? 'Custom' : (wish.category || 'WISH'))}
                     </span>
                     <button
                       type="button"
