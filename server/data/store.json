@@ -7662,6 +7662,26 @@
       "category": "EMERGENCY",
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-16T03:12:44.611Z"
+    },
+    {
+      "id": "aud_1789577634806_9s8qn",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-16T16:53:54.806Z"
+    },
+    {
+      "id": "aud_1789577635307_2739v",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-16T16:53:55.307Z"
     }
   ],
   "expense_categories": [
@@ -10879,6 +10899,18 @@
       "is_purchased": false,
       "added_by_name": "Ditya",
       "created_at": "2026-09-12T16:55:19.173Z"
+    },
+    {
+      "id": "g_1789529636960",
+      "family_id": "fam_1789381570680",
+      "item_name": "passport xerox copy",
+      "quantity": "1 unit",
+      "category": "CAT_1789529626712",
+      "estimated_cost": 0,
+      "notes": "",
+      "is_purchased": false,
+      "added_by_name": "Rambabu",
+      "created_at": "2026-09-16T03:33:56.960Z"
     }
   ],
   "maintenance_items": [

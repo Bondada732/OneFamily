@@ -12,7 +12,7 @@ const getApiBase = (): string => {
     }
     // If running inside Capacitor Native APK on Android
     if (window.location.protocol === 'capacitor:' || (window.location.hostname === 'localhost' && window.location.port === '')) {
-      const customHost = localStorage.getItem('onefamily_api_host') || `http://${window.location.hostname === 'localhost' ? '192.168.1.5' : window.location.hostname}:4000`;
+      const customHost = localStorage.getItem('onefamily_api_host') || `http://${window.location.hostname === 'localhost' ? '192.168.1.6' : window.location.hostname}:4000`;
       return `${customHost}/api`;
     }
   }
