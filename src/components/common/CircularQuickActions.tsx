@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   Receipt,
   Gift,
@@ -8,9 +8,6 @@ import {
   CheckSquare,
   Wrench,
   ShieldAlert,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 
 export interface QuickActionItem {
@@ -47,6 +44,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   onEmergency,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const items: QuickActionItem[] = [
     {
@@ -57,7 +55,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: Receipt,
       neonColor: '#FF2A55',
       glowShadow: '0 0 16px rgba(255, 42, 85, 0.65), inset 0 0 14px rgba(255, 42, 85, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 42, 85, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(255, 42, 85, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onAddExpense,
     },
     {
@@ -68,7 +66,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: Gift,
       neonColor: '#00D2FF',
       glowShadow: '0 0 16px rgba(0, 210, 255, 0.65), inset 0 0 14px rgba(0, 210, 255, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(0, 210, 255, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(0, 210, 255, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onWishList,
     },
     {
@@ -79,7 +77,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: Target,
       neonColor: '#00E676',
       glowShadow: '0 0 16px rgba(0, 230, 118, 0.65), inset 0 0 14px rgba(0, 230, 118, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(0, 230, 118, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(0, 230, 118, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onSetGoal,
     },
     {
@@ -90,7 +88,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: Wallet,
       neonColor: '#B388FF',
       glowShadow: '0 0 16px rgba(179, 136, 255, 0.65), inset 0 0 14px rgba(179, 136, 255, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(179, 136, 255, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(179, 136, 255, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onAddIncome,
     },
     {
@@ -101,7 +99,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: FolderLock,
       neonColor: '#FFD600',
       glowShadow: '0 0 16px rgba(255, 214, 0, 0.65), inset 0 0 14px rgba(255, 214, 0, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 214, 0, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(255, 214, 0, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onVault,
     },
     {
@@ -112,7 +110,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: CheckSquare,
       neonColor: '#38BDF8',
       glowShadow: '0 0 16px rgba(56, 189, 248, 0.65), inset 0 0 14px rgba(56, 189, 248, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(56, 189, 248, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(56, 189, 248, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onTasks,
     },
     {
@@ -123,7 +121,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: Wrench,
       neonColor: '#FF6D00',
       glowShadow: '0 0 16px rgba(255, 109, 0, 0.65), inset 0 0 14px rgba(255, 109, 0, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 109, 0, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(255, 109, 0, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onMaintenance,
     },
     {
@@ -134,46 +132,98 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       icon: ShieldAlert,
       neonColor: '#FF1744',
       glowShadow: '0 0 16px rgba(255, 23, 68, 0.65), inset 0 0 14px rgba(255, 23, 68, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 23, 68, 0.18) 0%, rgba(13, 21, 45, 0.95) 70%)',
+      bgGradient: 'linear-gradient(180deg, rgba(255, 23, 68, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
       onClick: onEmergency,
     },
   ];
 
+  // Dynamically calculate the curved arc trajectory on scroll and resize
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let animFrameId: number;
+
+    const updateCurvature = () => {
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const radius = rect.width * 0.48;
+
+      cardRefs.current.forEach((card) => {
+        if (!card) return;
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const diff = (cardCenter - centerX) / radius;
+        const clamped = Math.max(-1.6, Math.min(1.6, diff));
+
+        // Parabolic arc curve equation: center cards are lifted, sides curve downward
+        const translateY = Math.pow(clamped, 2) * 14;
+        const rotateZ = clamped * 6.5; // degrees tilt along arc tangent
+        const rotateY = clamped * -10; // 3D cylinder curvature
+        const scale = 1.02 - Math.abs(clamped) * 0.05;
+
+        card.style.transform = `translate3d(0, ${translateY}px, 0) rotateZ(${rotateZ}deg) rotateY(${rotateY}deg) scale(${scale})`;
+      });
+    };
+
+    const handleScroll = () => {
+      cancelAnimationFrame(animFrameId);
+      animFrameId = requestAnimationFrame(updateCurvature);
+    };
+
+    // Initial calculation
+    updateCurvature();
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(animFrameId);
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
+
   return (
-    <div className="relative w-full py-1">
-      {/* Single-Line Horizontal Neon Cards Track with smooth spacing and curve */}
+    <div className="relative w-full pt-1 pb-4 overflow-hidden">
+      {/* Curved Arc Track with 3D perspective */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none snap-x snap-mandatory py-2 px-2.5 scroll-smooth"
+        className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-none snap-x snap-mandatory pt-2 pb-5 px-4 scroll-smooth"
         style={{
           WebkitOverflowScrolling: 'touch',
-          perspective: '1000px',
+          perspective: '1200px',
+          perspectiveOrigin: '50% 50%',
         }}
       >
-        {items.map((item) => {
+        {items.map((item, idx) => {
           const Icon = item.icon;
           return (
             <button
               key={item.id}
+              ref={(el) => {
+                cardRefs.current[idx] = el;
+              }}
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 item.onClick();
               }}
-              className="relative shrink-0 snap-start rounded-[28px] p-0 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.05] active:scale-95 text-left focus:outline-none group select-none"
+              className="relative shrink-0 snap-center rounded-[28px] p-0 overflow-hidden cursor-pointer transition-transform duration-150 will-change-transform active:scale-95 text-left focus:outline-none group select-none shadow-2xl"
               style={{
                 width: '96px',
                 minWidth: '96px',
                 height: '152px',
                 border: `2px solid ${item.neonColor}`,
-                boxShadow: `${item.glowShadow}, 0 10px 25px -5px rgba(0, 0, 0, 0.7)`,
+                boxShadow: `${item.glowShadow}, 0 12px 30px -6px rgba(0, 0, 0, 0.85)`,
                 background: item.bgGradient,
                 borderRadius: '28px',
+                transformOrigin: '50% 120%',
               }}
             >
               {/* Curved Glass Reflection Sheen */}
-              <div 
-                className="absolute inset-x-0 top-0 h-[48%] bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none"
+              <div
+                className="absolute inset-x-0 top-0 h-[46%] bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none"
                 style={{
                   borderTopLeftRadius: '26px',
                   borderTopRightRadius: '26px',
@@ -182,7 +232,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
 
               {/* Card Interior */}
               <div className="relative z-10 w-full h-full p-2.5 flex flex-col justify-between items-center text-center">
-                {/* Top Number / Index Indicator (Matching Reference Design) */}
+                {/* Top Number Indicator */}
                 <div
                   className="text-2xl font-black tracking-tight"
                   style={{
@@ -193,11 +243,11 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
                   {item.num}
                 </div>
 
-                {/* Center Glowing Icon with Curved Rounded Box */}
+                {/* Center Glowing Icon with Curved Box */}
                 <div
                   className="w-11 h-11 rounded-[18px] flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-lg"
                   style={{
-                    backgroundColor: 'rgba(5, 8, 17, 0.82)',
+                    backgroundColor: 'rgba(5, 8, 17, 0.85)',
                     border: `1.5px solid ${item.neonColor}`,
                     color: item.neonColor,
                     boxShadow: `0 0 14px ${item.neonColor}70`,

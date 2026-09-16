@@ -317,31 +317,19 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
   return (
     <div className="p-3.5 space-y-3.5 text-[#F4F8FF] pb-24 animate-in fade-in duration-300">
-      {/* 2nd Line: Profile Avatar + Small Greeting + Temperature */}
+      {/* 2nd Line: Small Greeting + Temperature (Avatar removed per request) */}
       <div className="flex items-center justify-between pt-0.5">
-        <div className="flex items-center gap-2.5">
-          {/* User Profile Avatar */}
-          <div className="relative shrink-0">
-            <img
-              src={currentUser?.avatar_url || family?.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-              alt={currentUser?.name || 'Rambabu'}
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-[#16C7F2]/60 shadow-md"
-            />
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-2 ring-[#080D1A]"></span>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs sm:text-sm font-semibold text-slate-200">
+              {getGreeting()},{' '}
+              <strong className="text-white font-black">{firstName}</strong>
+            </span>
+            <span className="text-xs">👋</span>
           </div>
-
-          <div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs sm:text-sm font-semibold text-slate-200">
-                {getGreeting()},{' '}
-                <strong className="text-white font-black">{firstName}</strong>
-              </span>
-              <span className="text-xs">👋</span>
-            </div>
-            <p className="text-[10px] text-slate-400 italic mt-0.5 leading-tight">
-              "Small steps today, big dreams tomorrow."
-            </p>
-          </div>
+          <p className="text-[10px] text-slate-400 italic mt-0.5 leading-tight">
+            "Small steps today, big dreams tomorrow."
+          </p>
         </div>
 
         {/* Weather Card */}
@@ -363,6 +351,116 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         onMaintenance={() => setShowMaintenanceModal(true)}
         onEmergency={() => setShowEmergencyModal(true)}
       />
+
+      {/* 2.5. Family Wishlist Section (Positioned ABOVE Family Wealth) */}
+      <div className="space-y-2.5 pt-1">
+        <div className="flex items-center justify-between px-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-[#00D2FF]/15 border border-[#00D2FF]/35 flex items-center justify-center text-[#00D2FF] shadow-sm">
+              <Gift className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
+                Family Wishlist
+                {wishlistItems.length > 0 && (
+                  <span className="text-[10px] bg-[#00D2FF]/20 text-[#00D2FF] font-bold px-2 py-0.2 rounded-full border border-[#00D2FF]/30">
+                    {wishlistItems.length}
+                  </span>
+                )}
+              </h3>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowWishListModal(true)}
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#00D2FF]/15 hover:bg-[#00D2FF]/25 border border-[#00D2FF]/40 text-[#00D2FF] text-[11px] font-bold transition-all active:scale-95 shadow-sm"
+          >
+            <span>+ Add Wish</span>
+          </button>
+        </div>
+
+        {/* Wishlist Items Cards */}
+        {wishlistItems && wishlistItems.length > 0 ? (
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5">
+            {wishlistItems.map((wish) => {
+              const isFulfilled = wish.completed || wish.status === 'COMPLETED';
+              return (
+                <div
+                  key={wish.id}
+                  className={`relative shrink-0 snap-start w-52 p-3 rounded-[20px] bg-[#0D152D] border transition-all shadow-lg flex flex-col justify-between group ${
+                    isFulfilled
+                      ? 'border-emerald-500/40 bg-emerald-950/10 opacity-75'
+                      : 'border-slate-800/90 hover:border-[#00D2FF]/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#00D2FF]/15 text-[#00D2FF] border border-[#00D2FF]/25 mb-1.5">
+                        {wish.category || 'WISH'}
+                      </span>
+                      <h4 className={`text-xs font-bold truncate ${isFulfilled ? 'line-through text-slate-400' : 'text-white'}`}>
+                        {wish.item_name || wish.title}
+                      </h4>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleWishFulfilled(wish.id)}
+                      className={`p-1 rounded-lg border transition-colors shrink-0 ${
+                        isFulfilled
+                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                          : 'bg-slate-800/70 text-slate-400 hover:text-white border-slate-700/60'
+                      }`}
+                      title={isFulfilled ? 'Mark unfulfilled' : 'Mark fulfilled'}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-800/80">
+                    <span className="text-xs font-black text-[#00E676] font-mono">
+                      {wish.estimated_cost
+                        ? `₹${Number(wish.estimated_cost).toLocaleString('en-IN')}`
+                        : wish.quantity || '₹0'}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => deleteWishItem(wish.id)}
+                      className="p-1 rounded-md text-slate-500 hover:text-[#FF4D6D] hover:bg-[#FF4D6D]/15 transition-colors"
+                      title="Remove wish"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            onClick={() => setShowWishListModal(true)}
+            className="p-3.5 rounded-[22px] bg-[#0D152D]/80 border border-dashed border-slate-700/70 hover:border-[#00D2FF]/60 transition-all cursor-pointer flex items-center justify-between group shadow-sm"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#00D2FF]/10 border border-[#00D2FF]/25 flex items-center justify-center text-[#00D2FF]">
+                <Gift className="w-4 h-4 stroke-[2.2]" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white group-hover:text-[#00D2FF] transition-colors">
+                  No wishlist items yet
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  Tap to add your family's dream gadgets, vacations, or goals
+                </p>
+              </div>
+            </div>
+            <span className="text-xs text-[#00D2FF] font-bold px-2 py-1 rounded-lg bg-[#00D2FF]/10 border border-[#00D2FF]/25">
+              + Add
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* 3. Family Wealth Hero Card (Positioned BELOW Action Buttons, ABOVE Quick Overview) */}
       <div
