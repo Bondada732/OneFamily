@@ -114,7 +114,6 @@ class DatabaseService {
     }
 
     try {
-      console.log('🔄 Hydrating database from Supabase Cloud...');
       const tables: (keyof DBStore)[] = [
         'families',
         'users',
@@ -146,13 +145,12 @@ class DatabaseService {
       // Check if users exist in Supabase
       const remoteUsers = await fetchAllFromSupabase('users');
       if (remoteUsers.length === 0) {
-        console.log('ℹ️ Supabase tables empty. Using local store as base.');
         return false;
       }
 
       for (const table of tables) {
         const records = await fetchAllFromSupabase(table as string);
-        if (records && records.length > 0) {
+        if (records) {
           this.data[table] = records.map((r: any) => {
             const copy = { ...r };
             if (copy.photos && typeof copy.photos === 'string' && copy.photos.startsWith('[')) {
@@ -167,12 +165,19 @@ class DatabaseService {
       }
 
       this.save();
-      console.log(`✅ Successfully hydrated ${remoteUsers.length} users and all tables from Supabase Cloud!`);
       return true;
     } catch (err) {
       console.error('⚠️ Failed to hydrate database from Supabase:', err);
       return false;
     }
+  }
+
+  public initSupabaseRealtime() {
+    const supabase = (import('./supabaseClient.js') as any);
+    // Setup background continuous sync from Supabase every 15 seconds
+    setInterval(() => {
+      this.hydrateFromSupabase().catch(() => {});
+    }, 15000);
   }
 
   public getTable<K extends keyof DBStore>(tableName: K): DBStore[K] {
@@ -233,4 +238,5 @@ class DatabaseService {
 }
 
 export const db = new DatabaseService();
+db.initSupabaseRealtime();
 export default db;

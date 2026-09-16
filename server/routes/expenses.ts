@@ -10,8 +10,12 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Get All Expenses & Categories
-router.get('/:id/expenses', requirePermission('FINANCE_VIEW'), (req: AuthRequest, res) => {
+router.get('/:id/expenses', requirePermission('FINANCE_VIEW'), async (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
+  
+  // Always sync fresh data from Supabase Cloud
+  await db.hydrateFromSupabase().catch(() => {});
+
   const expenses = db.find('expenses', (e) => e.family_id === familyId);
   const categories = getOrCreateExpenseCategories(familyId);
 

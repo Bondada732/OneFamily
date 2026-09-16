@@ -8,8 +8,12 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Get All Tasks, Grocery, Maintenance
-router.get('/:id/tasks', (req: AuthRequest, res) => {
+router.get('/:id/tasks', async (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
+
+  // Always sync fresh data from Supabase Cloud
+  await db.hydrateFromSupabase().catch(() => {});
+
   const tasks = db.find('tasks', (t) => t.family_id === familyId);
   const groceryItems = db.find('grocery_items', (g) => g.family_id === familyId);
   const maintenanceItems = db.find('maintenance_items', (m) => m.family_id === familyId);
