@@ -7632,6 +7632,16 @@
       "category": "EMERGENCY",
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-15T18:18:32.595Z"
+    },
+    {
+      "id": "aud_1789501525718_6m55o",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Created Goal",
+      "category": "FINANCE",
+      "details": "Created goal \"emergency fund\" targeting ₹200000",
+      "created_at": "2026-09-15T19:45:25.718Z"
     }
   ],
   "expense_categories": [
@@ -9583,6 +9593,20 @@
       "status": "IN_PROGRESS",
       "contributors": "[\"Raj Sharma\"]",
       "created_at": "2026-09-12T17:34:51.177Z"
+    },
+    {
+      "id": "goal_1789501525320",
+      "family_id": "fam_1789381570680",
+      "title": "emergency fund",
+      "category": "EMERGENCY",
+      "target_amount": 200000,
+      "current_amount": 0,
+      "monthly_contribution": 10000,
+      "target_date": "2028-12-31",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "contributors": "[\"Rambabu\"]",
+      "created_at": "2026-09-15T19:45:25.320Z"
     }
   ],
   "calendar_events": [

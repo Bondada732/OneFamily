@@ -247,26 +247,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
             </div>
           )}
         </div>
-
-        {/* Right: Search & Notifications with Dark Glass Buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onOpenSearch}
-            className="w-9 h-9 rounded-full bg-[#0D152D] hover:bg-[#131F3F] active:scale-95 border border-slate-700/70 flex items-center justify-center text-slate-200 hover:text-white transition-all shadow-sm"
-            title="Search transactions, docs, goals"
-          >
-            <Search className="w-4 h-4 stroke-[2.2]" />
-          </button>
-
-          <button
-            onClick={onOpenNotifications}
-            className="relative w-9 h-9 rounded-full bg-[#0D152D] hover:bg-[#131F3F] active:scale-95 border border-slate-700/70 flex items-center justify-center text-slate-200 hover:text-white transition-all shadow-sm"
-            title="Notifications & Smart Reminders"
-          >
-            <Bell className="w-4 h-4 stroke-[2.2]" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF4D6D] ring-2 ring-[#080D1A] animate-pulse"></span>
-          </button>
-        </div>
       </div>
     </header>
   );
