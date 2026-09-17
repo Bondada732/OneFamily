@@ -115,3 +115,30 @@ export interface SmartCaptureSettings {
   privacyMode: boolean;
   historicalScanDays: number;
 }
+
+export interface SmsPermissionDetail {
+  readSmsGranted: boolean;
+  receiveSmsGranted: boolean;
+  permissionState: PermissionState;
+}
+
+export interface SmartExpenseDiagnostics {
+  androidVersion?: string;
+  apiLevel?: number;
+  targetSdk?: number;
+  manufacturer?: string;
+  model?: string;
+  readSmsPermission: boolean;
+  receiveSmsPermission: boolean;
+  smsInboxAccessible: boolean;
+  smsInboxCount: number;
+  inboxError?: string;
+  receiverConfigured: boolean;
+  receiverTriggerCount: number;
+  lastSmsTimestamp?: string | null;
+  capacitorPluginLoaded: boolean;
+  pendingQueueCount: number;
+  notificationCaptureImplemented: boolean;
+  notificationStatusMessage: string;
+}
+

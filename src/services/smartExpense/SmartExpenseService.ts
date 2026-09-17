@@ -1,11 +1,12 @@
 import { apiRequest } from '../../utils/api.js';
-import { DetectedTransaction, SmartCaptureSettings, PermissionState, ParsedTransactionResult } from './types.js';
+import { DetectedTransaction, SmartCaptureSettings, PermissionState, ParsedTransactionResult, SmsPermissionDetail, SmartExpenseDiagnostics } from './types.js';
 import { AndroidSmsCaptureProvider, WebCaptureProvider, TransactionCaptureProvider } from './TransactionCaptureProvider.js';
 import { TransactionParserPipeline } from './TransactionParser.js';
 
 class SmartExpenseManager {
   private provider: TransactionCaptureProvider = new AndroidSmsCaptureProvider();
   private webProvider: TransactionCaptureProvider = new WebCaptureProvider();
+  private isCapturing: boolean = false;
 
   // Get active capture provider
   public getProvider = async (): Promise<TransactionCaptureProvider> => {
@@ -13,6 +14,81 @@ class SmartExpenseManager {
       return this.provider;
     }
     return this.webProvider;
+  };
+
+  // Check detailed permissions (READ_SMS & RECEIVE_SMS individually)
+  public checkDetailedPermissions = async (): Promise<SmsPermissionDetail> => {
+    const provider = await this.getProvider();
+    if (provider.checkDetailedPermissions) {
+      return await provider.checkDetailedPermissions();
+    }
+    const state = await provider.getPermissionState();
+    return {
+      readSmsGranted: state === 'GRANTED',
+      receiveSmsGranted: state === 'GRANTED',
+      permissionState: state,
+    };
+  };
+
+  // Request detailed runtime SMS permissions
+  public requestDetailedPermissions = async (): Promise<SmsPermissionDetail> => {
+    const provider = await this.getProvider();
+    if (provider.requestDetailedPermissions) {
+      return await provider.requestDetailedPermissions();
+    }
+    const state = await provider.requestPermission();
+    return {
+      readSmsGranted: state === 'GRANTED',
+      receiveSmsGranted: state === 'GRANTED',
+      permissionState: state,
+    };
+  };
+
+  // Query SMS Inbox count via ContentResolver (Diagnostic)
+  public getRecentSmsCount = async (): Promise<{ accessible: boolean; count: number; error?: string }> => {
+    const provider = await this.getProvider();
+    if (provider.getRecentSmsCount) {
+      return await provider.getRecentSmsCount();
+    }
+    return { accessible: false, count: 0, error: 'Provider does not support SMS count' };
+  };
+
+  // Run full system diagnostics
+  public runDiagnostics = async (): Promise<SmartExpenseDiagnostics> => {
+    const provider = await this.getProvider();
+    if (provider.runDiagnostics) {
+      return await provider.runDiagnostics();
+    }
+    return {
+      readSmsPermission: false,
+      receiveSmsPermission: false,
+      smsInboxAccessible: false,
+      smsInboxCount: 0,
+      receiverConfigured: false,
+      receiverTriggerCount: 0,
+      capacitorPluginLoaded: false,
+      pendingQueueCount: 0,
+      notificationCaptureImplemented: false,
+      notificationStatusMessage: 'Web mode',
+    };
+  };
+
+  // Drain pending SMS captured while app was closed or in background
+  public drainPendingOfflineSms = async (familyId: string): Promise<number> => {
+    if (!familyId) return 0;
+    try {
+      const provider = await this.getProvider();
+      if (provider.getPendingIncomingSms) {
+        const offlinePending = await provider.getPendingIncomingSms();
+        if (offlinePending.length > 0) {
+          const res = await this.ingestDetectedTransactions(familyId, offlinePending);
+          return res.ingestedCount;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to drain pending offline SMS:', err);
+    }
+    return 0;
   };
 
   // 1. Fetch All Transactions for Family
@@ -24,6 +100,9 @@ class SmartExpenseManager {
   }> {
     if (!familyId) return { pending: [], confirmed: [], ignored: [], summary: { pendingCount: 0, pendingTotal: 0, confirmedCount: 0 } };
     try {
+      // First, attempt to drain any offline pending SMS into backend
+      await this.drainPendingOfflineSms(familyId);
+
       const data = await apiRequest(`/smart-expenses/${familyId}/all`);
       return {
         pending: (data.pending || []).map(this.mapServerToClient),

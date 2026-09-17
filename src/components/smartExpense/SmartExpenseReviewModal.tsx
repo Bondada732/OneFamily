@@ -22,6 +22,8 @@ import {
 import { DetectedTransaction } from '../../services/smartExpense/types.js';
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
 import { useFamily } from '../../context/FamilyContext.js';
+import { SmartExpenseDiagnosticsModal } from './SmartExpenseDiagnosticsModal.js';
+import { Activity } from 'lucide-react';
 
 interface SmartExpenseReviewModalProps {
   isOpen: boolean;
@@ -66,6 +68,7 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
   const [showPasteBox, setShowPasteBox] = useState(false);
   const [pastedSms, setPastedSms] = useState('');
   const [pasteResult, setPasteResult] = useState<string | null>(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   if (!isOpen) return null;
 
@@ -148,6 +151,14 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
           </div>
 
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setShowDiagnostics(true)}
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 transition-colors flex items-center gap-1 text-[11px] font-semibold px-2.5"
+              title="Native SMS Diagnostics & Audit"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>Audit</span>
+            </button>
             <button
               onClick={onOpenSettings}
               className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
@@ -471,6 +482,14 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
           </button>
         </div>
       </div>
+
+      {/* Embedded Diagnostics Modal */}
+      <SmartExpenseDiagnosticsModal
+        isOpen={showDiagnostics}
+        onClose={() => setShowDiagnostics(false)}
+        familyId={activeFamilyId}
+        onRefreshData={onRefreshData}
+      />
     </div>
   );
 };
