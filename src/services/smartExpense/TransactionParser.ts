@@ -1,4 +1,4 @@
-﻿import { ParsedTransactionResult, TransactionType } from './types.js';
+import { ParsedTransactionResult, TransactionType } from './types.js';
 import { FinancialMessageDetector } from './FinancialMessageDetector.js';
 import { AmountParser } from './AmountParser.js';
 import { TransactionDirectionClassifier } from './TransactionDirectionClassifier.js';
@@ -317,7 +317,64 @@ export class IciciParser implements ITransactionParser {
   }
 }
 
-// 5. Generic Bank & Debit Fallback Parser
+// 5. Paytm & Paytm Payments Bank Parser
+export class PaytmParser implements ITransactionParser {
+  name = 'PaytmParser';
+
+  canParse(message: string, sender: string = ''): boolean {
+    return /paytm/i.test(sender) || /paytm/i.test(message);
+  }
+
+  parse(
+    message: string,
+    sender: string = '',
+    userPreferences = {},
+    timestamp?: string | number
+  ): ParsedTransactionResult | null {
+    const amountData = AmountParser.parse(message);
+    if (!amountData) return null;
+
+    const direction = TransactionDirectionClassifier.classify(message);
+    const acctMatch = /(?:a\/?c|wallet|card|account)\s*(?:no\.?|ending|is)?\s*[:*xX\s]*(\d{3,4})\b/i.exec(message);
+    const refMatch = /(?:ref|txn|rrn|upi|id)\s*(?:no\.?|id)?\s*[:#]?\s*([0-9a-zA-Z]{6,16})/i.exec(message);
+
+    let rawMerchant = '';
+    const vpaMatch = /([a-zA-Z0-9._-]+@[a-zA-Z0-9_-]+)/.exec(message);
+    if (vpaMatch) {
+      rawMerchant = vpaMatch[1];
+    } else {
+      const toMatch = /(?:to|paid\s+to|transfer(?:red)?\s+to|sent\s+to|towards)\s+([a-zA-Z0-9\s&.'-]+?)(?:\s+(?:using|via|on|ref|a\/c|upi|\.)|$)/i.exec(message);
+      if (toMatch && toMatch[1]) {
+        rawMerchant = toMatch[1].trim();
+      }
+    }
+
+    const { normalized } = MerchantNormalizer.normalize(rawMerchant || 'Paytm Transfer');
+    const catResult = ExpenseCategoryEngine.suggestCategory(normalized, message, userPreferences);
+    const txDate = TransactionDateParser.parse(message, timestamp);
+
+    return {
+      isFinancial: true,
+      amount: amountData.amount,
+      currency: amountData.currency,
+      direction,
+      transactionType: 'UPI',
+      merchantRaw: rawMerchant || 'Paytm Payee',
+      merchantNormalized: normalized,
+      bankName: 'Paytm Payments Bank',
+      upiId: vpaMatch ? vpaMatch[1] : undefined,
+      accountLast4: acctMatch ? acctMatch[1] : undefined,
+      transactionReference: refMatch ? refMatch[1] : undefined,
+      transactionDateTime: txDate,
+      categorySuggested: catResult.category,
+      categoryConfidence: catResult.confidence,
+      parserUsed: this.name,
+      rawSourceHash: TransactionDuplicateDetector.generateHash(message),
+    };
+  }
+}
+
+// 6. Generic Bank & Debit Fallback Parser
 export class GenericDebitParser implements ITransactionParser {
   name = 'GenericDebitParser';
 
@@ -373,6 +430,7 @@ export class TransactionParserPipeline {
     new SbiParser(),
     new HdfcParser(),
     new IciciParser(),
+    new PaytmParser(),
     new GenericUpiParser(),
     new GenericDebitParser(),
   ];

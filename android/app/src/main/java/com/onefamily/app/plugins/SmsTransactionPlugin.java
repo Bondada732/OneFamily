@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
@@ -39,7 +40,7 @@ import java.util.regex.Pattern;
 public class SmsTransactionPlugin extends Plugin {
 
     private BroadcastReceiver smsReceiver = null;
-    private static final Pattern FINANCIAL_FILTER = Pattern.compile("(?i)(debited|credited|spent|paid|transferred|upi|vpa|a/c|acct|inr|rs|₹)");
+    private static final Pattern FINANCIAL_FILTER = Pattern.compile("(?i)(debited|credited|spent|paid|transferred|transfer|sent|received|upi|vpa|a/c|acct|inr|rs|₹)");
 
     @PluginMethod
     public void checkPermission(PluginCall call) {
@@ -80,7 +81,7 @@ public class SmsTransactionPlugin extends Plugin {
                             if (pdus != null) {
                                 for (Object pdu : pdus) {
                                     SmsMessage sms;
-                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                         sms = SmsMessage.createFromPdu((byte[]) pdu, format);
                                     } else {
                                         sms = SmsMessage.createFromPdu((byte[]) pdu);
@@ -106,7 +107,12 @@ public class SmsTransactionPlugin extends Plugin {
 
             IntentFilter filter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
             filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-            getContext().registerReceiver(smsReceiver, filter);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                getContext().registerReceiver(smsReceiver, filter, Context.RECEIVER_EXPORTED);
+            } else {
+                getContext().registerReceiver(smsReceiver, filter);
+            }
         }
 
         JSObject ret = new JSObject();

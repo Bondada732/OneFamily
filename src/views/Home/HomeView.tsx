@@ -165,6 +165,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   useEffect(() => {
     refreshDashboard();
     loadHomeData();
+    if (family?.id) {
+      SmartExpenseService.startLiveCapture(family.id, () => {
+        loadHomeData();
+      });
+    }
   }, [family?.id, refreshDashboard]);
 
   // Dynamic greeting by time of day
