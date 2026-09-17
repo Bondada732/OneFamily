@@ -137,17 +137,17 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
   ];
 
-  // Buttery smooth 120fps curve math with ZERO layout thrashing (No getBoundingClientRect in scroll loop!)
+  // Smooth curve math with compact 1-inch button dimensions
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     let animFrameId: number | null = null;
     let cachedClientWidth = container.clientWidth || 360;
-    const CARD_WIDTH = 96;
-    const CARD_GAP = 16;
-    const PADDING_LEFT = 16;
-    const PITCH = CARD_WIDTH + CARD_GAP; // 112px
+    const CARD_WIDTH = 68;
+    const CARD_GAP = 10;
+    const PADDING_LEFT = 12;
+    const PITCH = CARD_WIDTH + CARD_GAP; // 78px
 
     const updateMeasurements = () => {
       if (container) {
@@ -158,22 +158,20 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     const applyCurvature = () => {
       const scrollLeft = container.scrollLeft;
       const centerX = scrollLeft + cachedClientWidth / 2;
-      const radius = cachedClientWidth * 0.46;
+      const radius = cachedClientWidth * 0.48;
 
       for (let i = 0; i < items.length; i++) {
         const card = cardRefs.current[i];
         if (!card) continue;
 
-        // Pure arithmetic coordinate calculation - ZERO DOM queries!
         const cardCenter = PADDING_LEFT + i * PITCH + CARD_WIDTH / 2;
         const diff = (cardCenter - centerX) / radius;
         const clamped = Math.max(-1.5, Math.min(1.5, diff));
 
-        // Parabolic arc curve equation: Center cards elevated, sides gracefully curve downward
-        const translateY = clamped * clamped * 15;
-        const rotateZ = clamped * 6.5; // degrees tilt along curve arc
-        const rotateY = clamped * -10; // 3D cylinder curvature
-        const scale = 1.02 - Math.abs(clamped) * 0.05;
+        const translateY = clamped * clamped * 6;
+        const rotateZ = clamped * 3.5;
+        const rotateY = clamped * -5;
+        const scale = 1.01 - Math.abs(clamped) * 0.03;
 
         card.style.transform = `translate3d(0, ${translateY.toFixed(1)}px, 0) rotateZ(${rotateZ.toFixed(1)}deg) rotateY(${rotateY.toFixed(1)}deg) scale(${scale.toFixed(2)})`;
       }
@@ -186,7 +184,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       }
     };
 
-    // Initial render
     updateMeasurements();
     applyCurvature();
 
@@ -203,11 +200,11 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   }, [items.length]);
 
   return (
-    <div className="relative w-full pt-1 pb-2 overflow-hidden">
+    <div className="relative w-full pt-0.5 pb-1 overflow-hidden">
       {/* Curved Arc Track with GPU-accelerated touch physics */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto scrollbar-none pt-2 pb-6 px-4 overscroll-x-contain"
+        className="flex gap-2.5 overflow-x-auto scrollbar-none pt-1 pb-3 px-3 overscroll-x-contain"
         style={{
           WebkitOverflowScrolling: 'touch',
           perspective: '1000px',
@@ -228,15 +225,15 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
                 e.stopPropagation();
                 item.onClick();
               }}
-              className="relative shrink-0 rounded-[28px] p-0 overflow-hidden cursor-pointer active:scale-95 text-left focus:outline-none group select-none shadow-2xl"
+              className="relative shrink-0 rounded-[18px] p-0 overflow-hidden cursor-pointer active:scale-95 text-left focus:outline-none group select-none shadow-lg"
               style={{
-                width: '96px',
-                minWidth: '96px',
-                height: '152px',
-                border: `2px solid ${item.neonColor}`,
-                boxShadow: `${item.glowShadow}, 0 10px 25px -5px rgba(0, 0, 0, 0.85)`,
+                width: '68px',
+                minWidth: '68px',
+                height: '76px',
+                border: `1.5px solid ${item.neonColor}`,
+                boxShadow: `${item.glowShadow}, 0 6px 16px -3px rgba(0, 0, 0, 0.75)`,
                 background: item.bgGradient,
-                borderRadius: '28px',
+                borderRadius: '18px',
                 transformOrigin: '50% 120%',
                 willChange: 'transform',
                 backfaceVisibility: 'hidden',
@@ -245,46 +242,43 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
             >
               {/* Curved Glass Reflection Sheen */}
               <div
-                className="absolute inset-x-0 top-0 h-[46%] bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none"
+                className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none"
                 style={{
-                  borderTopLeftRadius: '26px',
-                  borderTopRightRadius: '26px',
+                  borderTopLeftRadius: '16px',
+                  borderTopRightRadius: '16px',
                 }}
               />
 
               {/* Card Interior */}
-              <div className="relative z-10 w-full h-full p-2.5 flex flex-col justify-between items-center text-center">
+              <div className="relative z-10 w-full h-full p-1.5 flex flex-col justify-between items-center text-center">
                 {/* Top Number Indicator */}
                 <div
-                  className="text-2xl font-black tracking-tight"
+                  className="text-xs font-black tracking-tight leading-none"
                   style={{
                     color: item.neonColor,
-                    textShadow: `0 0 14px ${item.neonColor}`,
+                    textShadow: `0 0 10px ${item.neonColor}`,
                   }}
                 >
                   {item.num}
                 </div>
 
-                {/* Center Glowing Icon with Curved Box */}
+                {/* Center Glowing Icon */}
                 <div
-                  className="w-11 h-11 rounded-[18px] flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-lg"
+                  className="w-7 h-7 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-md"
                   style={{
                     backgroundColor: 'rgba(5, 8, 17, 0.85)',
-                    border: `1.5px solid ${item.neonColor}`,
+                    border: `1.2px solid ${item.neonColor}`,
                     color: item.neonColor,
-                    boxShadow: `0 0 14px ${item.neonColor}70`,
+                    boxShadow: `0 0 10px ${item.neonColor}60`,
                   }}
                 >
-                  <Icon className="w-5 h-5 stroke-[2.4]" />
+                  <Icon className="w-3.5 h-3.5 stroke-[2.3]" />
                 </div>
 
-                {/* Bottom Label (Bold White, Centered) */}
-                <div className="w-full pb-0.5">
-                  <span className="block text-[11px] font-black text-white leading-tight tracking-tight drop-shadow-md">
+                {/* Bottom Label */}
+                <div className="w-full pb-0.5 px-0.5">
+                  <span className="block text-[9px] font-bold text-white leading-tight truncate drop-shadow-sm">
                     {item.name}
-                  </span>
-                  <span className="block text-[8.5px] font-bold text-slate-300/85 truncate mt-0.5">
-                    {item.sub}
                   </span>
                 </div>
               </div>
