@@ -7,12 +7,12 @@ class SmartExpenseManager {
   private webProvider: TransactionCaptureProvider = new WebCaptureProvider();
 
   // Get active capture provider
-  public async getProvider(): Promise<TransactionCaptureProvider> {
+  public getProvider = async (): Promise<TransactionCaptureProvider> => {
     if (await this.provider.isAvailable()) {
       return this.provider;
     }
     return this.webProvider;
-  }
+  };
 
   // 1. Fetch All Transactions for Family
   public async fetchAllTransactions(familyId: string): Promise<{
@@ -245,9 +245,7 @@ class SmartExpenseManager {
   }
 
   // 10. Real-time Live SMS listener on device
-  private isCapturing = false;
-
-  public async startLiveCapture(familyId: string, onNewTransaction?: () => void): Promise<void> {
+  public startLiveCapture = async (familyId: string, onNewTransaction?: () => void): Promise<void> => {
     if (this.isCapturing || !familyId) return;
 
     try {
@@ -272,9 +270,9 @@ class SmartExpenseManager {
       console.warn('Failed to start live SMS capture:', err);
       this.isCapturing = false;
     }
-  }
+  };
 
-  public async stopLiveCapture(): Promise<void> {
+  public stopLiveCapture = async (): Promise<void> => {
     if (!this.isCapturing) return;
     try {
       const provider = await this.getProvider();
@@ -283,7 +281,7 @@ class SmartExpenseManager {
     } catch (err) {
       console.warn('Failed to stop live capture:', err);
     }
-  }
+  };
 
   private mapServerToClient(item: any): DetectedTransaction {
     return {
