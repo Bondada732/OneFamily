@@ -1,61 +1,81 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { X, Check, Zap, ShieldCheck, Clock, RefreshCw, Smartphone, Bell, Eye, EyeOff } from 'lucide-react';
 import { SmartCaptureSettings, PermissionState } from '../../services/smartExpense/types.js';
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
 
 interface SmartExpenseSettingsModalProps {
   isOpen: boolean;
-  familyId: string;
+  familyId?: string;
+  settings?: SmartCaptureSettings;
   onClose: () => void;
-  onSettingsSaved: () => void;
-  onRunScan: (days: number) => void;
-  onRequestPermission: () => void;
+  onSettingsSaved?: () => void;
+  onSaveSettings?: (settings: Partial<SmartCaptureSettings>) => void;
+  onTriggerScan?: (days?: number) => Promise<void> | void;
+  onRequestPermission?: () => void;
 }
 
 export const SmartExpenseSettingsModal: React.FC<SmartExpenseSettingsModalProps> = ({
   isOpen,
-  familyId,
+  familyId = '',
+  settings: initialSettings,
   onClose,
   onSettingsSaved,
-  onRunScan,
+  onSaveSettings,
+  onTriggerScan,
   onRequestPermission,
 }) => {
   if (!isOpen) return null;
 
-  const [settings, setSettings] = useState<SmartCaptureSettings>({
-    enabled: true,
-    smsEnabled: true,
-    notificationEnabled: false,
-    autoCategorization: true,
-    dailyReview: true,
-    notificationMode: 'BATCH',
-    privacyMode: false,
-    historicalScanDays: 7,
-  });
+  const [settings, setSettings] = useState<SmartCaptureSettings>(
+    initialSettings || {
+      enabled: true,
+      smsEnabled: true,
+      notificationEnabled: false,
+      autoCategorization: true,
+      dailyReview: true,
+      notificationMode: 'BATCH',
+      privacyMode: false,
+      historicalScanDays: 7,
+    }
+  );
   const [permissionState, setPermissionState] = useState<PermissionState>('NOT_REQUESTED');
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
 
   useEffect(() => {
-    SmartExpenseService.getSettings(familyId).then(setSettings);
+    if (initialSettings) {
+      setSettings(initialSettings);
+    } else if (familyId) {
+      SmartExpenseService.getSettings(familyId).then(setSettings);
+    }
     SmartExpenseService.getProvider().then((p) => p.getPermissionState().then(setPermissionState));
-  }, [familyId]);
+  }, [familyId, initialSettings]);
 
   const handleToggle = (key: keyof SmartCaptureSettings) => {
     const updated = { ...settings, [key]: !settings[key] };
     setSettings(updated);
-    SmartExpenseService.updateSettings(familyId, updated);
+    if (onSaveSettings) {
+      onSaveSettings(updated);
+    } else if (familyId) {
+      SmartExpenseService.updateSettings(familyId, updated);
+    }
+    onSettingsSaved?.();
   };
 
   const handleScan = async (days: number) => {
     setIsScanning(true);
     setScanResult(null);
     try {
-      const res = await SmartExpenseService.runHistoricalScan(familyId, days);
-      setScanResult(`Found & synced ${res.detectedCount} eligible transaction(s).`);
-      onSettingsSaved();
+      if (onTriggerScan) {
+        await onTriggerScan(days);
+      } else if (familyId) {
+        const res = await SmartExpenseService.runHistoricalScan(familyId, days);
+        setScanResult(`Found & synced ${res.detectedCount} eligible transaction(s).`);
+      }
+      setScanResult('Scan complete! Transactions synced to review queue.');
+      onSettingsSaved?.();
     } catch (err: any) {
-      setScanResult(`Scan error: ${err.message || 'Check permissions'}`);
+      setScanResult(`Scan error: ${err?.message || 'Check permissions'}`);
     } finally {
       setIsScanning(false);
     }
@@ -213,7 +233,7 @@ export const SmartExpenseSettingsModal: React.FC<SmartExpenseSettingsModalProps>
         <button
           type="button"
           onClick={() => {
-            onSettingsSaved();
+            onSettingsSaved?.();
             onClose();
           }}
           className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#168BFF] to-[#16C7F2] text-slate-950 hover:text-white font-black text-xs shadow-lg shadow-[#168BFF]/20 transition-all"

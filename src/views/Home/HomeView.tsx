@@ -1066,10 +1066,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
       <SmartExpenseSettingsModal
         isOpen={showSmartSettingsModal}
+        familyId={family?.id || ''}
         onClose={() => setShowSmartSettingsModal(false)}
         settings={smartSettings}
+        onSettingsSaved={loadHomeData}
         onSaveSettings={handleSaveSmartSettings}
         onTriggerScan={handleScanRecentSmartTx}
+        onRequestPermission={() => {
+          setShowSmartSettingsModal(false);
+          setShowSmartPermissionModal(true);
+        }}
       />
     </div>
   );
