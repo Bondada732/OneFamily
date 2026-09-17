@@ -681,80 +681,91 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         )}
       </div>
 
-      {/* 3. Family Wealth Hero Card (Positioned BELOW Action Buttons, ABOVE Quick Overview) */}
-      <div
-        onClick={() => onNavigateTab('money')}
-        className="relative overflow-hidden rounded-[24px] bg-[#0D152D] border border-slate-800/90 p-4 shadow-xl cursor-pointer group hover:border-[#16C7F2]/50 transition-all"
-      >
-        {/* Subtle glow overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(22,199,242,0.08),transparent_70%)] pointer-events-none" />
-
-        <div className="flex items-center justify-between mb-2 relative z-10">
+      {/* 3. Recent Expenses Section in Bullet Points (Replaced Family Wealth) */}
+      <div className="space-y-1.5 pt-1 px-1">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-xl bg-amber-400/15 text-amber-400 border border-amber-400/25">
-              <Sun className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-xs font-bold text-slate-200 tracking-wide">Family Wealth</span>
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="text-[#FF4D6D]">✦</span>
+              <span>Recent Expenses</span>
+              {expenses.length > 0 && (
+                <span className="text-[10px] text-[#FF4D6D] font-bold">
+                  ({Math.min(expenses.length, 5)})
+                </span>
+              )}
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                togglePrivacyMode();
-              }}
-              className="p-1 rounded-md text-slate-400 hover:text-white transition-colors"
-              title="Toggle Privacy Mask"
+              onClick={() => setShowAddExpenseModal(true)}
+              className="text-[11px] text-[#FF4D6D] hover:text-[#FF758F] font-bold transition-colors"
             >
-              {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-400" /> : <Eye className="w-3.5 h-3.5 text-slate-400" />}
+              + Add Expense
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigateTab('money')}
+              className="text-[11px] text-slate-400 hover:text-white font-medium transition-colors"
+            >
+              View All &rarr;
             </button>
           </div>
-
-          <div className="w-6 h-6 rounded-full bg-slate-800/80 group-hover:bg-slate-700/80 border border-slate-700/60 flex items-center justify-center text-slate-300 group-hover:translate-x-0.5 transition-all">
-            <ChevronRight className="w-3.5 h-3.5" />
-          </div>
         </div>
 
-        <div className="flex items-end justify-between relative z-10">
-          <div className="space-y-1.5">
-            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-sans">
-              {isPrivacyMode ? '••••••••' : formatCurrency(netWorthDisplay, false)}
-            </div>
+        {/* Expenses in Bullet Points */}
+        {expenses && expenses.length > 0 ? (
+          <ul className="space-y-1.5 pl-1 text-xs">
+            {expenses.slice(0, 5).map((exp) => {
+              const amountDisplay = isPrivacyMode
+                ? '••••'
+                : `₹${Number(exp.amount || 0).toLocaleString('en-IN')}`;
+              const merchantDisplay = exp.merchant || exp.description || exp.title || 'Expense';
+              const categoryDisplay = exp.category_name || exp.category || 'General';
+              const dateDisplay = exp.date || exp.expense_date
+                ? new Date(exp.date || exp.expense_date).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                  })
+                : '';
 
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 text-[#34D399] text-[11px] font-bold">
-              <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
-              <span>12% this month</span>
-            </div>
-          </div>
-
-          {/* Embedded Sparkline Graph */}
-          <div className="w-36 h-14 -mr-1">
-            <svg viewBox="0 0 120 50" className="w-full h-full overflow-visible">
-              <defs>
-                <linearGradient id="kinoraGraphFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#168BFF" stopOpacity="0.25" />
-                  <stop offset="60%" stopColor="#16C7F2" stopOpacity="0.08" />
-                  <stop offset="100%" stopColor="#0D152D" stopOpacity="0.0" />
-                </linearGradient>
-                <linearGradient id="kinoraGraphLine" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#168BFF" />
-                  <stop offset="50%" stopColor="#16C7F2" />
-                  <stop offset="100%" stopColor="#34D399" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M 0 38 Q 20 42, 40 26 T 80 18 T 120 6 L 120 50 L 0 50 Z"
-                fill="url(#kinoraGraphFill)"
-              />
-              <path
-                d="M 0 38 Q 20 42, 40 26 T 80 18 T 120 6"
-                fill="none"
-                stroke="url(#kinoraGraphLine)"
-                strokeWidth="2.8"
-                strokeLinecap="round"
-              />
-              <circle cx="120" cy="6" r="3" fill="#34D399" />
-            </svg>
-          </div>
-        </div>
+              return (
+                <li
+                  key={exp.id || Math.random()}
+                  className="flex items-center justify-between group py-0.5"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="select-none text-base leading-none text-[#FF4D6D]">
+                      •
+                    </span>
+                    <span className="truncate font-medium text-slate-100">
+                      {merchantDisplay}
+                    </span>
+                    <span className="text-[11px] font-bold text-[#FF4D6D] shrink-0">
+                      ({amountDisplay})
+                    </span>
+                    <span className="text-[10px] text-slate-400 shrink-0">
+                      • {categoryDisplay}
+                      {dateDisplay ? ` • ${dateDisplay}` : ''}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-xs text-slate-400 pl-1">
+            • No expenses yet. Tap{' '}
+            <button
+              onClick={() => setShowAddExpenseModal(true)}
+              className="text-[#FF4D6D] underline font-medium"
+            >
+              + Add Expense
+            </button>{' '}
+            to track your family's daily spending.
+          </p>
+        )}
       </div>
 
       {/* 4. Quick Overview (3 Dark Cards Matching Image 1) */}
