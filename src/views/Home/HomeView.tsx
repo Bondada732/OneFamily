@@ -39,10 +39,378 @@ import {
   Calendar,
   Sparkles,
   CheckCircle2,
+  Circle,
   ArrowUpRight,
   ArrowDownLeft,
   Trash2,
+  ShoppingCart,
+  ShoppingBag,
+  Tag,
+  Utensils,
+  Home as HomeIcon,
+  Zap,
+  Car,
+  HeartPulse,
+  BookOpen,
+  Film,
+  Laptop,
+  Plane,
+  Check,
+  Plus,
 } from 'lucide-react';
+
+// Category Icon & Self-Color Light Tinted Box Visual Helpers
+const getExpenseCategoryVisual = (categoryName?: string, merchant?: string) => {
+  const text = `${categoryName || ''} ${merchant || ''}`.toLowerCase();
+
+  if (
+    text.includes('grocer') ||
+    text.includes('mart') ||
+    text.includes('blinkit') ||
+    text.includes('zepto') ||
+    text.includes('instamart') ||
+    text.includes('bigbasket') ||
+    text.includes('kirana') ||
+    text.includes('supermarket')
+  ) {
+    return {
+      Icon: ShoppingCart,
+      boxClass: 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400',
+    };
+  }
+  if (
+    text.includes('milk') ||
+    text.includes('dairy') ||
+    text.includes('curd') ||
+    text.includes('coffee') ||
+    text.includes('tea')
+  ) {
+    return {
+      Icon: Tag,
+      boxClass: 'bg-pink-500/15 border border-pink-500/30 text-pink-400',
+    };
+  }
+  if (
+    text.includes('veg') ||
+    text.includes('fruit') ||
+    text.includes('salad') ||
+    text.includes('food') ||
+    text.includes('dining') ||
+    text.includes('swiggy') ||
+    text.includes('zomato') ||
+    text.includes('restaurant') ||
+    text.includes('kitchen') ||
+    text.includes('biryani')
+  ) {
+    return {
+      Icon: Utensils,
+      boxClass: 'bg-teal-500/15 border border-teal-500/30 text-teal-400',
+    };
+  }
+  if (
+    text.includes('maintenance') ||
+    text.includes('repair') ||
+    text.includes('service') ||
+    text.includes('plumb') ||
+    text.includes('electrician') ||
+    text.includes('carpenter')
+  ) {
+    return {
+      Icon: Wrench,
+      boxClass: 'bg-amber-500/15 border border-amber-500/30 text-amber-400',
+    };
+  }
+  if (
+    text.includes('rent') ||
+    text.includes('housing') ||
+    text.includes('flat') ||
+    text.includes('apartment') ||
+    text.includes('society') ||
+    text.includes('pg')
+  ) {
+    return {
+      Icon: HomeIcon,
+      boxClass: 'bg-cyan-500/15 border border-cyan-500/30 text-cyan-400',
+    };
+  }
+  if (
+    text.includes('utilit') ||
+    text.includes('bill') ||
+    text.includes('power') ||
+    text.includes('water') ||
+    text.includes('gas') ||
+    text.includes('cylinder') ||
+    text.includes('bescom') ||
+    text.includes('recharge') ||
+    text.includes('broadband') ||
+    text.includes('wifi') ||
+    text.includes('dth')
+  ) {
+    return {
+      Icon: Zap,
+      boxClass: 'bg-yellow-500/15 border border-yellow-500/30 text-yellow-400',
+    };
+  }
+  if (
+    text.includes('fuel') ||
+    text.includes('petrol') ||
+    text.includes('diesel') ||
+    text.includes('transport') ||
+    text.includes('uber') ||
+    text.includes('ola') ||
+    text.includes('rapido') ||
+    text.includes('auto') ||
+    text.includes('fastag') ||
+    text.includes('parking') ||
+    text.includes('toll') ||
+    text.includes('travel') ||
+    text.includes('irctc') ||
+    text.includes('flight') ||
+    text.includes('bus')
+  ) {
+    return {
+      Icon: Car,
+      boxClass: 'bg-blue-500/15 border border-blue-500/30 text-blue-400',
+    };
+  }
+  if (
+    text.includes('shop') ||
+    text.includes('cloth') ||
+    text.includes('amazon') ||
+    text.includes('flipkart') ||
+    text.includes('myntra') ||
+    text.includes('ajio') ||
+    text.includes('mall') ||
+    text.includes('fashion') ||
+    text.includes('shoes')
+  ) {
+    return {
+      Icon: ShoppingBag,
+      boxClass: 'bg-purple-500/15 border border-purple-500/30 text-purple-400',
+    };
+  }
+  if (
+    text.includes('health') ||
+    text.includes('medic') ||
+    text.includes('pharma') ||
+    text.includes('doctor') ||
+    text.includes('clinic') ||
+    text.includes('hospital') ||
+    text.includes('lab') ||
+    text.includes('dentist') ||
+    text.includes('apollo')
+  ) {
+    return {
+      Icon: HeartPulse,
+      boxClass: 'bg-rose-500/15 border border-rose-500/30 text-rose-400',
+    };
+  }
+  if (
+    text.includes('school') ||
+    text.includes('college') ||
+    text.includes('tuition') ||
+    text.includes('book') ||
+    text.includes('course') ||
+    text.includes('exam') ||
+    text.includes('fee') ||
+    text.includes('educat')
+  ) {
+    return {
+      Icon: BookOpen,
+      boxClass: 'bg-indigo-500/15 border border-indigo-500/30 text-indigo-400',
+    };
+  }
+  if (
+    text.includes('movie') ||
+    text.includes('cinema') ||
+    text.includes('pvr') ||
+    text.includes('inox') ||
+    text.includes('netflix') ||
+    text.includes('hotstar') ||
+    text.includes('spotify') ||
+    text.includes('game') ||
+    text.includes('entertain')
+  ) {
+    return {
+      Icon: Film,
+      boxClass: 'bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-400',
+    };
+  }
+  return {
+    Icon: Tag,
+    boxClass: 'bg-sky-500/15 border border-sky-500/30 text-sky-400',
+  };
+};
+
+const getWishCategoryVisual = (title: string = '', category: string = '') => {
+  const text = `${title} ${category}`.toLowerCase();
+  if (
+    text.includes('phone') ||
+    text.includes('laptop') ||
+    text.includes('tv') ||
+    text.includes('ipad') ||
+    text.includes('tablet') ||
+    text.includes('gadget') ||
+    text.includes('camera') ||
+    text.includes('watch') ||
+    text.includes('playstation')
+  ) {
+    return {
+      Icon: Laptop,
+      boxClass: 'bg-cyan-500/15 border border-cyan-500/30 text-cyan-400',
+    };
+  }
+  if (
+    text.includes('car') ||
+    text.includes('bike') ||
+    text.includes('cycle') ||
+    text.includes('bicycle') ||
+    text.includes('scooter') ||
+    text.includes('vehicle')
+  ) {
+    return {
+      Icon: Car,
+      boxClass: 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400',
+    };
+  }
+  if (
+    text.includes('home') ||
+    text.includes('sofa') ||
+    text.includes('bed') ||
+    text.includes('fridge') ||
+    text.includes('refrigerator') ||
+    text.includes('ac') ||
+    text.includes('furnitur') ||
+    text.includes('house') ||
+    text.includes('flat')
+  ) {
+    return {
+      Icon: HomeIcon,
+      boxClass: 'bg-amber-500/15 border border-amber-500/30 text-amber-400',
+    };
+  }
+  if (
+    text.includes('trip') ||
+    text.includes('travel') ||
+    text.includes('tour') ||
+    text.includes('vacation') ||
+    text.includes('holiday') ||
+    text.includes('flight') ||
+    text.includes('goa') ||
+    text.includes('paris') ||
+    text.includes('kashmir')
+  ) {
+    return {
+      Icon: Plane,
+      boxClass: 'bg-blue-500/15 border border-blue-500/30 text-blue-400',
+    };
+  }
+  if (
+    text.includes('gold') ||
+    text.includes('jewel') ||
+    text.includes('diamond') ||
+    text.includes('ring') ||
+    text.includes('necklace') ||
+    text.includes('silver')
+  ) {
+    return {
+      Icon: Sparkles,
+      boxClass: 'bg-yellow-500/15 border border-yellow-500/30 text-yellow-400',
+    };
+  }
+  return {
+    Icon: Gift,
+    boxClass: 'bg-purple-500/15 border border-purple-500/30 text-purple-400',
+  };
+};
+
+const getTaskCategoryVisual = (title: string = '', category: string = '') => {
+  const text = `${title} ${category}`.toLowerCase();
+  if (
+    text.includes('grocer') ||
+    text.includes('vegetable') ||
+    text.includes('milk') ||
+    text.includes('buy') ||
+    text.includes('shop') ||
+    text.includes('market')
+  ) {
+    return {
+      Icon: ShoppingCart,
+      boxClass: 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400',
+    };
+  }
+  if (
+    text.includes('clean') ||
+    text.includes('wash') ||
+    text.includes('mop') ||
+    text.includes('tidy') ||
+    text.includes('laundry') ||
+    text.includes('cook') ||
+    text.includes('dish')
+  ) {
+    return {
+      Icon: Sparkles,
+      boxClass: 'bg-teal-500/15 border border-teal-500/30 text-teal-400',
+    };
+  }
+  if (
+    text.includes('repair') ||
+    text.includes('fix') ||
+    text.includes('service') ||
+    text.includes('maint') ||
+    text.includes('plumb') ||
+    text.includes('mechanic')
+  ) {
+    return {
+      Icon: Wrench,
+      boxClass: 'bg-amber-500/15 border border-amber-500/30 text-amber-400',
+    };
+  }
+  if (
+    text.includes('bill') ||
+    text.includes('pay') ||
+    text.includes('recharge') ||
+    text.includes('fee') ||
+    text.includes('bank') ||
+    text.includes('transfer')
+  ) {
+    return {
+      Icon: Zap,
+      boxClass: 'bg-yellow-500/15 border border-yellow-500/30 text-yellow-400',
+    };
+  }
+  if (
+    text.includes('doctor') ||
+    text.includes('medic') ||
+    text.includes('health') ||
+    text.includes('clinic') ||
+    text.includes('hospital') ||
+    text.includes('test') ||
+    text.includes('vaccin')
+  ) {
+    return {
+      Icon: HeartPulse,
+      boxClass: 'bg-rose-500/15 border border-rose-500/30 text-rose-400',
+    };
+  }
+  if (
+    text.includes('school') ||
+    text.includes('homework') ||
+    text.includes('study') ||
+    text.includes('exam') ||
+    text.includes('class') ||
+    text.includes('tuition')
+  ) {
+    return {
+      Icon: BookOpen,
+      boxClass: 'bg-indigo-500/15 border border-indigo-500/30 text-indigo-400',
+    };
+  }
+  return {
+    Icon: CheckSquare,
+    boxClass: 'bg-sky-500/15 border border-sky-500/30 text-sky-400',
+  };
+};
 
 interface HomeViewProps {
   onNavigateTab: (tab: any) => void;
@@ -501,222 +869,44 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         isPrivacyMode={isPrivacyMode}
       />
 
-      {/* 2.5. Family Wishlist Section in Bullet Points (Positioned ABOVE Family Wealth) */}
-      <div className="space-y-1.5 pt-1 px-1">
-        <div className="flex items-center justify-between">
+      {/* 2.4. Recent Expenses Section (Matching Reference Model Image) */}
+      <div className="bg-[#0D152D] border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5">
+        <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="text-[#00D2FF]">✦</span>
-              <span>Family Wishlist</span>
-              {wishlistItems.length > 0 && (
-                <span className="text-[10px] text-[#00D2FF] font-bold">
-                  ({wishlistItems.length})
-                </span>
-              )}
-            </h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowWishListModal(true)}
-            className="text-[11px] text-[#00D2FF] hover:text-[#7EDCFF] font-bold transition-colors"
-          >
-            + Add Wish
-          </button>
-        </div>
-
-        {/* Wishlist Items in Pure Bullet Points */}
-        {wishlistItems && wishlistItems.length > 0 ? (
-          <ul className="space-y-1.5 pl-1 text-xs">
-            {wishlistItems.map((wish) => {
-              const isFulfilled = wish.completed || wish.status === 'COMPLETED';
-              const costDisplay = wish.estimated_cost
-                ? `₹${Number(wish.estimated_cost).toLocaleString('en-IN')}`
-                : wish.quantity && wish.quantity !== '1 unit'
-                ? wish.quantity
-                : '';
-
-              return (
-                <li
-                  key={wish.id}
-                  className="flex items-center justify-between group py-0.5"
-                >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span
-                      onClick={() => toggleWishFulfilled(wish.id)}
-                      className={`cursor-pointer select-none text-base leading-none transition-colors ${
-                        isFulfilled ? 'text-emerald-400' : 'text-[#00D2FF]'
-                      }`}
-                    >
-                      •
-                    </span>
-                    <span
-                      onClick={() => toggleWishFulfilled(wish.id)}
-                      className={`truncate cursor-pointer font-medium transition-colors ${
-                        isFulfilled ? 'line-through text-slate-500' : 'text-slate-100 hover:text-white'
-                      }`}
-                    >
-                      {wish.item_name || wish.title}
-                    </span>
-                    {costDisplay && (
-                      <span className={`text-[11px] font-bold shrink-0 ${isFulfilled ? 'text-slate-500' : 'text-[#00E676]'}`}>
-                        ({costDisplay})
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => deleteWishItem(wish.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all ml-2"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="text-xs text-slate-400 pl-1">
-            • No wishlist items yet. Tap <button onClick={() => setShowWishListModal(true)} className="text-[#00D2FF] underline font-medium">+ Add Wish</button> to add dreams for your family.
-          </p>
-        )}
-      </div>
-
-      {/* 2.6. Family Tasks Section in Bullet Points (Positioned BELOW Wishlist, ABOVE Family Wealth) */}
-      <div className="space-y-1.5 pt-1 px-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="text-[#FFB91F]">✦</span>
-              <span>Family Tasks</span>
-              {familyTasks.length > 0 && (
-                <span className="text-[10px] text-[#FFB91F] font-bold">
-                  ({familyTasks.length})
-                </span>
-              )}
-            </h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowTaskModal(true)}
-            className="text-[11px] text-[#FFB91F] hover:text-[#FFD21F] font-bold transition-colors"
-          >
-            + Add Task
-          </button>
-        </div>
-
-        {/* Tasks Items in Pure Bullet Points */}
-        {familyTasks && familyTasks.length > 0 ? (
-          <ul className="space-y-1.5 pl-1 text-xs">
-            {familyTasks.map((task) => {
-              const isCompleted = task.status === 'COMPLETED';
-              const priorityColor =
-                task.priority === 'HIGH'
-                  ? 'text-[#FF4D6D]'
-                  : task.priority === 'MEDIUM'
-                  ? 'text-[#FFD21F]'
-                  : 'text-[#55D98A]';
-
-              return (
-                <li
-                  key={task.id}
-                  className="flex items-center justify-between group py-0.5"
-                >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span
-                      onClick={() => toggleTaskStatus(task.id)}
-                      className={`cursor-pointer select-none text-base leading-none transition-colors ${
-                        isCompleted ? 'text-emerald-400' : 'text-[#FFB91F]'
-                      }`}
-                    >
-                      •
-                    </span>
-                    <span
-                      onClick={() => toggleTaskStatus(task.id)}
-                      className={`truncate cursor-pointer font-medium transition-colors ${
-                        isCompleted ? 'line-through text-slate-500' : 'text-slate-100 hover:text-white'
-                      }`}
-                    >
-                      {task.title}
-                    </span>
-                    <span className="text-[10px] text-slate-400 shrink-0">
-                      {task.assigned_to_name ? `(${task.assigned_to_name}` : ''}
-                      {task.due_date ? ` • Due: ${task.due_date}` : ''}
-                      {task.priority ? ` • ` : ''}
-                      {task.priority ? (
-                        <span className={`font-semibold ${priorityColor}`}>
-                          {task.priority}
-                        </span>
-                      ) : null}
-                      {task.assigned_to_name ? `)` : ''}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => deleteTaskItem(task.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all ml-2"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="text-xs text-slate-400 pl-1">
-            • No tasks yet. Tap{' '}
-            <button
-              onClick={() => setShowTaskModal(true)}
-              className="text-[#FFB91F] underline font-medium"
-            >
-              + Add Task
-            </button>{' '}
-            to assign chores or family to-dos.
-          </p>
-        )}
-      </div>
-
-      {/* 3. Recent Expenses Section in Bullet Points (Replaced Family Wealth) */}
-      <div className="space-y-1.5 pt-1 px-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
               <span className="text-[#FF4D6D]">✦</span>
               <span>Recent Expenses</span>
               {expenses.length > 0 && (
-                <span className="text-[10px] text-[#FF4D6D] font-bold">
-                  ({Math.min(expenses.length, 5)})
+                <span className="text-[11px] text-[#FF4D6D] font-bold bg-[#FF4D6D]/15 px-2 py-0.5 rounded-full border border-[#FF4D6D]/30">
+                  {Math.min(expenses.length, 5)}
                 </span>
               )}
             </h3>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setShowAddExpenseModal(true)}
-              className="text-[11px] text-[#FF4D6D] hover:text-[#FF758F] font-bold transition-colors"
+              className="text-[11px] text-[#FF4D6D] hover:text-[#FF758F] font-bold bg-[#FF4D6D]/10 hover:bg-[#FF4D6D]/20 px-2.5 py-1 rounded-lg border border-[#FF4D6D]/25 transition-all flex items-center gap-1"
             >
-              + Add Expense
+              <Plus className="w-3 h-3" />
+              <span>Add</span>
             </button>
             <button
               type="button"
               onClick={() => onNavigateTab('money')}
-              className="text-[11px] text-slate-400 hover:text-white font-medium transition-colors"
+              className="text-[11px] text-slate-400 hover:text-white font-medium bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-slate-700/40 transition-all flex items-center gap-0.5"
             >
-              View All &rarr;
+              <span>View All</span>
+              <ChevronRight className="w-3 h-3" />
             </button>
           </div>
         </div>
 
-        {/* Expenses in Bullet Points */}
+        {/* Expenses List with Self-Color Light Boxes */}
         {expenses && expenses.length > 0 ? (
-          <ul className="space-y-1.5 pl-1 text-xs">
+          <div className="divide-y divide-slate-800/60">
             {expenses.slice(0, 5).map((exp) => {
               const amountDisplay = isPrivacyMode
                 ? '••••'
@@ -730,41 +920,275 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                   })
                 : '';
 
+              const visual = getExpenseCategoryVisual(categoryDisplay, merchantDisplay);
+              const VisualIcon = visual.Icon;
+
               return (
-                <li
+                <div
                   key={exp.id || Math.random()}
-                  className="flex items-center justify-between group py-0.5"
+                  className="flex items-center justify-between py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-all group"
                 >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="select-none text-base leading-none text-[#FF4D6D]">
-                      •
-                    </span>
-                    <span className="truncate font-medium text-slate-100">
-                      {merchantDisplay}
-                    </span>
-                    <span className="text-[11px] font-bold text-[#FF4D6D] shrink-0">
-                      ({amountDisplay})
-                    </span>
-                    <span className="text-[10px] text-slate-400 shrink-0">
-                      • {categoryDisplay}
-                      {dateDisplay ? ` • ${dateDisplay}` : ''}
-                    </span>
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {/* Self Color Light Box with Category Picture/Icon */}
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${visual.boxClass}`}>
+                      <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-semibold text-white truncate">
+                        {merchantDisplay}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1.5">
+                        <span>{categoryDisplay}</span>
+                        {dateDisplay && <span>•</span>}
+                        {dateDisplay && <span>{dateDisplay}</span>}
+                      </div>
+                    </div>
                   </div>
-                </li>
+
+                  <div className="text-xs sm:text-sm font-bold text-white text-right tracking-tight shrink-0 pl-3">
+                    {amountDisplay}
+                  </div>
+                </div>
               );
             })}
-          </ul>
+          </div>
         ) : (
-          <p className="text-xs text-slate-400 pl-1">
-            • No expenses yet. Tap{' '}
+          <div className="py-4 text-center">
+            <p className="text-xs text-slate-400">No expenses recorded yet.</p>
             <button
               onClick={() => setShowAddExpenseModal(true)}
-              className="text-[#FF4D6D] underline font-medium"
+              className="mt-2 text-xs font-semibold text-[#FF4D6D] hover:underline"
             >
-              + Add Expense
-            </button>{' '}
-            to track your family's daily spending.
-          </p>
+              + Record your first expense
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 2.5. Family Tasks Section (Matching Reference Model Image) */}
+      <div className="bg-[#0D152D] border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="text-[#FFB91F]">✦</span>
+              <span>Family Tasks</span>
+              {familyTasks.length > 0 && (
+                <span className="text-[11px] text-[#FFB91F] font-bold bg-[#FFB91F]/15 px-2 py-0.5 rounded-full border border-[#FFB91F]/30">
+                  {familyTasks.length}
+                </span>
+              )}
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowTaskModal(true)}
+            className="text-[11px] text-[#FFB91F] hover:text-[#FFD21F] font-bold bg-[#FFB91F]/10 hover:bg-[#FFB91F]/20 px-2.5 py-1 rounded-lg border border-[#FFB91F]/25 transition-all flex items-center gap-1"
+          >
+            <Plus className="w-3 h-3" />
+            <span>Add Task</span>
+          </button>
+        </div>
+
+        {/* Tasks List with Self-Color Light Boxes */}
+        {familyTasks && familyTasks.length > 0 ? (
+          <div className="divide-y divide-slate-800/60">
+            {familyTasks.map((task) => {
+              const isCompleted = task.status === 'COMPLETED';
+              const visual = getTaskCategoryVisual(task.title, task.category);
+              const VisualIcon = visual.Icon;
+              const priorityColor =
+                task.priority === 'HIGH'
+                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                  : task.priority === 'MEDIUM'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+
+              return (
+                <div
+                  key={task.id}
+                  className="flex items-center justify-between py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-all group"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {/* Self Color Light Box with Category Picture/Icon */}
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${visual.boxClass}`}>
+                      <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div
+                        onClick={() => toggleTaskStatus(task.id)}
+                        className={`text-xs sm:text-sm font-semibold cursor-pointer truncate transition-colors ${
+                          isCompleted ? 'line-through text-slate-500' : 'text-white hover:text-amber-300'
+                        }`}
+                      >
+                        {task.title}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1.5">
+                        {task.assigned_to_name && <span>{task.assigned_to_name}</span>}
+                        {task.assigned_to_name && task.due_date && <span>•</span>}
+                        {task.due_date && <span>Due: {task.due_date}</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 pl-2">
+                    {task.priority && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${priorityColor}`}>
+                        {task.priority}
+                      </span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => toggleTaskStatus(task.id)}
+                      className={`p-1.5 rounded-lg border transition-all ${
+                        isCompleted
+                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                          : 'bg-white/5 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
+                      }`}
+                      title={isCompleted ? 'Mark pending' : 'Mark completed'}
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => deleteTaskItem(task.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="py-4 text-center">
+            <p className="text-xs text-slate-400">No active tasks for the family.</p>
+            <button
+              onClick={() => setShowTaskModal(true)}
+              className="mt-2 text-xs font-semibold text-[#FFB91F] hover:underline"
+            >
+              + Add a chore or task
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 2.6. Family Wishlist Section (Matching Reference Model Image) */}
+      <div className="bg-[#0D152D] border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="text-[#00D2FF]">✦</span>
+              <span>Family Wishlist</span>
+              {wishlistItems.length > 0 && (
+                <span className="text-[11px] text-[#00D2FF] font-bold bg-[#00D2FF]/15 px-2 py-0.5 rounded-full border border-[#00D2FF]/30">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowWishListModal(true)}
+            className="text-[11px] text-[#00D2FF] hover:text-[#7EDCFF] font-bold bg-[#00D2FF]/10 hover:bg-[#00D2FF]/20 px-2.5 py-1 rounded-lg border border-[#00D2FF]/25 transition-all flex items-center gap-1"
+          >
+            <Plus className="w-3 h-3" />
+            <span>Add Wish</span>
+          </button>
+        </div>
+
+        {/* Wishlist List with Self-Color Light Boxes */}
+        {wishlistItems && wishlistItems.length > 0 ? (
+          <div className="divide-y divide-slate-800/60">
+            {wishlistItems.map((wish) => {
+              const isFulfilled = wish.completed || wish.status === 'COMPLETED';
+              const costDisplay = wish.estimated_cost
+                ? `₹${Number(wish.estimated_cost).toLocaleString('en-IN')}`
+                : wish.quantity && wish.quantity !== '1 unit'
+                ? wish.quantity
+                : '';
+
+              const visual = getWishCategoryVisual(wish.item_name || wish.title, wish.category);
+              const VisualIcon = visual.Icon;
+
+              return (
+                <div
+                  key={wish.id}
+                  className="flex items-center justify-between py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-all group"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {/* Self Color Light Box with Category Picture/Icon */}
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${visual.boxClass}`}>
+                      <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div
+                        onClick={() => toggleWishFulfilled(wish.id)}
+                        className={`text-xs sm:text-sm font-semibold cursor-pointer truncate transition-colors ${
+                          isFulfilled ? 'line-through text-slate-500' : 'text-white hover:text-cyan-300'
+                        }`}
+                      >
+                        {wish.item_name || wish.title}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1.5">
+                        <span>{wish.category || 'Wishlist'}</span>
+                        {wish.notes && <span>•</span>}
+                        {wish.notes && <span>{wish.notes}</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 pl-2">
+                    {costDisplay && (
+                      <span className={`text-xs sm:text-sm font-bold ${isFulfilled ? 'text-slate-500' : 'text-[#00E676]'}`}>
+                        {costDisplay}
+                      </span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => toggleWishFulfilled(wish.id)}
+                      className={`p-1.5 rounded-lg border transition-all ${
+                        isFulfilled
+                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                          : 'bg-white/5 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
+                      }`}
+                      title={isFulfilled ? 'Mark unfulfilled' : 'Mark fulfilled'}
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => deleteWishItem(wish.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="py-4 text-center">
+            <p className="text-xs text-slate-400">No wishlist items yet.</p>
+            <button
+              onClick={() => setShowWishListModal(true)}
+              className="mt-2 text-xs font-semibold text-[#00D2FF] hover:underline"
+            >
+              + Add a dream for your family
+            </button>
+          </div>
         )}
       </div>
 
