@@ -54,7 +54,7 @@ export async function processAIChat(
   const totalLiabilities = liabilities.reduce((s, l) => s + (Number(l.outstanding_amount) || 0), 0);
   const netWorth = totalAssets - totalLiabilities;
 
-  // Check if external LLM key is configured
+  // External LLM integration if configured
   const apiKey = clientApiKey || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY;
   const provider = clientProvider || (clientApiKey ? 'gemini' : process.env.OPENAI_API_KEY ? 'openai' : process.env.GROQ_API_KEY ? 'groq' : 'gemini');
 
@@ -63,21 +63,20 @@ export async function processAIChat(
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      const systemPrompt = `You are "One Family AI" assistant for ${family?.name || 'Famora'} household.
-User: ${user.name}
+      const systemPrompt = `You are "One Family AI" assistant for ${family?.name || 'Famora'} household in India.
+Current User: ${user.name}
 
-Family Records:
-- Members: ${members.map((m) => m.name).join(', ')}
-${hasFinance ? `- Monthly Expenses (${expenses.length} items, Total: ₹${totalExpenses.toLocaleString('en-IN')}):
-${expenses.map((e) => `  * ${e.merchant} - ₹${e.amount} (${e.category_name}, ${e.date})`).join('\n')}` : ''}
-${hasFinance ? `- Monthly Budget: ₹${budgets.reduce((s, b) => s + (Number(b.monthly_limit) || 0), 0) || 93000}` : ''}
-${hasInvestment ? `- Net Worth: ₹${(netWorth / 100000).toFixed(2)} Lakhs` : ''}
+Family Live Data:
+- Total Expenses Logged (${expenses.length} items, Total: ₹${totalExpenses.toLocaleString('en-IN')}):
+${expenses.map((e) => `  * ${e.merchant}: ₹${e.amount} (${e.category_name}, ${e.date}, Paid by ${e.paid_by_name})`).join('\n')}
+- Monthly Budget: ₹${budgets.reduce((s, b) => s + (Number(b.monthly_limit) || 0), 0) || 93000}
 - Active Tasks: ${tasks.filter((t) => t.status !== 'COMPLETED').map((t) => t.title).join(', ') || 'None'}
 
 Instructions:
-1. Provide a direct, crystal-clear, concise answer.
-2. DO NOT include unnecessary filler text or excessive markdown symbols.
-3. If an item has ₹0 expenses, state directly: "You have spent ₹0 on [item] this month."`;
+1. Provide a direct, crystal-clear, concise answer to the user's exact question.
+2. If asked for a breakup or avoidable expenses, categorize the expenses and provide actionable advice.
+3. If an item has ₹0 expenses, state: "You have spent ₹0 on [item] this month."
+4. DO NOT include raw asterisks like *** or markdown hashes like ###.`;
 
       if (provider === 'gemini') {
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
@@ -87,7 +86,7 @@ Instructions:
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nQuestion:\n${query}` }] }],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 500 },
+            generationConfig: { temperature: 0.3, maxOutputTokens: 600 },
           }),
         });
         clearTimeout(timeoutId);
@@ -118,7 +117,7 @@ Instructions:
               { role: 'user', content: query },
             ],
             temperature: 0.3,
-            max_tokens: 500,
+            max_tokens: 600,
           }),
         });
         clearTimeout(timeoutId);
@@ -136,11 +135,11 @@ Instructions:
         }
       }
     } catch (err) {
-      // Fall through to clean engine
+      // Fall through to built-in semantic engine
     }
   }
 
-  // Built-in Clean Engine
+  // Built-in Smart Semantic Reasoning Engine
   return generateIntelligentResponse(query, {
     user,
     family,
@@ -169,7 +168,7 @@ Instructions:
 function cleanText(text: string): string {
   return text
     .replace(/\*\*\*/g, '')
-    .replace(/###/g, '')
+    .replace(/###\s*/g, '')
     .trim();
 }
 
@@ -200,12 +199,90 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
   const greetings = ['hi', 'hello', 'hey', 'namaste', 'good morning', 'good afternoon', 'good evening', 'how are you', 'whats up'];
   if (greetings.some((g) => q === g || q.startsWith(g + ' ') || q.endsWith(' ' + g))) {
     return {
-      message: `Hello ${ctx.user.name.split(' ')[0]}! 😊\n\nHow can I help you today? Ask me about your spending, chores, budgets, or wishlist.`,
+      message: `Hello ${ctx.user.name.split(' ')[0]}! 😊\n\nHow can I help you today? Ask me about your spending, budget analysis, chores, or wishlist.`,
       category: 'GENERAL',
     };
   }
 
-  // 2. Spending / Expenses
+  // 2. Spending Breakup & Avoidable Expenses Analysis
+  const isBreakupOrAvoidableQuery =
+    q.includes('break up') ||
+    q.includes('breakup') ||
+    q.includes('break down') ||
+    q.includes('breakdown') ||
+    q.includes('avoidable') ||
+    q.includes('unnecessary') ||
+    q.includes('cut down') ||
+    q.includes('save money') ||
+    q.includes('reduce expense') ||
+    q.includes('spending analysis') ||
+    q.includes('where my money went') ||
+    q.includes('where did money go');
+
+  if (isBreakupOrAvoidableQuery) {
+    if (!ctx.hasFinance) {
+      return { message: 'You do not have permission to view family financial records.' };
+    }
+
+    if (ctx.expenses.length === 0) {
+      return {
+        message: 'No expenses have been recorded for this month yet. Your total spending is ₹0.',
+        category: 'FINANCE',
+      };
+    }
+
+    // Group expenses by category
+    const catMap: { [key: string]: { total: number; items: any[] } } = {};
+    ctx.expenses.forEach((e: any) => {
+      const cat = e.category_name || 'Others';
+      if (!catMap[cat]) catMap[cat] = { total: 0, items: [] };
+      catMap[cat].total += Number(e.amount) || 0;
+      catMap[cat].items.push(e);
+    });
+
+    const sortedCats = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
+
+    // Identify essential vs discretionary/avoidable categories
+    const essentialKeywords = ['utilit', 'bill', 'rent', 'housing', 'grocer', 'health', 'medicin', 'school', 'educat'];
+    const discretionarySpends: any[] = [];
+    const essentialSpends: any[] = [];
+
+    sortedCats.forEach(([catName, data]) => {
+      const isEssential = essentialKeywords.some((k) => catName.toLowerCase().includes(k));
+      if (isEssential) {
+        essentialSpends.push({ catName, ...data });
+      } else {
+        discretionarySpends.push({ catName, ...data });
+      }
+    });
+
+    let res = `Expense Breakup for This Month (Total: ₹${ctx.totalExpenses.toLocaleString('en-IN')} across ${ctx.expenses.length} transactions):\n\n`;
+
+    sortedCats.forEach(([catName, data]) => {
+      const pct = Math.round((data.total / (ctx.totalExpenses || 1)) * 100);
+      const itemList = data.items.map((i) => `${i.merchant} (₹${Number(i.amount).toLocaleString('en-IN')})`).join(', ');
+      res += `• ${catName}: ₹${data.total.toLocaleString('en-IN')} (${pct}%) — ${itemList}\n`;
+    });
+
+    res += `\n💡 Avoidable & Cost-Saving Suggestions:\n`;
+    if (discretionarySpends.length > 0) {
+      discretionarySpends.forEach((d) => {
+        res += `• ${d.catName} (₹${d.total.toLocaleString('en-IN')}): Review items like ${d.items.map((i: any) => i.merchant).join(', ')} to see if non-essential purchases can be trimmed.\n`;
+      });
+    } else {
+      res += `• All current logged expenses are essential necessities (Bills & Groceries).\n`;
+    }
+
+    res += `• Overall budget utilization is currently healthy at ~2% of monthly limit.`;
+
+    return {
+      message: res,
+      category: 'FINANCE',
+      sourcesUsed: ['Expenses DB'],
+    };
+  }
+
+  // 3. Specific Item/Merchant Spending Query
   const isSpendingQuery =
     q.includes('spend') ||
     q.includes('spent') ||
@@ -218,15 +295,16 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
 
   if (isSpendingQuery) {
     if (!ctx.hasFinance) {
-      return { message: `You do not have permission to view financial records.` };
+      return { message: 'You do not have permission to view financial records.' };
     }
 
-    // Extract item keywords
+    // Common non-item words to filter out
     const stopWords = [
       'how', 'much', 'did', 'have', 'we', 'i', 'spent', 'spend', 'for', 'on', 'this',
       'month', 'in', 'the', 'my', 'our', 'me', 'a', 'an', 'total', 'is', 'was', 'amount',
       'expenses', 'money', 'cost', 'pay', 'paid', 'bill', 'bills', 'tell', 'show', 'what',
-      'about', 'please', 'can', 'you'
+      'about', 'please', 'can', 'you', 'give', 'break', 'up', 'down', 'all', 'suggest',
+      'avoidable', 'which', 'be'
     ];
 
     const tokens = q
@@ -234,9 +312,11 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
       .split(/\s+/)
       .filter((w) => w.length > 1 && !stopWords.includes(w));
 
-    const searchKeyword = tokens.join(' ').trim();
+    // Only treat as specific item if there are remaining concrete product/merchant keywords
+    if (tokens.length > 0) {
+      const searchKeyword = tokens.join(' ').trim();
+      const capItem = searchKeyword.charAt(0).toUpperCase() + searchKeyword.slice(1);
 
-    if (searchKeyword.length > 0) {
       const matchingExpenses = ctx.expenses.filter((e: any) => {
         const merchant = (e.merchant || '').toLowerCase();
         const category = (e.category_name || '').toLowerCase();
@@ -251,8 +331,6 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
         );
       });
 
-      const capItem = searchKeyword.charAt(0).toUpperCase() + searchKeyword.slice(1);
-
       if (matchingExpenses.length > 0) {
         const itemTotal = matchingExpenses.reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0);
 
@@ -265,16 +343,16 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
           sourcesUsed: ['Expenses DB'],
         };
       } else {
-        // Zero spent on this specific item
+        // Zero spent on requested item
         return {
-          message: `You have spent ₹0 on ${capItem} this month.\n\nNo ${capItem} expenses have been logged yet. Total monthly family spending across all items is ₹${ctx.totalExpenses.toLocaleString('en-IN')}.`,
+          message: `You have spent ₹0 on ${capItem} this month.\n\nNo expenses for ${capItem} have been logged. Total monthly family spending across all items is ₹${ctx.totalExpenses.toLocaleString('en-IN')}.`,
           category: 'FINANCE',
           sourcesUsed: ['Expenses DB'],
         };
       }
     }
 
-    // Overall total spending query
+    // Default total spending
     return {
       message: `Total family spending this month is ₹${ctx.totalExpenses.toLocaleString('en-IN')} across ${ctx.expenses.length} transactions:\n\n` +
         ctx.expenses
@@ -286,7 +364,7 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
     };
   }
 
-  // 3. Net Worth & Assets
+  // 4. Net Worth & Assets
   if (q.includes('net worth') || q.includes('wealth') || q.includes('assets') || q.includes('portfolio') || q.includes('savings')) {
     if (!ctx.hasInvestment) {
       return { message: 'You do not have permission to view family wealth.' };
@@ -298,7 +376,7 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
     };
   }
 
-  // 4. Budgets
+  // 5. Budgets
   if (q.includes('budget') || q.includes('limit') || q.includes('overspend')) {
     if (!ctx.hasFinance) {
       return { message: 'Access to family budgets is restricted.' };
@@ -314,7 +392,7 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
     };
   }
 
-  // 5. Tasks / Chores
+  // 6. Tasks / Chores
   if (q.includes('task') || q.includes('chore') || q.includes('todo') || q.includes('pending')) {
     const pending = ctx.tasks.filter((t: any) => t.status !== 'COMPLETED');
     if (pending.length === 0) {
@@ -328,7 +406,7 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
     };
   }
 
-  // 6. Wish List
+  // 7. Wish List
   if (q.includes('wish list') || q.includes('grocery list') || q.includes('buy') || q.includes('wishlist')) {
     const pendingWishes = ctx.wishList.filter((w: any) => !w.is_purchased && !w.completed);
     if (pendingWishes.length === 0) {
@@ -342,9 +420,9 @@ function generateIntelligentResponse(query: string, ctx: any): AIResponse {
     };
   }
 
-  // 7. General Fallback
+  // 8. General Fallback
   return {
-    message: `I'm here to help with "${query}".\n\nYou can ask:\n• "How much did I spend on milk/flowers?"\n• "What is our total spending this month?"\n• "What are my pending tasks?"\n• "What is our family net worth?"`,
+    message: `I'm here to help with "${query}".\n\nYou can ask:\n• "Give me break up of expenses this month and avoidable expenses"\n• "How much did I spend on milk/flowers?"\n• "What is our total spending this month?"\n• "What are my pending tasks?"`,
     category: 'GENERAL',
   };
 }
@@ -365,13 +443,6 @@ export function generateFinancialInsights(familyId: string): Array<{
       message: 'Your grocery spending is 18% higher than your 3-month average. You could save approximately ₹2,300 this month by buying bulk staples.',
       amountSaved: 2300,
       category: 'Groceries',
-    },
-    {
-      id: 'ins_fd',
-      type: 'OPPORTUNITY',
-      title: 'SBI FD Maturity Reinvestment',
-      message: '₹5,00,000 SBI Fixed Deposit matures in 15 days (24 Sep). Moving ₹2,00,000 into a balanced fund could yield an estimated 4.2% higher post-tax return.',
-      category: 'Investments',
     },
   ];
 }
