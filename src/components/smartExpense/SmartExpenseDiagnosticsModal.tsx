@@ -72,15 +72,25 @@ export const SmartExpenseDiagnosticsModal: React.FC<SmartExpenseDiagnosticsModal
     }
   }, [isOpen]);
 
+  const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
+
   const handleRequestPermissions = async () => {
     setIsLoading(true);
     try {
+      if (!isNative) {
+        setStatusMessage(
+          '📱 Desktop Web Mode: Native Android system permission dialogs and SMS hardware listeners only execute when running inside the KinoraOne APK on a physical Android phone.'
+        );
+        setIsLoading(false);
+        return;
+      }
+
       const perms = await SmartExpenseService.requestDetailedPermissions();
       setPermissions(perms);
       setStatusMessage(
         perms.readSmsGranted && perms.receiveSmsGranted
-          ? 'SMS Permissions successfully granted by user.'
-          : 'Permission request completed. One or more permissions were not granted.'
+          ? '✓ SMS Permissions successfully granted by user.'
+          : 'Permission request completed. One or more permissions were not granted in Android Settings.'
       );
       await runAllDiagnostics();
     } catch (err: any) {
@@ -132,6 +142,19 @@ export const SmartExpenseDiagnosticsModal: React.FC<SmartExpenseDiagnosticsModal
 
         {/* Content */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs">
+          {/* Web Environment Notice */}
+          {!isNative && (
+            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-amber-200">
+                <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Desktop Web Browser Mode</span>
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                You are currently running in a web browser. Android Telephony APIs, system permission prompts, and background SMS receivers only run when the app is installed as an APK on a physical Android mobile phone.
+              </p>
+            </div>
+          )}
+
           {/* Status Message */}
           {statusMessage && (
             <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-300">
