@@ -244,6 +244,47 @@ class SmartExpenseManager {
     };
   }
 
+  // 10. Real-time Live SMS listener on device
+  private isCapturing = false;
+
+  public async startLiveCapture(familyId: string, onNewTransaction?: () => void): Promise<void> {
+    if (this.isCapturing || !familyId) return;
+
+    try {
+      const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
+      const hasPlugin = !!(window as any).Capacitor?.Plugins?.SmsTransactionPlugin;
+      if (!isNative || !hasPlugin) return;
+
+      const provider = await this.getProvider();
+      this.isCapturing = true;
+
+      await provider.startCapture(async (tx) => {
+        try {
+          const res = await this.ingestDetectedTransactions(familyId, [tx]);
+          if (res.ingestedCount > 0 && onNewTransaction) {
+            onNewTransaction();
+          }
+        } catch (e) {
+          console.error('Error ingesting live detected SMS transaction:', e);
+        }
+      });
+    } catch (err) {
+      console.warn('Failed to start live SMS capture:', err);
+      this.isCapturing = false;
+    }
+  }
+
+  public async stopLiveCapture(): Promise<void> {
+    if (!this.isCapturing) return;
+    try {
+      const provider = await this.getProvider();
+      await provider.stopCapture();
+      this.isCapturing = false;
+    } catch (err) {
+      console.warn('Failed to stop live capture:', err);
+    }
+  }
+
   private mapServerToClient(item: any): DetectedTransaction {
     return {
       id: item.id,

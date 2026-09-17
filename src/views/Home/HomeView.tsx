@@ -165,10 +165,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   useEffect(() => {
     refreshDashboard();
     loadHomeData();
-    if (family?.id) {
-      SmartExpenseService.startLiveCapture(family.id, () => {
-        loadHomeData();
-      });
+    if (family?.id && typeof SmartExpenseService.startLiveCapture === 'function') {
+      try {
+        SmartExpenseService.startLiveCapture(family.id, () => {
+          loadHomeData();
+        });
+      } catch (err) {
+        console.warn('Live capture init suppressed:', err);
+      }
     }
   }, [family?.id, refreshDashboard]);
 
