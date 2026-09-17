@@ -150,7 +150,7 @@ class DatabaseService {
 
       for (const table of tables) {
         const records = await fetchAllFromSupabase(table as string);
-        if (records) {
+        if (records && records.length > 0) {
           this.data[table] = records.map((r: any) => {
             const copy = { ...r };
             if (copy.photos && typeof copy.photos === 'string' && copy.photos.startsWith('[')) {
@@ -173,11 +173,8 @@ class DatabaseService {
   }
 
   public initSupabaseRealtime() {
-    const supabase = (import('./supabaseClient.js') as any);
-    // Setup background continuous sync from Supabase every 15 seconds
-    setInterval(() => {
-      this.hydrateFromSupabase().catch(() => {});
-    }, 15000);
+    // Initial sync from Supabase
+    this.hydrateFromSupabase().catch(() => {});
   }
 
   public getTable<K extends keyof DBStore>(tableName: K): DBStore[K] {
