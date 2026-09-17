@@ -1,17 +1,17 @@
-import { apiRequest } from '../../utils/api.js';
+﻿import { apiRequest } from '../../utils/api.js';
 import { DetectedTransaction, SmartCaptureSettings, PermissionState, ParsedTransactionResult } from './types.js';
-import { AndroidSmsCaptureProvider, MockStatementProvider, TransactionCaptureProvider } from './TransactionCaptureProvider.js';
+import { AndroidSmsCaptureProvider, WebCaptureProvider, TransactionCaptureProvider } from './TransactionCaptureProvider.js';
 
 class SmartExpenseManager {
   private provider: TransactionCaptureProvider = new AndroidSmsCaptureProvider();
-  private mockProvider: TransactionCaptureProvider = new MockStatementProvider();
+  private webProvider: TransactionCaptureProvider = new WebCaptureProvider();
 
   // Get active capture provider
   public async getProvider(): Promise<TransactionCaptureProvider> {
     if (await this.provider.isAvailable()) {
       return this.provider;
     }
-    return this.mockProvider;
+    return this.webProvider;
   }
 
   // 1. Fetch All Transactions for Family
@@ -51,7 +51,7 @@ class SmartExpenseManager {
       currency: p.currency || 'INR',
       merchant_raw: p.merchantRaw,
       merchant_normalized: p.merchantNormalized,
-      upi_id: p.upiId,
+      upiId: p.upiId,
       bank_name: p.bankName,
       account_last4: p.accountLast4,
       transaction_reference: p.transactionReference,
@@ -189,14 +189,32 @@ class SmartExpenseManager {
   }
 
   // 8. Run Historical Scan
-  public async runHistoricalScan(familyId: string, days: number = 7): Promise<{ detectedCount: number }> {
+  public async runHistoricalScan(familyId: string, days: number = 7): Promise<{ detectedCount: number; message?: string }> {
+    const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
+    const hasPlugin = !!(window as any).Capacitor?.Plugins?.SmsTransactionPlugin;
+
+    if (!isNative || !hasPlugin) {
+      return {
+        detectedCount: 0,
+        message: 'No messages to read: SMS capture is only active on Android mobile devices with SMS access.',
+      };
+    }
+
     const provider = await this.getProvider();
     const detected = await provider.scanHistorical(days);
     if (detected.length > 0) {
       const res = await this.ingestDetectedTransactions(familyId, detected);
-      return { detectedCount: res.ingestedCount };
+      return {
+        detectedCount: res.ingestedCount,
+        message: res.ingestedCount > 0
+          ? `Found & synced ${res.ingestedCount} eligible transaction(s).`
+          : 'No new financial SMS transactions found in the selected period.',
+      };
     }
-    return { detectedCount: 0 };
+    return {
+      detectedCount: 0,
+      message: 'No eligible financial SMS messages found on device.',
+    };
   }
 
   private mapServerToClient(item: any): DetectedTransaction {

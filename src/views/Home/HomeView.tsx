@@ -137,10 +137,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     loadHomeData();
   };
 
-  const handleScanRecentSmartTx = async () => {
-    if (!family?.id) return;
-    await SmartExpenseService.runHistoricalScan(family.id, smartSettings.historicalScanDays || 7);
-    loadHomeData();
+  const handleScanRecentSmartTx = async (days?: number) => {
+    if (!family?.id) return { detectedCount: 0, message: 'Family not found' };
+    const res = await SmartExpenseService.runHistoricalScan(family.id, days || smartSettings.historicalScanDays || 7);
+    await loadHomeData();
+    return res;
   };
 
   const handleGrantSmartPermission = async () => {

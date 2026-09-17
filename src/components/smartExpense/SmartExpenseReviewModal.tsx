@@ -29,7 +29,7 @@ interface SmartExpenseReviewModalProps {
   onEdit: (t: DetectedTransaction) => void;
   onIgnore: (t: DetectedTransaction) => void;
   onBulkConfirm: () => void;
-  onScanRecent: () => Promise<void>;
+  onScanRecent: () => Promise<{ detectedCount?: number; message?: string } | void>;
   onOpenSettings: () => void;
   isPrivacyMode?: boolean;
 }
@@ -58,12 +58,16 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
     setIsScanning(true);
     setScanMessage(null);
     try {
-      await onScanRecent();
-      setScanMessage('Scan complete! Detected transactions updated.');
-      setTimeout(() => setScanMessage(null), 4000);
+      const res: any = await onScanRecent();
+      if (res && res.message) {
+        setScanMessage(res.message);
+      } else {
+        setScanMessage('Scan complete.');
+      }
+      setTimeout(() => setScanMessage(null), 5000);
     } catch {
-      setScanMessage('Failed to scan. Please check permissions.');
-      setTimeout(() => setScanMessage(null), 4000);
+      setScanMessage('No messages to read on this device.');
+      setTimeout(() => setScanMessage(null), 5000);
     } finally {
       setIsScanning(false);
     }
@@ -149,7 +153,7 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
         </div>
 
         {scanMessage && (
-          <div className="mx-3 mt-2 p-2 rounded-xl bg-[#16C7F2]/10 border border-[#16C7F2]/30 text-xs text-[#16C7F2] text-center font-medium">
+          <div className="mx-3 mt-2 p-2.5 rounded-xl bg-[#16C7F2]/10 border border-[#16C7F2]/30 text-xs text-[#16C7F2] text-center font-medium animate-fadeIn">
             {scanMessage}
           </div>
         )}
@@ -206,9 +210,9 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
                   <div className="w-12 h-12 rounded-full bg-slate-800/80 flex items-center justify-center text-[#55D98A] mb-3">
                     <CheckCheck className="w-6 h-6" />
                   </div>
-                  <p className="text-sm font-bold text-white">All Caught Up!</p>
+                  <p className="text-sm font-bold text-white">No Pending Transactions</p>
                   <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                    No pending transactions detected. New UPI/Bank SMS notifications will appear here automatically.
+                    No SMS messages to read on this device. When using the Android app, new bank & UPI transactions will appear here automatically.
                   </p>
                   <button
                     onClick={handleScan}

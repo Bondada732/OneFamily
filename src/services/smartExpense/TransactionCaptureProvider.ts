@@ -100,45 +100,27 @@ export class AndroidSmsCaptureProvider implements TransactionCaptureProvider {
   }
 }
 
-// 2. Synthetic Test / Statement Import Provider (for Web Preview & Unit Testing)
-export class MockStatementProvider implements TransactionCaptureProvider {
-  id = 'mock_statement';
-  name = 'Sample Transaction Import';
+// 2. Web / Desktop Fallback Provider (No dummy data - returns empty list)
+export class WebCaptureProvider implements TransactionCaptureProvider {
+  id = 'web_capture';
+  name = 'Web SMS Provider (No SMS Access)';
 
   async isAvailable(): Promise<boolean> {
-    return true;
+    return false;
   }
 
   async getPermissionState(): Promise<PermissionState> {
-    return 'GRANTED';
+    return 'DENIED';
   }
 
   async requestPermission(): Promise<PermissionState> {
-    return 'GRANTED';
+    return 'DENIED';
   }
 
-  async startCapture(onTransactionDetected: (tx: ParsedTransactionResult) => void): Promise<void> {
-    // Simulator trigger
-  }
+  async startCapture(): Promise<void> {}
 
-  async scanHistorical(days: number = 7): Promise<ParsedTransactionResult[]> {
-    const now = Date.now();
-    const syntheticMessages = [
-      { sender: 'VM-HDFCBK', body: 'Rs 450.00 debited from A/c **1978 via UPI to swiggy@upi. Ref 425619876231', timestamp: String(now - 2 * 3600 * 1000) },
-      { sender: 'VK-SBIINB', body: 'Dear SBI User, A/C 1978 debited by Rs 1280.00 on 17Sep26 transfer to AMAZON UPI Ref 425619876232', timestamp: String(now - 5 * 3600 * 1000) },
-      { sender: 'AD-ICICIB', body: 'ICICI Bank Acct XX1978 debited for Rs 320.00 on 16-Sep-26; Uber credited. UPI:425619876233', timestamp: String(now - 24 * 3600 * 1000) },
-      { sender: 'BW-KOTAKB', body: 'Kotak Bank: Rs 150 debited from A/c XX1978 via UPI to Blinkit on 15-Sep-26. Ref 425619876234', timestamp: String(now - 48 * 3600 * 1000) },
-      { sender: 'VM-AXISBK', body: 'Axis Bank: INR 650.00 paid to Apollo Pharmacy via UPI on 14-Sep-26. Ref 425619876235', timestamp: String(now - 72 * 3600 * 1000) },
-    ];
-
-    const results: ParsedTransactionResult[] = [];
-    for (const msg of syntheticMessages) {
-      const parsed = TransactionParserPipeline.parse(msg.body, msg.sender, {}, msg.timestamp);
-      if (parsed) {
-        results.push(parsed);
-      }
-    }
-    return results;
+  async scanHistorical(): Promise<ParsedTransactionResult[]> {
+    return []; // No dummy transactions
   }
 
   async stopCapture(): Promise<void> {}
