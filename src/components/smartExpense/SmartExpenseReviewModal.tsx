@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Check,
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { DetectedTransaction } from '../../services/smartExpense/types.js';
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
+import { useFamily } from '../../context/FamilyContext.js';
 
 interface SmartExpenseReviewModalProps {
   isOpen: boolean;
@@ -55,6 +56,8 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
   onOpenSettings,
   isPrivacyMode = false,
 }) => {
+  const { family } = useFamily();
+  const activeFamilyId = familyId || family?.id || localStorage.getItem('onefamily_family_id') || '';
   const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'ignored'>('pending');
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
@@ -89,7 +92,7 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
     if (!pastedSms.trim()) return;
     setPasteResult(null);
     try {
-      const res = await SmartExpenseService.parseAndIngestRawSms(familyId, pastedSms);
+      const res = await SmartExpenseService.parseAndIngestRawSms(activeFamilyId, pastedSms);
       setPasteResult(res.message);
       if (res.success) {
         setPastedSms('');

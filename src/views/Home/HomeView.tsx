@@ -1035,6 +1035,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       {/* ================= SMART EXPENSE MODALS ================= */}
       <SmartExpenseReviewModal
         isOpen={showSmartReviewModal}
+        familyId={family?.id}
         onClose={() => setShowSmartReviewModal(false)}
         pendingTransactions={pendingSmartTx}
         confirmedTransactions={confirmedSmartTx}
@@ -1047,6 +1048,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         onIgnore={(tx) => handleIgnoreSmartTx(tx)}
         onBulkConfirm={handleBulkConfirmSmartTx}
         onScanRecent={handleScanRecentSmartTx}
+        onRefreshData={loadHomeData}
         onOpenSettings={() => {
           setShowSmartReviewModal(false);
           setShowSmartSettingsModal(true);

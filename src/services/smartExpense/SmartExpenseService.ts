@@ -223,9 +223,25 @@ class SmartExpenseManager {
     familyId: string,
     text: string
   ): Promise<{ success: boolean; transaction?: any; message: string }> => {
-    if (!familyId || !text || !text.trim()) {
+    if (!text || !text.trim()) {
       return { success: false, message: 'Please paste a valid SMS message text.' };
     }
+
+    const effectiveFamilyId =
+      familyId ||
+      localStorage.getItem('onefamily_family_id') ||
+      (() => {
+        try {
+          return JSON.parse(localStorage.getItem('onefamily_user') || '{}')?.family_id;
+        } catch {
+          return '';
+        }
+      })();
+
+    if (!effectiveFamilyId) {
+      return { success: false, message: 'Active household/family not found. Please log in again.' };
+    }
+
     const parsed = TransactionParserPipeline.parse(text);
     if (!parsed) {
       return {
@@ -233,7 +249,7 @@ class SmartExpenseManager {
         message: 'Could not extract financial transaction details from the pasted message. Ensure it has an amount (e.g. Rs 500) and debit/transfer information.',
       };
     }
-    const res = await this.ingestDetectedTransactions(familyId, [parsed]);
+    const res = await this.ingestDetectedTransactions(effectiveFamilyId, [parsed]);
     if (res.ingestedCount > 0) {
       return {
         success: true,
