@@ -204,65 +204,65 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
     <div className="w-full space-y-3 pt-1 pb-1 select-none">
       {/* 1. Header Section */}
       <div className="space-y-0.5 px-0.5">
-        <h4 className="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+        <h4 className="text-[9.5px] sm:text-[10.5px] font-bold tracking-wider text-slate-400 uppercase">
           HEY! HERE'S WHERE YOUR MONEY WENT
         </h4>
         <div className="flex items-baseline gap-2">
-          <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
             {isPrivacyMode ? '••••••' : `₹${displayTotalSpent.toLocaleString('en-IN')}`}
           </span>
-          <span className="text-xs sm:text-sm font-medium text-slate-400">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-400">
             spent this month
           </span>
         </div>
       </div>
 
-      {/* 2. Four Metrics Cards (Compact & Scaled to Fit Without Overflow) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {/* Card 1: TODAY */}
-        <div className="bg-[#0D152D]/95 border border-slate-800/90 hover:border-slate-700/80 rounded-xl p-2.5 flex flex-col justify-between shadow-md">
-          <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+      {/* 2. Four Metrics Cards with Distinct Figure Colors & Scaled Typography */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
+        {/* Card 1: TODAY (Cyan) */}
+        <div className="bg-[#0D152D]/95 border border-[#00D2FF]/25 hover:border-[#00D2FF]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
+          <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-wider text-slate-400 uppercase">
             TODAY
           </span>
-          <div className="text-sm sm:text-base font-extrabold text-white tracking-tight mt-1 truncate">
+          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#00D2FF]">
             {isPrivacyMode ? '••••' : `₹${todaySpent.toLocaleString('en-IN')}`}
           </div>
-          <div className="h-3" />
+          <div className="h-2.5" />
         </div>
 
-        {/* Card 2: THIS WEEK */}
-        <div className="bg-[#0D152D]/95 border border-slate-800/90 hover:border-slate-700/80 rounded-xl p-2.5 flex flex-col justify-between shadow-md">
-          <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+        {/* Card 2: THIS WEEK (Gold / Amber) */}
+        <div className="bg-[#0D152D]/95 border border-[#FFB800]/25 hover:border-[#FFB800]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
+          <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-wider text-slate-400 uppercase">
             THIS WEEK
           </span>
-          <div className="text-sm sm:text-base font-extrabold text-white tracking-tight mt-1 truncate">
+          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#FFB800]">
             {isPrivacyMode ? '••••' : `₹${thisWeekSpent.toLocaleString('en-IN')}`}
           </div>
-          <div className="h-3" />
+          <div className="h-2.5" />
         </div>
 
-        {/* Card 3: BUDGET LEFT */}
-        <div className="bg-[#0D152D]/95 border border-slate-800/90 hover:border-slate-700/80 rounded-xl p-2.5 flex flex-col justify-between shadow-md">
-          <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-slate-400 uppercase truncate">
+        {/* Card 3: BUDGET LEFT (Emerald Green) */}
+        <div className="bg-[#0D152D]/95 border border-[#00E676]/25 hover:border-[#00E676]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
+          <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-wider text-slate-400 uppercase truncate">
             BUDGET LEFT
           </span>
-          <div className="text-sm sm:text-base font-extrabold text-white tracking-tight mt-1 truncate">
+          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#00E676]">
             {isPrivacyMode ? '••••••' : `₹${budgetLeft.toLocaleString('en-IN')}`}
           </div>
-          <div className="text-[10px] font-bold text-[#00D2C4] mt-0.5 leading-none">
+          <div className="text-[9.5px] font-bold text-[#00E676] mt-0.5 leading-none">
             {percentUsed}% used
           </div>
         </div>
 
-        {/* Card 4: TRANSACTIONS */}
-        <div className="bg-[#0D152D]/95 border border-slate-800/90 hover:border-slate-700/80 rounded-xl p-2.5 flex flex-col justify-between shadow-md">
-          <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-slate-400 uppercase truncate">
+        {/* Card 4: TRANSACTIONS (Purple) */}
+        <div className="bg-[#0D152D]/95 border border-[#C084FC]/25 hover:border-[#C084FC]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
+          <span className="text-[8px] sm:text-[9px] font-bold tracking-tight text-slate-400 uppercase">
             TRANSACTIONS
           </span>
-          <div className="text-sm sm:text-base font-extrabold text-white tracking-tight mt-1 truncate">
+          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#C084FC]">
             {transactionCount}
           </div>
-          <div className="text-[9.5px] font-medium text-slate-400 mt-0.5 leading-none truncate">
+          <div className="text-[8.5px] sm:text-[9px] font-medium text-[#C084FC]/80 mt-0.5 leading-none truncate">
             avg ₹{Math.round(avgPerDay)}/d
           </div>
         </div>
