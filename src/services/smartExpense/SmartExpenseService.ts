@@ -211,6 +211,13 @@ class SmartExpenseManager {
           : 'No new financial SMS transactions found in the selected period.',
       };
     }
+
+    return {
+      detectedCount: 0,
+      message: 'No financial SMS transactions found in the selected period.',
+    };
+  }
+
   // 9. Parse and Ingest Single Raw SMS Text (for manual testing / paste)
   public async parseAndIngestRawSms(familyId: string, text: string): Promise<{ success: boolean; transaction?: any; message: string }> {
     if (!familyId || !text || !text.trim()) {
