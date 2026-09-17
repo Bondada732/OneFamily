@@ -11,9 +11,6 @@ router.get('/:id/dashboard', async (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
   const user = req.user!;
 
-  // Always sync fresh data from Supabase Cloud
-  await db.hydrateFromSupabase().catch(() => {});
-
   const hasFinance = user.role === 'FAMILY_HEAD' || user.permissions.includes('FINANCE_VIEW');
   const hasInvestments = user.role === 'FAMILY_HEAD' || user.permissions.includes('INVESTMENT_VIEW');
   const hasDocuments = user.role === 'FAMILY_HEAD' || user.permissions.includes('DOCUMENT_VIEW');
