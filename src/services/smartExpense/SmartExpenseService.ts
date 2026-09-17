@@ -164,7 +164,7 @@ class SmartExpenseManager {
   }
 
   // 7. Update Settings
-  public async updateSettings(familyId: string, settings: Partial<SmartCaptureSettings>): Promise<boolean> {
+  public updateSettings = async (familyId: string, settings: Partial<SmartCaptureSettings>): Promise<boolean> => {
     if (!familyId) return false;
     try {
       const payload: any = {};
@@ -186,10 +186,10 @@ class SmartExpenseManager {
       console.error('Failed to update smart capture settings:', err);
       return false;
     }
-  }
+  };
 
   // 8. Run Historical Scan
-  public async runHistoricalScan(familyId: string, days: number = 7): Promise<{ detectedCount: number; message?: string }> {
+  public runHistoricalScan = async (familyId: string, days: number = 7): Promise<{ detectedCount: number; message?: string }> => {
     const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
     const hasPlugin = !!(window as any).Capacitor?.Plugins?.SmsTransactionPlugin;
 
@@ -216,10 +216,13 @@ class SmartExpenseManager {
       detectedCount: 0,
       message: 'No financial SMS transactions found in the selected period.',
     };
-  }
+  };
 
   // 9. Parse and Ingest Single Raw SMS Text (for manual testing / paste)
-  public async parseAndIngestRawSms(familyId: string, text: string): Promise<{ success: boolean; transaction?: any; message: string }> {
+  public parseAndIngestRawSms = async (
+    familyId: string,
+    text: string
+  ): Promise<{ success: boolean; transaction?: any; message: string }> => {
     if (!familyId || !text || !text.trim()) {
       return { success: false, message: 'Please paste a valid SMS message text.' };
     }
@@ -242,7 +245,7 @@ class SmartExpenseManager {
       success: false,
       message: 'This transaction was already ingested previously (duplicate reference/hash).',
     };
-  }
+  };
 
   // 10. Real-time Live SMS listener on device
   public startLiveCapture = async (familyId: string, onNewTransaction?: () => void): Promise<void> => {

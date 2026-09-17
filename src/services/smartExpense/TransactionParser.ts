@@ -396,9 +396,14 @@ export class GenericDebitParser implements ITransactionParser {
     const refMatch = /(?:ref|rrn|txn|id)\s*[:#]?\s*([0-9a-zA-Z]{6,16})/i.exec(message);
 
     let rawMerchant = '';
-    const toMatch = /(?:to|at|paid\s+to|transfer\s+to|towards)\s+([a-zA-Z0-9\s&.'-]+?)(?:\s+(?:on|ref|a\/c|\.)|$)/i.exec(message);
-    if (toMatch) {
-      rawMerchant = toMatch[1].trim();
+    const vpaMatch = /([a-zA-Z0-9._-]+@[a-zA-Z0-9_-]+)/.exec(message);
+    if (vpaMatch) {
+      rawMerchant = vpaMatch[1];
+    } else {
+      const toMatch = /(?:to|at|paid\s+to|transfer\s+to|towards|for|info:?)\s+([a-zA-Z0-9\s&.'-]+?)(?:\s+(?:on|ref|rrn|txn|a\/c|using|via|\.)|$)/i.exec(message);
+      if (toMatch && toMatch[1]) {
+        rawMerchant = toMatch[1].trim();
+      }
     }
 
     const { normalized } = MerchantNormalizer.normalize(rawMerchant);
