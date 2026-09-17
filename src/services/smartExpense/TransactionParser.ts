@@ -374,7 +374,75 @@ export class PaytmParser implements ITransactionParser {
   }
 }
 
-// 6. Generic Bank & Debit Fallback Parser
+// 6. Airtel Payments Bank Parser
+export class AirtelPaymentsBankParser implements ITransactionParser {
+  name = 'AirtelPaymentsBankParser';
+
+  canParse(message: string, sender: string = ''): boolean {
+    return /airtel\s*(?:payments\s*bank|money|bank)/i.test(message) || /airtel/i.test(sender);
+  }
+
+  parse(
+    message: string,
+    sender: string = '',
+    userPreferences = {},
+    timestamp?: string | number
+  ): ParsedTransactionResult | null {
+    const amountData = AmountParser.parse(message);
+    if (!amountData) return null;
+
+    const direction = TransactionDirectionClassifier.classify(message);
+
+    // Extract Txn ID
+    const refMatch = /(?:txn\s*id|ref\s*no|rrn|id)\s*[:#]?\s*([0-9a-zA-Z]{6,16})/i.exec(message);
+    const transactionReference = refMatch ? refMatch[1] : undefined;
+
+    // Extract Account Last 4
+    const acctMatch = /(?:a\/?c|account)\s*(?:no\.?|ending)?\s*[:*xX]*(\d{3,4})\b/i.exec(message);
+    const accountLast4 = acctMatch ? acctMatch[1] : undefined;
+
+    // Extract Payee / Merchant
+    let rawMerchant = '';
+    const vpaMatch = /([a-zA-Z0-9._-]+@[a-zA-Z0-9_-]+)/.exec(message);
+    if (vpaMatch) {
+      rawMerchant = vpaMatch[1];
+    } else {
+      const toMatch = /(?:paid\s+to|transfer(?:red)?\s+to|towards|to)\s+([a-zA-Z0-9\s&.'-]+?)(?:\s+(?:from|txn|ref|bal|on|using|via|\.)|$)/i.exec(message);
+      if (toMatch && toMatch[1] && !/airtel|payments\s+bank/i.test(toMatch[1])) {
+        rawMerchant = toMatch[1].trim();
+      }
+    }
+
+    if (!rawMerchant) {
+      rawMerchant = 'Airtel Bank Payment';
+    }
+
+    const { normalized } = MerchantNormalizer.normalize(rawMerchant);
+    const catResult = ExpenseCategoryEngine.suggestCategory(normalized, message, userPreferences);
+    const txDate = TransactionDateParser.parse(message, timestamp);
+
+    return {
+      isFinancial: true,
+      amount: amountData.amount,
+      currency: amountData.currency,
+      direction,
+      transactionType: /upi/i.test(message) ? 'UPI' : 'BANK_TRANSFER',
+      merchantRaw: rawMerchant,
+      merchantNormalized: normalized,
+      bankName: 'Airtel Payments Bank',
+      upiId: vpaMatch ? vpaMatch[1] : undefined,
+      accountLast4,
+      transactionReference,
+      transactionDateTime: txDate,
+      categorySuggested: catResult.category,
+      categoryConfidence: catResult.confidence,
+      parserUsed: this.name,
+      rawSourceHash: TransactionDuplicateDetector.generateHash(message),
+    };
+  }
+}
+
+// 7. Generic Bank & Debit Fallback Parser
 export class GenericDebitParser implements ITransactionParser {
   name = 'GenericDebitParser';
 
@@ -406,7 +474,7 @@ export class GenericDebitParser implements ITransactionParser {
       }
     }
 
-    const { normalized } = MerchantNormalizer.normalize(rawMerchant);
+    const { normalized } = MerchantNormalizer.normalize(rawMerchant || 'General Expense');
     const catResult = ExpenseCategoryEngine.suggestCategory(normalized, message, userPreferences);
     const txDate = TransactionDateParser.parse(message, timestamp);
 
@@ -436,6 +504,7 @@ export class TransactionParserPipeline {
     new HdfcParser(),
     new IciciParser(),
     new PaytmParser(),
+    new AirtelPaymentsBankParser(),
     new GenericUpiParser(),
     new GenericDebitParser(),
   ];

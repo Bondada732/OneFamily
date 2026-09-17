@@ -116,5 +116,15 @@ describe('Smart Expense Engine Unit Tests', () => {
       assert.strictEqual(parsed?.categorySuggested, 'Food & Dining');
       assert.strictEqual(parsed?.transactionReference, '426189012345');
     });
+
+    it('parses Airtel Payments Bank debited SMS format', () => {
+      const airtelSms = 'Rs. 20.00 debited from Airtel Payments Bank a/c Txn ID 196731152570 Bal:9547.53 Call 180023400 for help';
+      const parsed = TransactionParser.parse(airtelSms);
+
+      assert.ok(parsed, 'Should parse Airtel SMS');
+      assert.strictEqual(parsed?.amount, 20);
+      assert.strictEqual(parsed?.direction, 'DEBIT');
+      assert.strictEqual(parsed?.transactionReference, '196731152570');
+    });
   });
 });
