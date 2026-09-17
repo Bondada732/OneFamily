@@ -14,6 +14,7 @@ import { AddTaskModal } from '../../components/common/AddTaskModal.js';
 import { AddMaintenanceModal } from '../../components/common/AddMaintenanceModal.js';
 import { AddEmergencyModal } from '../../components/common/AddEmergencyModal.js';
 import { CircularQuickActions } from '../../components/common/CircularQuickActions.js';
+import { MoneyAnalyticsDashboard } from '../../components/home/MoneyAnalyticsDashboard.js';
 import {
   Receipt,
   Gift,
@@ -59,22 +60,27 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   // Shared Wishlist & Tasks items state
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [familyTasks, setFamilyTasks] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
 
-  // Load shared wishlist and tasks from backend database
-  const loadTasksAndWishlist = async () => {
+  // Load shared wishlist, tasks, and expenses from backend database
+  const loadHomeData = async () => {
     if (!family?.id) return;
     try {
-      const data = await apiRequest(`/tasks/${family.id}/tasks`);
-      setWishlistItems(data.groceryItems || []);
-      setFamilyTasks(data.tasks || []);
+      const [tasksRes, expRes] = await Promise.all([
+        apiRequest(`/tasks/${family.id}/tasks`).catch(() => ({ groceryItems: [], tasks: [] })),
+        apiRequest(`/expenses/${family.id}/expenses`).catch(() => ({ expenses: [] })),
+      ]);
+      setWishlistItems(tasksRes.groceryItems || []);
+      setFamilyTasks(tasksRes.tasks || []);
+      setExpenses(expRes.expenses || []);
     } catch (err) {
-      console.error('Failed to load tasks and wishlist:', err);
+      console.error('Failed to load home data:', err);
     }
   };
 
   useEffect(() => {
     refreshDashboard();
-    loadTasksAndWishlist();
+    loadHomeData();
   }, [family?.id, refreshDashboard]);
 
   // Dynamic greeting by time of day
@@ -102,6 +108,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       });
       setShowAddExpenseModal(false);
       refreshDashboard();
+      loadHomeData();
     } catch (err) {
       console.error('Failed to create expense:', err);
     }
@@ -381,6 +388,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         onTasks={() => setShowTaskModal(true)}
         onMaintenance={() => setShowMaintenanceModal(true)}
         onEmergency={() => setShowEmergencyModal(true)}
+      />
+
+      {/* 2.2. Spending Financial Analytics Dashboard (Matching Attached Image) */}
+      <MoneyAnalyticsDashboard
+        expenses={expenses}
+        monthlyBudget={dashboard?.snapshot?.monthlyBudget || 100000}
+        onNavigateTab={onNavigateTab}
+        isPrivacyMode={isPrivacyMode}
       />
 
       {/* 2.5. Family Wishlist Section in Bullet Points (Positioned ABOVE Family Wealth) */}
