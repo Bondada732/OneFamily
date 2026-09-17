@@ -29,7 +29,7 @@ export const AIView: React.FC = () => {
     {
       id: 'msg_welcome',
       sender: 'AI',
-      text: `Hello ${currentUser?.name ? currentUser.name.split(' ')[0] : 'there'}! 👋 I am your **One Family AI Assistant**.\n\nAsk me anything! You can ask about your family's expenses, budgets, assets, tasks, calendar schedules, or ask for general assistance, trip planning, advice, message drafting, and recipes.\n\nHow can I help you today?`,
+      text: `Hello ${currentUser?.name ? currentUser.name.split(' ')[0] : 'there'}! 👋 I am your One Family AI Assistant.\n\nAsk me anything about your household spending, budgets, chores, or wishlist.\n\nHow can I help you today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -256,10 +256,33 @@ export const AIView: React.FC = () => {
                   className={`max-w-[85%] p-3.5 rounded-2xl text-xs leading-relaxed ${
                     msg.sender === 'USER'
                       ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white font-medium rounded-tr-none shadow-md'
-                      : 'bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-tl-none whitespace-pre-wrap shadow-sm'
+                      : 'bg-slate-800/95 border border-slate-700/80 text-slate-100 rounded-tl-none shadow-sm'
                   }`}
                 >
-                  <div>{msg.text}</div>
+                  <div className="space-y-1.5">
+                    {msg.text.split('\n').map((line, lIdx) => {
+                      const cleanLine = line.replace(/^###\s*/, '').replace(/\*\*\*/g, '').trim();
+                      if (!cleanLine) return <div key={lIdx} className="h-1" />;
+
+                      // Render bold segments properly
+                      const parts = cleanLine.split(/(\*\*[^*]+\*\*)/g);
+
+                      return (
+                        <div key={lIdx} className={cleanLine.startsWith('•') ? 'pl-2 text-slate-200' : ''}>
+                          {parts.map((part, pIdx) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                              return (
+                                <strong key={pIdx} className="font-bold text-white">
+                                  {part.slice(2, -2)}
+                                </strong>
+                              );
+                            }
+                            return <span key={pIdx}>{part}</span>;
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
 
                   {msg.sourcesUsed && msg.sourcesUsed.length > 0 && (
                     <div className="flex items-center gap-1 mt-2 text-[10px] text-indigo-300 pt-1 border-t border-slate-700/60 font-mono">
