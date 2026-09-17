@@ -56,23 +56,25 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
 
-  // Shared Wishlist items state
+  // Shared Wishlist & Tasks items state
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [familyTasks, setFamilyTasks] = useState<any[]>([]);
 
-  // Load shared wishlist items from backend database
-  const loadWishlist = async () => {
+  // Load shared wishlist and tasks from backend database
+  const loadTasksAndWishlist = async () => {
     if (!family?.id) return;
     try {
       const data = await apiRequest(`/tasks/${family.id}/tasks`);
       setWishlistItems(data.groceryItems || []);
+      setFamilyTasks(data.tasks || []);
     } catch (err) {
-      console.error('Failed to load wishlist:', err);
+      console.error('Failed to load tasks and wishlist:', err);
     }
   };
 
   useEffect(() => {
     refreshDashboard();
-    loadWishlist();
+    loadTasksAndWishlist();
   }, [family?.id, refreshDashboard]);
 
   // Dynamic greeting by time of day
@@ -222,6 +224,32 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     }
   };
 
+  const toggleTaskStatus = async (id: string) => {
+    if (!family?.id) return;
+    try {
+      const updated = await apiRequest(`/tasks/${family.id}/tasks/${id}/toggle`, {
+        method: 'PATCH',
+      });
+      setFamilyTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to toggle task status:', err);
+    }
+  };
+
+  const deleteTaskItem = async (id: string) => {
+    if (!family?.id) return;
+    try {
+      setFamilyTasks((prev) => prev.filter((t) => t.id !== id));
+      await apiRequest(`/tasks/${family.id}/tasks/${id}`, {
+        method: 'DELETE',
+      });
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to delete task item:', err);
+    }
+  };
+
   const handleCreateTask = async (taskData: {
     title: string;
     category: string;
@@ -232,7 +260,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   }) => {
     if (!family?.id || !taskData.title.trim()) return;
     try {
-      await apiRequest(`/tasks/${family.id}/tasks`, {
+      const created = await apiRequest(`/tasks/${family.id}/tasks`, {
         method: 'POST',
         body: JSON.stringify({
           title: taskData.title,
@@ -243,6 +271,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           status: 'PENDING',
         }),
       });
+      if (created) {
+        setFamilyTasks((prev) => [created, ...prev]);
+      }
       setShowTaskModal(false);
       refreshDashboard();
     } catch (err) {
@@ -431,6 +462,103 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         ) : (
           <p className="text-xs text-slate-400 pl-1">
             • No wishlist items yet. Tap <button onClick={() => setShowWishListModal(true)} className="text-[#00D2FF] underline font-medium">+ Add Wish</button> to add dreams for your family.
+          </p>
+        )}
+      </div>
+
+      {/* 2.6. Family Tasks Section in Bullet Points (Positioned BELOW Wishlist, ABOVE Family Wealth) */}
+      <div className="space-y-1.5 pt-1 px-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="text-[#FFB91F]">✦</span>
+              <span>Family Tasks</span>
+              {familyTasks.length > 0 && (
+                <span className="text-[10px] text-[#FFB91F] font-bold">
+                  ({familyTasks.length})
+                </span>
+              )}
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowTaskModal(true)}
+            className="text-[11px] text-[#FFB91F] hover:text-[#FFD21F] font-bold transition-colors"
+          >
+            + Add Task
+          </button>
+        </div>
+
+        {/* Tasks Items in Pure Bullet Points */}
+        {familyTasks && familyTasks.length > 0 ? (
+          <ul className="space-y-1.5 pl-1 text-xs">
+            {familyTasks.map((task) => {
+              const isCompleted = task.status === 'COMPLETED';
+              const priorityColor =
+                task.priority === 'HIGH'
+                  ? 'text-[#FF4D6D]'
+                  : task.priority === 'MEDIUM'
+                  ? 'text-[#FFD21F]'
+                  : 'text-[#55D98A]';
+
+              return (
+                <li
+                  key={task.id}
+                  className="flex items-center justify-between group py-0.5"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span
+                      onClick={() => toggleTaskStatus(task.id)}
+                      className={`cursor-pointer select-none text-base leading-none transition-colors ${
+                        isCompleted ? 'text-emerald-400' : 'text-[#FFB91F]'
+                      }`}
+                    >
+                      •
+                    </span>
+                    <span
+                      onClick={() => toggleTaskStatus(task.id)}
+                      className={`truncate cursor-pointer font-medium transition-colors ${
+                        isCompleted ? 'line-through text-slate-500' : 'text-slate-100 hover:text-white'
+                      }`}
+                    >
+                      {task.title}
+                    </span>
+                    <span className="text-[10px] text-slate-400 shrink-0">
+                      {task.assigned_to_name ? `(${task.assigned_to_name}` : ''}
+                      {task.due_date ? ` • Due: ${task.due_date}` : ''}
+                      {task.priority ? ` • ` : ''}
+                      {task.priority ? (
+                        <span className={`font-semibold ${priorityColor}`}>
+                          {task.priority}
+                        </span>
+                      ) : null}
+                      {task.assigned_to_name ? `)` : ''}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => deleteTaskItem(task.id)}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all ml-2"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-xs text-slate-400 pl-1">
+            • No tasks yet. Tap{' '}
+            <button
+              onClick={() => setShowTaskModal(true)}
+              className="text-[#FFB91F] underline font-medium"
+            >
+              + Add Task
+            </button>{' '}
+            to assign chores or family to-dos.
           </p>
         )}
       </div>
