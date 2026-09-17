@@ -12,7 +12,6 @@ import {
 
 export interface QuickActionItem {
   id: string;
-  num: string;
   name: string;
   sub: string;
   icon: React.ElementType;
@@ -49,7 +48,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   const items: QuickActionItem[] = [
     {
       id: 'expense',
-      num: '1',
       name: 'Add Expense',
       sub: 'Quick Pay',
       icon: Receipt,
@@ -60,7 +58,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
     {
       id: 'wish',
-      num: '2',
       name: 'Wish List',
       sub: 'Dream Items',
       icon: Gift,
@@ -71,7 +68,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
     {
       id: 'goal',
-      num: '3',
       name: 'Set Goal',
       sub: 'Target Funds',
       icon: Target,
@@ -82,7 +78,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
     {
       id: 'income',
-      num: '4',
       name: 'Add Income',
       sub: 'Salary & More',
       icon: Wallet,
@@ -93,7 +88,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
     {
       id: 'vault',
-      num: '5',
       name: 'Vault',
       sub: 'KYC & Docs',
       icon: FolderLock,
@@ -104,7 +98,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
     {
       id: 'tasks',
-      num: '6',
       name: 'Tasks',
       sub: 'Daily To-Do',
       icon: CheckSquare,
@@ -115,7 +108,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
     {
       id: 'maintenance',
-      num: '7',
       name: 'Maintenance',
       sub: 'Appliance Care',
       icon: Wrench,
@@ -126,7 +118,6 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
     },
     {
       id: 'emergency',
-      num: '8',
       name: 'Emergency',
       sub: '24/7 SOS',
       icon: ShieldAlert,
@@ -250,21 +241,10 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
               />
 
               {/* Card Interior */}
-              <div className="relative z-10 w-full h-full p-1.5 flex flex-col justify-between items-center text-center">
-                {/* Top Number Indicator */}
-                <div
-                  className="text-xs font-black tracking-tight leading-none"
-                  style={{
-                    color: item.neonColor,
-                    textShadow: `0 0 10px ${item.neonColor}`,
-                  }}
-                >
-                  {item.num}
-                </div>
-
+              <div className="relative z-10 w-full h-full p-2 flex flex-col justify-center items-center gap-1.5 text-center">
                 {/* Center Glowing Icon */}
                 <div
-                  className="w-7 h-7 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-md"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-md"
                   style={{
                     backgroundColor: 'rgba(5, 8, 17, 0.85)',
                     border: `1.2px solid ${item.neonColor}`,
@@ -272,12 +252,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
                     boxShadow: `0 0 10px ${item.neonColor}60`,
                   }}
                 >
-                  <Icon className="w-3.5 h-3.5 stroke-[2.3]" />
+                  <Icon className="w-4 h-4 stroke-[2.3]" />
                 </div>
 
                 {/* Bottom Label */}
-                <div className="w-full pb-0.5 px-0.5">
-                  <span className="block text-[9px] font-bold text-white leading-tight truncate drop-shadow-sm">
+                <div className="w-full px-0.5">
+                  <span className="block text-[9.5px] font-bold text-white leading-tight truncate drop-shadow-sm">
                     {item.name}
                   </span>
                 </div>
