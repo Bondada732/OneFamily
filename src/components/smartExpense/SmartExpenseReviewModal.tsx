@@ -16,11 +16,15 @@ import {
   Eye,
   EyeOff,
   Settings,
+  ClipboardPaste,
+  Send,
 } from 'lucide-react';
 import { DetectedTransaction } from '../../services/smartExpense/types.js';
+import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
 
 interface SmartExpenseReviewModalProps {
   isOpen: boolean;
+  familyId?: string;
   onClose: () => void;
   pendingTransactions: DetectedTransaction[];
   confirmedTransactions: DetectedTransaction[];
@@ -30,12 +34,14 @@ interface SmartExpenseReviewModalProps {
   onIgnore: (t: DetectedTransaction) => void;
   onBulkConfirm: () => void;
   onScanRecent: () => Promise<{ detectedCount?: number; message?: string } | void>;
+  onRefreshData?: () => void;
   onOpenSettings: () => void;
   isPrivacyMode?: boolean;
 }
 
 export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = ({
   isOpen,
+  familyId = '',
   onClose,
   pendingTransactions = [],
   confirmedTransactions = [],
@@ -45,12 +51,18 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
   onIgnore,
   onBulkConfirm,
   onScanRecent,
+  onRefreshData,
   onOpenSettings,
   isPrivacyMode = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'ignored'>('pending');
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
+
+  // Paste SMS Quick Test state
+  const [showPasteBox, setShowPasteBox] = useState(false);
+  const [pastedSms, setPastedSms] = useState('');
+  const [pasteResult, setPasteResult] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -64,12 +76,31 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
       } else {
         setScanMessage('Scan complete.');
       }
-      setTimeout(() => setScanMessage(null), 5000);
+      setTimeout(() => setScanMessage(null), 6000);
     } catch {
       setScanMessage('No messages to read on this device.');
-      setTimeout(() => setScanMessage(null), 5000);
+      setTimeout(() => setScanMessage(null), 6000);
     } finally {
       setIsScanning(false);
+    }
+  };
+
+  const handleParsePastedSms = async () => {
+    if (!pastedSms.trim()) return;
+    setPasteResult(null);
+    try {
+      const res = await SmartExpenseService.parseAndIngestRawSms(familyId, pastedSms);
+      setPasteResult(res.message);
+      if (res.success) {
+        setPastedSms('');
+        onRefreshData?.();
+        setTimeout(() => {
+          setShowPasteBox(false);
+          setPasteResult(null);
+        }, 3000);
+      }
+    } catch (err: any) {
+      setPasteResult(`Error: ${err?.message || 'Could not parse'}`);
     }
   };
 
@@ -131,15 +162,26 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
         </div>
 
         {/* Scan & Batch Action Bar */}
-        <div className="p-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between gap-2">
-          <button
-            onClick={handleScan}
-            disabled={isScanning}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 disabled:opacity-60 transition-all"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#16C7F2] ${isScanning ? 'animate-spin' : ''}`} />
-            <span>{isScanning ? 'Scanning SMS...' : 'Scan Recent (7 Days)'}</span>
-          </button>
+        <div className="p-3 bg-slate-900/60 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleScan}
+              disabled={isScanning}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 disabled:opacity-60 transition-all"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-[#16C7F2] ${isScanning ? 'animate-spin' : ''}`} />
+              <span>{isScanning ? 'Scanning...' : 'Scan Recent (7 Days)'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowPasteBox(!showPasteBox)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-all"
+              title="Paste SMS text directly to test or capture"
+            >
+              <ClipboardPaste className="w-3.5 h-3.5 text-[#55D98A]" />
+              <span>Paste SMS</span>
+            </button>
+          </div>
 
           {activeTab === 'pending' && pendingTransactions.length > 0 && (
             <button
@@ -151,6 +193,39 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
             </button>
           )}
         </div>
+
+        {/* Optional Collapsible Paste SMS Area */}
+        {showPasteBox && (
+          <div className="p-3 bg-slate-900/90 border-b border-slate-800 space-y-2 animate-fadeIn">
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-bold">
+              <span>Paste Bank/UPI SMS Text to Test or Ingest:</span>
+              <button
+                onClick={() => setShowPasteBox(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <textarea
+              rows={2}
+              value={pastedSms}
+              onChange={(e) => setPastedSms(e.target.value)}
+              placeholder="e.g. Paid Rs. 500 to Suresh Kumar via UPI. Ref 426189012345"
+              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#16C7F2]"
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-[10.5px] text-[#16C7F2] font-semibold">{pasteResult}</span>
+              <button
+                type="button"
+                onClick={handleParsePastedSms}
+                className="px-3 py-1 rounded-xl bg-[#168BFF] hover:bg-[#16C7F2] text-white text-xs font-bold transition-all flex items-center gap-1"
+              >
+                <Send className="w-3 h-3" />
+                <span>Parse & Add</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {scanMessage && (
           <div className="mx-3 mt-2 p-2.5 rounded-xl bg-[#16C7F2]/10 border border-[#16C7F2]/30 text-xs text-[#16C7F2] text-center font-medium animate-fadeIn">
@@ -212,15 +287,24 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
                   </div>
                   <p className="text-sm font-bold text-white">No Pending Transactions</p>
                   <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                    No SMS messages to read on this device. When using the Android app, new bank & UPI transactions will appear here automatically.
+                    No new transactions found. On your Android phone, incoming bank & UPI SMS messages will appear here automatically.
                   </p>
-                  <button
-                    onClick={handleScan}
-                    className="mt-4 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center gap-2"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 text-[#16C7F2]" />
-                    <span>Scan SMS Messages</span>
-                  </button>
+                  <div className="flex items-center gap-2 mt-4">
+                    <button
+                      onClick={handleScan}
+                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center gap-1.5"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 text-[#16C7F2]" />
+                      <span>Scan SMS Messages</span>
+                    </button>
+                    <button
+                      onClick={() => setShowPasteBox(true)}
+                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center gap-1.5"
+                    >
+                      <ClipboardPaste className="w-3.5 h-3.5 text-[#55D98A]" />
+                      <span>Paste SMS</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 pendingTransactions.map((tx) => (

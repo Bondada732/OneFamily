@@ -1,4 +1,4 @@
-﻿import { apiRequest } from '../../utils/api.js';
+import { apiRequest } from '../../utils/api.js';
 import { DetectedTransaction, SmartCaptureSettings, PermissionState, ParsedTransactionResult } from './types.js';
 import { AndroidSmsCaptureProvider, WebCaptureProvider, TransactionCaptureProvider } from './TransactionCaptureProvider.js';
 
@@ -211,9 +211,29 @@ class SmartExpenseManager {
           : 'No new financial SMS transactions found in the selected period.',
       };
     }
+  // 9. Parse and Ingest Single Raw SMS Text (for manual testing / paste)
+  public async parseAndIngestRawSms(familyId: string, text: string): Promise<{ success: boolean; transaction?: any; message: string }> {
+    if (!familyId || !text || !text.trim()) {
+      return { success: false, message: 'Please paste a valid SMS message text.' };
+    }
+    const parsed = TransactionParserPipeline.parse(text);
+    if (!parsed) {
+      return {
+        success: false,
+        message: 'Could not extract financial transaction details from the pasted message. Ensure it has an amount (e.g. Rs 500) and debit/transfer information.',
+      };
+    }
+    const res = await this.ingestDetectedTransactions(familyId, [parsed]);
+    if (res.ingestedCount > 0) {
+      return {
+        success: true,
+        transaction: parsed,
+        message: `Successfully captured: ${parsed.merchantNormalized || 'Payee'} ₹${parsed.amount}`,
+      };
+    }
     return {
-      detectedCount: 0,
-      message: 'No eligible financial SMS messages found on device.',
+      success: false,
+      message: 'This transaction was already ingested previously (duplicate reference/hash).',
     };
   }
 

@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
@@ -22,8 +23,6 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
-
-import java.util.regex.Pattern;
 
 @CapacitorPlugin(
     name = "SmsTransactionPlugin",
@@ -39,8 +38,8 @@ import java.util.regex.Pattern;
 )
 public class SmsTransactionPlugin extends Plugin {
 
+    private static final String TAG = "SmsTransactionPlugin";
     private BroadcastReceiver smsReceiver = null;
-    private static final Pattern FINANCIAL_FILTER = Pattern.compile("(?i)(debited|credited|spent|paid|transferred|transfer|sent|received|upi|vpa|a/c|acct|inr|rs|₹)");
 
     @PluginMethod
     public void checkPermission(PluginCall call) {
@@ -90,7 +89,7 @@ public class SmsTransactionPlugin extends Plugin {
                                         String sender = sms.getOriginatingAddress();
                                         String body = sms.getMessageBody();
 
-                                        if (body != null && FINANCIAL_FILTER.matcher(body).find()) {
+                                        if (body != null && body.trim().length() > 0) {
                                             JSObject eventData = new JSObject();
                                             eventData.put("sender", sender != null ? sender : "");
                                             eventData.put("body", body);
@@ -113,6 +112,7 @@ public class SmsTransactionPlugin extends Plugin {
             } else {
                 getContext().registerReceiver(smsReceiver, filter);
             }
+            Log.d(TAG, "SMS live listener registered");
         }
 
         JSObject ret = new JSObject();
@@ -145,46 +145,58 @@ public class SmsTransactionPlugin extends Plugin {
         long cutoffTime = System.currentTimeMillis() - (days * 24L * 60L * 60L * 1000L);
 
         JSArray messagesArray = new JSArray();
-        Uri uri = Uri.parse("content://sms/inbox");
+        Uri[] uris = new Uri[]{
+            Uri.parse("content://sms"),
+            Uri.parse("content://sms/inbox")
+        };
 
-        Cursor cursor = null;
-        try {
-            cursor = context.getContentResolver().query(
-                uri,
-                new String[]{"address", "body", "date"},
-                "date >= ?",
-                new String[]{String.valueOf(cutoffTime)},
-                "date DESC LIMIT 100"
-            );
+        boolean foundMessages = false;
 
-            if (cursor != null && cursor.moveToFirst()) {
-                int addressIdx = cursor.getColumnIndex("address");
-                int bodyIdx = cursor.getColumnIndex("body");
-                int dateIdx = cursor.getColumnIndex("date");
+        for (Uri uri : uris) {
+            if (foundMessages) break;
+            Cursor cursor = null;
+            try {
+                cursor = context.getContentResolver().query(
+                    uri,
+                    new String[]{"address", "body", "date"},
+                    "date >= ?",
+                    new String[]{String.valueOf(cutoffTime)},
+                    "date DESC LIMIT 200"
+                );
 
-                do {
-                    String body = cursor.getString(bodyIdx);
-                    if (body != null && FINANCIAL_FILTER.matcher(body).find()) {
-                        String sender = cursor.getString(addressIdx);
-                        long date = cursor.getLong(dateIdx);
+                if (cursor != null && cursor.moveToFirst()) {
+                    int addressIdx = cursor.getColumnIndex("address");
+                    int bodyIdx = cursor.getColumnIndex("body");
+                    int dateIdx = cursor.getColumnIndex("date");
 
-                        JSObject msgObj = new JSObject();
-                        msgObj.put("sender", sender != null ? sender : "");
-                        msgObj.put("body", body);
-                        msgObj.put("timestamp", String.valueOf(date));
-                        messagesArray.put(msgObj);
+                    do {
+                        String body = cursor.getString(bodyIdx);
+                        if (body != null && body.trim().length() > 0) {
+                            String sender = cursor.getString(addressIdx);
+                            long date = cursor.getLong(dateIdx);
+
+                            JSObject msgObj = new JSObject();
+                            msgObj.put("sender", sender != null ? sender : "");
+                            msgObj.put("body", body);
+                            msgObj.put("timestamp", String.valueOf(date));
+                            messagesArray.put(msgObj);
+                        }
+                    } while (cursor.moveToNext());
+
+                    if (messagesArray.length() > 0) {
+                        foundMessages = true;
                     }
-                } while (cursor.moveToNext());
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Query error for uri " + uri + ": " + e.getMessage());
+            } finally {
+                if (cursor != null) cursor.close();
             }
-        } catch (Exception e) {
-            call.reject("Failed to query SMS content provider: " + e.getMessage());
-            return;
-        } finally {
-            if (cursor != null) cursor.close();
         }
 
         JSObject ret = new JSObject();
         ret.put("messages", messagesArray);
+        ret.put("count", messagesArray.length());
         call.resolve(ret);
     }
 
