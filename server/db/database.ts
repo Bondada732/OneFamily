@@ -34,6 +34,10 @@ export interface DBStore {
   maintenance_items: any[];
   notifications: any[];
   ai_conversations: any[];
+  detected_transactions: any[];
+  merchant_aliases: any[];
+  merchant_preferences: any[];
+  smart_capture_settings: any[];
 }
 
 const DATA_DIR = path.resolve(__dirname, '../data');
@@ -67,6 +71,10 @@ class DatabaseService {
     maintenance_items: [],
     notifications: [],
     ai_conversations: [],
+    detected_transactions: [],
+    merchant_aliases: [],
+    merchant_preferences: [],
+    smart_capture_settings: [],
   };
 
   private initialized = false;

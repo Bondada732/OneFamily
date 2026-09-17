@@ -18,6 +18,7 @@ import memoriesRouter from './routes/memories.js';
 import emergencyRouter from './routes/emergency.js';
 import aiRouter from './routes/ai.js';
 import searchRouter from './routes/search.js';
+import smartExpensesRouter from './routes/smartExpenses.js';
 
 const app = express();
 
@@ -83,6 +84,7 @@ app.use('/api/memories', memoriesRouter);
 app.use('/api/emergency', emergencyRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/search', searchRouter);
+app.use('/api/smart-expenses', smartExpensesRouter);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -15,6 +15,13 @@ import { AddMaintenanceModal } from '../../components/common/AddMaintenanceModal
 import { AddEmergencyModal } from '../../components/common/AddEmergencyModal.js';
 import { CircularQuickActions } from '../../components/common/CircularQuickActions.js';
 import { MoneyAnalyticsDashboard } from '../../components/home/MoneyAnalyticsDashboard.js';
+import { SmartExpensesHomeCard } from '../../components/home/SmartExpensesHomeCard.js';
+import { SmartExpenseReviewModal } from '../../components/smartExpense/SmartExpenseReviewModal.js';
+import { SmartExpensePermissionModal } from '../../components/smartExpense/SmartExpensePermissionModal.js';
+import { SmartExpenseDetailModal } from '../../components/smartExpense/SmartExpenseDetailModal.js';
+import { SmartExpenseSettingsModal } from '../../components/smartExpense/SmartExpenseSettingsModal.js';
+import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
+import { DetectedTransaction, SmartCaptureSettings } from '../../services/smartExpense/types.js';
 import {
   Receipt,
   Gift,
@@ -62,20 +69,96 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [familyTasks, setFamilyTasks] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
 
-  // Load shared wishlist, tasks, and expenses from backend database
+  // Smart Expense State
+  const [pendingSmartTx, setPendingSmartTx] = useState<DetectedTransaction[]>([]);
+  const [confirmedSmartTx, setConfirmedSmartTx] = useState<DetectedTransaction[]>([]);
+  const [ignoredSmartTx, setIgnoredSmartTx] = useState<DetectedTransaction[]>([]);
+  const [smartSettings, setSmartSettings] = useState<SmartCaptureSettings>({
+    enabled: false,
+    smsEnabled: false,
+    notificationEnabled: false,
+    autoCategorization: true,
+    dailyReview: true,
+    notificationMode: 'BATCH',
+    privacyMode: false,
+    historicalScanDays: 7,
+  });
+  const [showSmartReviewModal, setShowSmartReviewModal] = useState(false);
+  const [showSmartPermissionModal, setShowSmartPermissionModal] = useState(false);
+  const [showSmartDetailModal, setShowSmartDetailModal] = useState(false);
+  const [showSmartSettingsModal, setShowSmartSettingsModal] = useState(false);
+  const [selectedSmartTx, setSelectedSmartTx] = useState<DetectedTransaction | null>(null);
+
+  // Load shared wishlist, tasks, expenses, and smart capture from backend database
   const loadHomeData = async () => {
     if (!family?.id) return;
     try {
-      const [tasksRes, expRes] = await Promise.all([
+      const [tasksRes, expRes, smartData, smartSettingsData] = await Promise.all([
         apiRequest(`/tasks/${family.id}/tasks`).catch(() => ({ groceryItems: [], tasks: [] })),
         apiRequest(`/expenses/${family.id}/expenses`).catch(() => ({ expenses: [] })),
+        SmartExpenseService.fetchAllTransactions(family.id).catch(() => ({ pending: [], confirmed: [], ignored: [] })),
+        SmartExpenseService.getSettings(family.id).catch(() => null),
       ]);
       setWishlistItems(tasksRes.groceryItems || []);
       setFamilyTasks(tasksRes.tasks || []);
       setExpenses(expRes.expenses || []);
+      if (smartData) {
+        setPendingSmartTx(smartData.pending || []);
+        setConfirmedSmartTx(smartData.confirmed || []);
+        setIgnoredSmartTx(smartData.ignored || []);
+      }
+      if (smartSettingsData) {
+        setSmartSettings(smartSettingsData);
+      }
     } catch (err) {
       console.error('Failed to load home data:', err);
     }
+  };
+
+  const handleConfirmSmartTx = async (tx: DetectedTransaction, overrides?: any) => {
+    if (!family?.id) return;
+    const success = await SmartExpenseService.confirmTransaction(family.id, tx.id, overrides);
+    if (success) {
+      refreshDashboard();
+      loadHomeData();
+    }
+  };
+
+  const handleBulkConfirmSmartTx = async () => {
+    if (!family?.id) return;
+    await SmartExpenseService.bulkConfirmTransactions(family.id);
+    refreshDashboard();
+    loadHomeData();
+  };
+
+  const handleIgnoreSmartTx = async (tx: DetectedTransaction) => {
+    if (!family?.id) return;
+    await SmartExpenseService.ignoreTransaction(family.id, tx.id);
+    loadHomeData();
+  };
+
+  const handleScanRecentSmartTx = async () => {
+    if (!family?.id) return;
+    await SmartExpenseService.runHistoricalScan(family.id, smartSettings.historicalScanDays || 7);
+    loadHomeData();
+  };
+
+  const handleGrantSmartPermission = async () => {
+    setShowSmartPermissionModal(false);
+    if (!family?.id) return;
+    const provider = await SmartExpenseService.getProvider();
+    await provider.requestPermission();
+    await SmartExpenseService.updateSettings(family.id, { enabled: true, smsEnabled: true });
+    await handleScanRecentSmartTx();
+    const updatedSettings = await SmartExpenseService.getSettings(family.id);
+    setSmartSettings(updatedSettings);
+  };
+
+  const handleSaveSmartSettings = async (newSettings: Partial<SmartCaptureSettings>) => {
+    if (!family?.id) return;
+    await SmartExpenseService.updateSettings(family.id, newSettings);
+    const updated = await SmartExpenseService.getSettings(family.id);
+    setSmartSettings(updated);
   };
 
   useEffect(() => {
@@ -395,6 +478,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         expenses={expenses}
         monthlyBudget={dashboard?.snapshot?.monthlyBudget || 100000}
         onNavigateTab={onNavigateTab}
+        isPrivacyMode={isPrivacyMode}
+      />
+
+      {/* 2.3. Smart Expenses Quick Review Card */}
+      <SmartExpensesHomeCard
+        pendingTransactions={pendingSmartTx}
+        settings={smartSettings}
+        onOpenReview={() => setShowSmartReviewModal(true)}
+        onOpenEnable={() => setShowSmartPermissionModal(true)}
+        onOpenSettings={() => setShowSmartSettingsModal(true)}
         isPrivacyMode={isPrivacyMode}
       />
 
@@ -927,6 +1020,56 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         isOpen={showEmergencyModal}
         onClose={() => setShowEmergencyModal(false)}
         onSubmit={handleCreateEmergencyContact}
+      />
+
+      {/* ================= SMART EXPENSE MODALS ================= */}
+      <SmartExpenseReviewModal
+        isOpen={showSmartReviewModal}
+        onClose={() => setShowSmartReviewModal(false)}
+        pendingTransactions={pendingSmartTx}
+        confirmedTransactions={confirmedSmartTx}
+        ignoredTransactions={ignoredSmartTx}
+        onConfirm={(tx) => handleConfirmSmartTx(tx)}
+        onEdit={(tx) => {
+          setSelectedSmartTx(tx);
+          setShowSmartDetailModal(true);
+        }}
+        onIgnore={(tx) => handleIgnoreSmartTx(tx)}
+        onBulkConfirm={handleBulkConfirmSmartTx}
+        onScanRecent={handleScanRecentSmartTx}
+        onOpenSettings={() => {
+          setShowSmartReviewModal(false);
+          setShowSmartSettingsModal(true);
+        }}
+        isPrivacyMode={isPrivacyMode}
+      />
+
+      <SmartExpensePermissionModal
+        isOpen={showSmartPermissionModal}
+        onClose={() => setShowSmartPermissionModal(false)}
+        onGrant={handleGrantSmartPermission}
+      />
+
+      <SmartExpenseDetailModal
+        isOpen={showSmartDetailModal}
+        transaction={selectedSmartTx}
+        onClose={() => {
+          setShowSmartDetailModal(false);
+          setSelectedSmartTx(null);
+        }}
+        onConfirm={(overrides) => {
+          if (selectedSmartTx) {
+            handleConfirmSmartTx(selectedSmartTx, overrides);
+          }
+        }}
+      />
+
+      <SmartExpenseSettingsModal
+        isOpen={showSmartSettingsModal}
+        onClose={() => setShowSmartSettingsModal(false)}
+        settings={smartSettings}
+        onSaveSettings={handleSaveSmartSettings}
+        onTriggerScan={handleScanRecentSmartTx}
       />
     </div>
   );
