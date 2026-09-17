@@ -1,6 +1,7 @@
 import { apiRequest } from '../../utils/api.js';
 import { DetectedTransaction, SmartCaptureSettings, PermissionState, ParsedTransactionResult } from './types.js';
 import { AndroidSmsCaptureProvider, WebCaptureProvider, TransactionCaptureProvider } from './TransactionCaptureProvider.js';
+import { TransactionParserPipeline } from './TransactionParser.js';
 
 class SmartExpenseManager {
   private provider: TransactionCaptureProvider = new AndroidSmsCaptureProvider();
