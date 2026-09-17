@@ -1,4 +1,4 @@
-import { PermissionState, ParsedTransactionResult } from './types.js';
+﻿import { PermissionState, ParsedTransactionResult } from './types.js';
 import { TransactionParserPipeline } from './TransactionParser.js';
 
 export interface TransactionCaptureProvider {
@@ -50,9 +50,9 @@ export class AndroidSmsCaptureProvider implements TransactionCaptureProvider {
       const plugin = (window as any).Capacitor?.Plugins?.SmsTransactionPlugin;
       if (!plugin) return;
 
-      plugin.addListener('smsReceived', (event: { body: string; sender: string }) => {
+      plugin.addListener('smsReceived', (event: { body: string; sender: string; timestamp?: string }) => {
         if (!event || !event.body) return;
-        const parsed = TransactionParserPipeline.parse(event.body, event.sender);
+        const parsed = TransactionParserPipeline.parse(event.body, event.sender, {}, event.timestamp);
         if (parsed) {
           onTransactionDetected(parsed);
         }
@@ -78,7 +78,7 @@ export class AndroidSmsCaptureProvider implements TransactionCaptureProvider {
 
       const results: ParsedTransactionResult[] = [];
       for (const msg of rawMessages) {
-        const parsed = TransactionParserPipeline.parse(msg.body, msg.sender);
+        const parsed = TransactionParserPipeline.parse(msg.body, msg.sender, {}, msg.timestamp);
         if (parsed) {
           results.push(parsed);
         }
@@ -122,17 +122,18 @@ export class MockStatementProvider implements TransactionCaptureProvider {
   }
 
   async scanHistorical(days: number = 7): Promise<ParsedTransactionResult[]> {
+    const now = Date.now();
     const syntheticMessages = [
-      { sender: 'VM-HDFCBK', body: 'Rs 450.00 debited from A/c **1978 via UPI to swiggy@upi. Ref 425619876231' },
-      { sender: 'VK-SBIINB', body: 'Dear SBI User, A/C 1978 debited by Rs 1280.00 on 17Sep26 transfer to AMAZON UPI Ref 425619876232' },
-      { sender: 'AD-ICICIB', body: 'ICICI Bank Acct XX1978 debited for Rs 320.00 on 17-Sep-26; Uber credited. UPI:425619876233' },
-      { sender: 'BW-KOTAKB', body: 'Kotak Bank: Rs 150 debited from A/c XX1978 via UPI to Blinkit on 17-Sep-26. Ref 425619876234' },
-      { sender: 'VM-AXISBK', body: 'Axis Bank: INR 650.00 paid to Apollo Pharmacy via UPI on 16-Sep-26. Ref 425619876235' },
+      { sender: 'VM-HDFCBK', body: 'Rs 450.00 debited from A/c **1978 via UPI to swiggy@upi. Ref 425619876231', timestamp: String(now - 2 * 3600 * 1000) },
+      { sender: 'VK-SBIINB', body: 'Dear SBI User, A/C 1978 debited by Rs 1280.00 on 17Sep26 transfer to AMAZON UPI Ref 425619876232', timestamp: String(now - 5 * 3600 * 1000) },
+      { sender: 'AD-ICICIB', body: 'ICICI Bank Acct XX1978 debited for Rs 320.00 on 16-Sep-26; Uber credited. UPI:425619876233', timestamp: String(now - 24 * 3600 * 1000) },
+      { sender: 'BW-KOTAKB', body: 'Kotak Bank: Rs 150 debited from A/c XX1978 via UPI to Blinkit on 15-Sep-26. Ref 425619876234', timestamp: String(now - 48 * 3600 * 1000) },
+      { sender: 'VM-AXISBK', body: 'Axis Bank: INR 650.00 paid to Apollo Pharmacy via UPI on 14-Sep-26. Ref 425619876235', timestamp: String(now - 72 * 3600 * 1000) },
     ];
 
     const results: ParsedTransactionResult[] = [];
     for (const msg of syntheticMessages) {
-      const parsed = TransactionParserPipeline.parse(msg.body, msg.sender);
+      const parsed = TransactionParserPipeline.parse(msg.body, msg.sender, {}, msg.timestamp);
       if (parsed) {
         results.push(parsed);
       }
