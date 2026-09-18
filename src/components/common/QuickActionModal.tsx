@@ -66,7 +66,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-[#0B1226] border-t sm:border border-slate-700/80 rounded-t-[28px] sm:rounded-[28px] p-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4">
+      <div className="w-full max-w-md bg-[#0B1226] border-t sm:border border-slate-700/80 rounded-t-[28px] sm:rounded-[28px] p-5 pb-[max(env(safe-area-inset-bottom,0px),28px)] sm:pb-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4">
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div>
             <h3 className="text-lg font-bold text-white">Create & Record</h3>

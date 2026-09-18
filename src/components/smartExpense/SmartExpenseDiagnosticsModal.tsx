@@ -117,8 +117,8 @@ export const SmartExpenseDiagnosticsModal: React.FC<SmartExpenseDiagnosticsModal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-[#0B132B] border border-cyan-500/30 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 pt-6 pb-[max(env(safe-area-inset-bottom,0px),36px)] sm:p-4 overflow-y-auto">
+      <div className="bg-[#0B132B] border border-cyan-500/30 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0D152D]">
           <div className="flex items-center gap-2.5">

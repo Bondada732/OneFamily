@@ -133,8 +133,8 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn select-none">
-      <div className="w-full max-w-lg h-[90vh] max-h-[700px] flex flex-col rounded-3xl bg-[#0B132B] border border-slate-700/80 shadow-2xl text-slate-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 pt-6 pb-[max(env(safe-area-inset-bottom,0px),36px)] sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn select-none">
+      <div className="w-full max-w-lg h-[80vh] max-h-[620px] flex flex-col rounded-3xl bg-[#0B132B] border border-slate-700/80 shadow-2xl text-slate-100 overflow-hidden">
         {/* Top Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-[#073B9E]/50 via-[#0D152D] to-[#0B132B]">
           <div className="flex items-center gap-2.5">

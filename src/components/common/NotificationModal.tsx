@@ -62,7 +62,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-[#0B1226] border-t sm:border-2 border-slate-700/80 rounded-t-3xl sm:rounded-3xl p-6 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4 max-h-[80vh] flex flex-col">
+      <div className="w-full max-w-md bg-[#0B1226] border-t sm:border-2 border-slate-700/80 rounded-t-3xl sm:rounded-3xl p-6 pb-[max(env(safe-area-inset-bottom,0px),28px)] sm:pb-6 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4 max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-[#0D152D] text-[#16C7F2] rounded-xl border border-slate-700/60">

@@ -27,7 +27,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 max-w-md mx-auto">
-      <nav className="relative bg-[#080D1A]/95 backdrop-blur-2xl border-t border-slate-800/80 px-4 py-2 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+      <nav className="relative bg-[#080D1A]/95 backdrop-blur-2xl border-t border-slate-800/80 px-4 pt-2 pb-[max(env(safe-area-inset-bottom,0px),22px)] sm:pb-2 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
         {/* Left 2 items */}
         <div className="flex items-center gap-6">
           {leftNavItems.map((item) => {
