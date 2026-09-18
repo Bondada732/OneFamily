@@ -1,25 +1,33 @@
-const getApiBase = (): string => {
-  // If deployed on Vercel with a custom backend URL
+export const getApiBase = (): string => {
+  // If deployed on Vercel or cloud with a custom backend URL
   const envUrl = (import.meta as any).env?.VITE_API_URL;
   if (envUrl) {
     return `${envUrl.replace(/\/$/, '')}/api`;
   }
 
   if (typeof window !== 'undefined') {
-    // If accessed via Vite dev server port (e.g. mobile browser at 192.168.1.5:5173 or localhost:5173)
+    // Custom host saved in localStorage
+    const savedHost = localStorage.getItem('onefamily_api_host');
+    if (savedHost) {
+      return `${savedHost.replace(/\/$/, '')}/api`;
+    }
+
+    // If accessed via Vite dev server port (e.g. mobile browser at 192.168.1.6:5173 or localhost:5173)
     if (window.location.port === '5173') {
       return '/api';
     }
+
     // If running inside Capacitor Native APK on Android
-    if (window.location.protocol === 'capacitor:' || (window.location.hostname === 'localhost' && window.location.port === '')) {
-      const customHost = localStorage.getItem('onefamily_api_host') || `http://${window.location.hostname === 'localhost' ? '192.168.1.6' : window.location.hostname}:4000`;
-      return `${customHost}/api`;
+    if (
+      window.location.protocol === 'capacitor:' ||
+      (window.location.hostname === 'localhost' && window.location.port === '') ||
+      (window as any).Capacitor?.isNativePlatform?.()
+    ) {
+      return 'http://192.168.1.6:4000/api';
     }
   }
   return '/api';
 };
-
-const API_BASE = getApiBase();
 
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -28,6 +36,7 @@ export async function apiRequest<T = any>(
 ): Promise<T> {
   const token = localStorage.getItem('onefamily_token');
   const activeUser = activeUserId || localStorage.getItem('onefamily_active_user_id');
+  const apiBase = getApiBase();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -39,10 +48,20 @@ export async function apiRequest<T = any>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${apiBase}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (netErr: any) {
+    console.error('Network connection error to', `${apiBase}${endpoint}:`, netErr);
+    const err: any = new Error(
+      `Cannot connect to server at ${apiBase}. Please verify your phone is connected to the same Wi-Fi network as your PC.`
+    );
+    err.isNetworkError = true;
+    throw err;
+  }
 
   if (!response.ok) {
     let errorData: any = {};
@@ -59,3 +78,4 @@ export async function apiRequest<T = any>(
 
   return response.json();
 }
+

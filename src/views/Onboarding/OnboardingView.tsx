@@ -428,9 +428,23 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
           {/* Quick Demo Logins Section */}
           <div className="pt-2 border-t border-slate-800 space-y-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block text-center">
-              Quick Switch / Demo Profiles (Key: FAM-SHARMA-01)
+              Quick Logins
             </span>
             <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('rambabub789@gmail.com')}
+                className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-amber-500/40 text-left transition-all flex items-center gap-2"
+              >
+                <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-xs">
+                  R
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold text-white leading-tight">Rambabu</div>
+                  <div className="text-[9px] text-amber-400">Family Head (Ram's)</div>
+                </div>
+              </button>
+
               <button
                 type="button"
                 onClick={() => handleQuickDemo('raj.sharma@example.com')}
@@ -439,19 +453,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" className="w-7 h-7 rounded-lg object-cover" alt="Raj" />
                 <div>
                   <div className="text-[11px] font-bold text-white leading-tight">Raj Sharma</div>
-                  <div className="text-[9px] text-amber-400">Family Head</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickDemo('priya.sharma@example.com')}
-                className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-left transition-all flex items-center gap-2"
-              >
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" className="w-7 h-7 rounded-lg object-cover" alt="Priya" />
-                <div>
-                  <div className="text-[11px] font-bold text-white leading-tight">Priya Sharma</div>
-                  <div className="text-[9px] text-indigo-300">Spouse / Co-Head</div>
+                  <div className="text-[9px] text-slate-400">Sharma Family</div>
                 </div>
               </button>
             </div>
