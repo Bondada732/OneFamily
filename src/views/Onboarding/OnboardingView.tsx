@@ -318,7 +318,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
   }
 
   return (
-    <div className="p-5 space-y-5 animate-fade-in text-white min-h-full flex flex-col justify-between">
+    <div className="p-5 pt-safe-mobile space-y-5 animate-fade-in text-white min-h-full flex flex-col justify-between">
       {/* Brand Header */}
       <div className="text-center space-y-1 pt-2">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 via-rose-500 to-indigo-600 mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/30 p-0.5">

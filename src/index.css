@@ -48,6 +48,24 @@
   }
 }
 
+/* Mobile Status Bar & Safe Area Utilities */
+.header-safe-top {
+  padding-top: max(env(safe-area-inset-top, 0px), 36px);
+}
+
+.pt-safe-mobile {
+  padding-top: max(env(safe-area-inset-top, 0px), 36px);
+}
+
+@media (min-width: 640px) {
+  .header-safe-top {
+    padding-top: 0.625rem; /* 10px (py-2.5) on desktop */
+  }
+  .pt-safe-mobile {
+    padding-top: 1.25rem; /* 20px (p-5) on desktop */
+  }
+}
+
 /* Reusable KinoraOne Theme Classes */
 .kinora-bg-gradient {
   background: #050811;

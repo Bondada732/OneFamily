@@ -35,7 +35,7 @@ const MainAppContent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 pt-safe-mobile text-center space-y-4">
         <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-indigo-600 p-1 flex items-center justify-center animate-bounce shadow-2xl">
           <span className="text-white font-extrabold text-2xl">1F</span>
         </div>
@@ -70,7 +70,7 @@ const MainAppContent: React.FC = () => {
 
     return (
       <MobileFrame>
-        <div className="p-6 min-h-screen flex flex-col justify-between text-white animate-fade-in bg-slate-900">
+        <div className="p-6 min-h-screen flex flex-col justify-between text-white animate-fade-in bg-slate-900 pt-safe-mobile">
           <div className="space-y-6 pt-6 text-center">
             {/* Header / Avatar */}
             <div className="relative mx-auto w-20 h-20">

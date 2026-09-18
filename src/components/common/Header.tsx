@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
   const displayName = family?.name || `${currentUser?.name?.split(' ')[0] || 'My'} Family`;
 
   return (
-    <header className="sticky top-0 z-40 bg-[#080D1A]/95 backdrop-blur-xl border-b border-slate-800/80 px-4 py-2.5 shadow-md shadow-black/50">
+    <header className="sticky top-0 z-40 bg-[#080D1A]/95 backdrop-blur-xl border-b border-slate-800/80 px-4 pb-2.5 header-safe-top shadow-md shadow-black/50">
       <div className="flex items-center justify-between">
         {/* Left: KinoraOne Logo & Brand Name */}
         <div className="flex items-center gap-2.5">
