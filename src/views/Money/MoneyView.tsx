@@ -690,7 +690,7 @@ export const MoneyView: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              {expenses.slice(0, 3).map((exp) => (
+              {expenses.slice(0, 10).map((exp) => (
                 <div key={exp.id} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">

@@ -17,7 +17,11 @@ router.get('/:id/expenses', requirePermission('FINANCE_VIEW'), async (req: AuthR
   const categories = getOrCreateExpenseCategories(familyId);
 
   res.json({
-    expenses: expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    expenses: expenses.sort((a, b) => {
+      const diff = new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (diff !== 0) return diff;
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    }),
     categories,
     totalExpenses: expenses.reduce((sum, e) => sum + e.amount, 0),
   });

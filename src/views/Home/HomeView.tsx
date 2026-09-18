@@ -907,7 +907,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         {/* Expenses List with Self-Color Light Boxes */}
         {expenses && expenses.length > 0 ? (
           <div className="divide-y divide-slate-800/60">
-            {expenses.slice(0, 5).map((exp) => {
+            {expenses.slice(0, 8).map((exp) => {
               const amountDisplay = isPrivacyMode
                 ? '••••'
                 : `₹${Number(exp.amount || 0).toLocaleString('en-IN')}`;
