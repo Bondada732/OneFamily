@@ -1371,37 +1371,50 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </button>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-          {(recentMemories && recentMemories.length > 0
-            ? recentMemories
-            : [
-                { id: 'm1', title: 'Goa Family Vacation', location: 'Goa Beach', photo: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400' },
-                { id: 'm2', title: 'Diwali Celebration', location: 'Home', photo: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=400' },
-                { id: 'm3', title: 'Hitesh Birthday Party', location: 'Hyderabad', photo: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400' },
-              ]
-          ).map((mem: any) => {
-            const imgUrl = mem.photo || mem.photosList?.[0] || 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400';
-            return (
-              <div
-                key={mem.id}
-                onClick={() => onNavigateTab('memories')}
-                className="min-w-[140px] max-w-[140px] rounded-[20px] bg-[#0D152D] border border-slate-800/90 overflow-hidden shadow-md shrink-0 cursor-pointer group hover:border-[#16C7F2]/50 transition-all"
-              >
-                <div className="h-24 overflow-hidden relative">
-                  <img
-                    src={imgUrl}
-                    alt={mem.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#080D1A]/95 via-transparent to-transparent" />
-                  <span className="absolute bottom-1.5 left-2.5 text-[9px] font-bold text-white truncate max-w-[120px]">
-                    {mem.location || mem.title}
-                  </span>
+        {recentMemories && recentMemories.length > 0 ? (
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+            {recentMemories.map((mem: any) => {
+              const imgUrl = mem.photo || mem.photosList?.[0] || 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400';
+              return (
+                <div
+                  key={mem.id}
+                  onClick={() => onNavigateTab('memories')}
+                  className="min-w-[140px] max-w-[140px] rounded-[20px] bg-[#0D152D] border border-slate-800/90 overflow-hidden shadow-md shrink-0 cursor-pointer group hover:border-[#16C7F2]/50 transition-all"
+                >
+                  <div className="h-24 overflow-hidden relative">
+                    <img
+                      src={imgUrl}
+                      alt={mem.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#080D1A]/95 via-transparent to-transparent" />
+                    <span className="absolute bottom-1.5 left-2.5 text-[9px] font-bold text-white truncate max-w-[120px]">
+                      {mem.location || mem.title}
+                    </span>
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            onClick={() => onNavigateTab('memories')}
+            className="flex items-center justify-between p-3.5 rounded-2xl bg-[#0D152D] border border-slate-800/80 hover:border-[#16C7F2]/40 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#16C7F2]/15 border border-[#16C7F2]/30 flex items-center justify-center text-[#16C7F2] shrink-0">
+                <Sparkles className="w-4 h-4" />
               </div>
-            );
-          })}
-        </div>
+              <div>
+                <p className="text-xs font-bold text-white">Capture Your First Family Moment</p>
+                <p className="text-[10px] text-slate-400">Save family photos, voice stories & precious memories</p>
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-[#16C7F2] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+              <Plus className="w-3.5 h-3.5" /> Add
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ================= MODALS (WITH KINORAONE THEME SYSTEM) ================= */}

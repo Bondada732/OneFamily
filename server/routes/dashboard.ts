@@ -131,7 +131,21 @@ router.get('/:id/dashboard', async (req: AuthRequest, res) => {
   const goals = db.find('goals', (g) => g.family_id === familyId);
 
   // 6. Recent Memories
-  const memories = db.find('memories', (m) => m.family_id === familyId);
+  const rawMemories = db.find('memories', (m) => m.family_id === familyId);
+  const formattedMemories = rawMemories.map((m) => {
+    let photosList = [];
+    try {
+      photosList = typeof m.photos === 'string' ? JSON.parse(m.photos || '[]') : (m.photos || []);
+    } catch {
+      photosList = m.photos ? [m.photos] : [];
+    }
+    return {
+      ...m,
+      photo: photosList[0] || m.photo || '',
+      photosList,
+      taggedMembersList: typeof m.tagged_members === 'string' ? JSON.parse(m.tagged_members || '[]') : (m.tagged_members || []),
+    };
+  });
 
   // 7. AI Insight
   const insights = generateFinancialInsights(familyId);
@@ -162,7 +176,7 @@ router.get('/:id/dashboard', async (req: AuthRequest, res) => {
       reminders: reminders.slice(0, 3),
     },
     goals: goals.slice(0, 3),
-    recentMemories: memories.slice(0, 4),
+    recentMemories: formattedMemories.slice(0, 6),
     aiInsight,
   });
 });

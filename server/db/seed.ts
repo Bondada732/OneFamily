@@ -906,85 +906,9 @@ export function seedDatabase() {
     },
   ];
 
-  // 16. Memories & Voice Memories
-  const memories = [
-    {
-      id: 'mem_1',
-      family_id: familyId,
-      title: 'Goa Summer Road Trip & Sunset at Palolem Beach 🏖️',
-      date: '2026-05-18',
-      location: 'South Goa, India',
-      album: 'Goa 2026',
-      description: 'Day 2 of our memorable family road trip. The kids loved the dolphin tour and building sand castles together while Dadi enjoyed the sea breeze.',
-      photos: JSON.stringify([
-        'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=80',
-      ]),
-      tagged_members: JSON.stringify(['Raj', 'Priya', 'Aarav', 'Ananya', 'Kalyani']),
-      created_at: '2026-05-20T00:00:00Z',
-    },
-    {
-      id: 'mem_2',
-      family_id: familyId,
-      title: "Ananya's 8th Birthday & Magic Show Party 🎈",
-      date: '2025-11-05',
-      location: 'Home, Hyderabad',
-      album: 'Birthdays',
-      description: 'Ananya turned 8! All her school friends came over for a homemade chocolate truffle cake and puppet magic show.',
-      photos: JSON.stringify([
-        'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&auto=format&fit=crop&q=80',
-      ]),
-      tagged_members: JSON.stringify(['Ananya', 'Aarav', 'Priya', 'Raj', 'Kalyani']),
-      created_at: '2025-11-06T00:00:00Z',
-    },
-    {
-      id: 'mem_3',
-      family_id: familyId,
-      title: 'Diwali Lakshmi Puja & Family Diyas 🪔',
-      date: '2025-10-31',
-      location: 'Hyderabad',
-      album: 'Festivals',
-      description: 'Decorated the house with 50 traditional earthen diyas and marigold garlands with Dadi leading the evening Aarti.',
-      photos: JSON.stringify([
-        'https://images.unsplash.com/photo-1605379399642-870262d3d051?w=800&auto=format&fit=crop&q=80',
-      ]),
-      tagged_members: JSON.stringify(['Raj', 'Priya', 'Aarav', 'Ananya', 'Kalyani']),
-      created_at: '2025-11-01T00:00:00Z',
-    },
-  ];
-
-  const voiceMemories = [
-    {
-      id: 'vm_1',
-      family_id: familyId,
-      speaker_name: 'Kalyani Sharma',
-      speaker_relationship: 'Grandmother',
-      title: 'How We Moved to Hyderabad in 1982',
-      date: '2026-02-14',
-      audio_url: 'https://actions.google.com/sounds/v1/ambiences/outdoor_park.ogg',
-      duration_seconds: 145,
-      transcript: 'When your grandfather and I first came to Hyderabad in 1982, Hitec city was just rocks and lakes. We started with two steel trunks and a dream for our children. Never forget where your roots come from, work hard and stay honest.',
-      translation_hindi: 'जब आपके दादाजी और मैं 1982 में पहली बार हैदराबाद आए, तब हाई-टेक सिटी सिर्फ चट्टानें और झीलें थीं। हमने दो स्टील के बक्सों और अपने बच्चों के सपने के साथ शुरुआत की। अपनी जड़ों को कभी मत भूलना।',
-      translation_telugu: '1982 లో మీ తాతగారు మరియు నేను మొదటిసారి హైదరాబాద్ వచ్చినప్పుడు, హైటెక్ సిటీ కేవలం రాళ్ళు మరియు సరస్సులు మాత్రమే. మేము రెండు స్టీల్ ట్రంకులతో ప్రారంభించాము.',
-      created_at: '2026-02-14T10:00:00Z',
-    },
-    {
-      id: 'vm_2',
-      family_id: familyId,
-      speaker_name: 'Kalyani Sharma',
-      speaker_relationship: 'Grandmother',
-      title: 'Special Advice on Kindness and Family Unity',
-      date: '2026-07-20',
-      audio_url: 'https://actions.google.com/sounds/v1/ambiences/outdoor_park.ogg',
-      duration_seconds: 98,
-      transcript: 'To Aarav and Ananya: Money will come and go, but the love and respect you have for your siblings and parents is your true wealth. Always support each other when times get tough.',
-      translation_hindi: 'आरव और अनन्या के लिए: पैसा आएगा और जाएगा, लेकिन अपने भाई-बहनों और माता-पिता के प्रति जो प्यार और सम्मान है, वही आपकी असली दौलत है।',
-      translation_telugu: 'ఆరవ్ మరియు అనన్యకు: డబ్బు వస్తుంది పోతుంది, కానీ మీ తోబుట్టువులు మరియు తల్లిదండ్రుల పట్ల మీకు ఉండే ప్రేమ మరియు గౌరవమే మీ నిజమైన సంపద.',
-      created_at: '2026-07-20T11:00:00Z',
-    },
-  ];
+  // 16. Memories & Voice Memories (Real memories only, no dummy seed data)
+  const memories: any[] = [];
+  const voiceMemories: any[] = [];
 
   // 17. Tasks
   const tasks = [

@@ -83,9 +83,7 @@ export const MemoriesView: React.FC = () => {
   const [showRecordVoice, setShowRecordVoice] = useState(false);
   const [lightboxMedia, setLightboxMedia] = useState<{ url: string; type: 'image' | 'video'; title?: string } | null>(null);
 
-  const [selectedMedia, setSelectedMedia] = useState<string[]>([
-    'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800',
-  ]);
+  const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
   const [customMediaUrl, setCustomMediaUrl] = useState('');
   const [isProcessingMedia, setIsProcessingMedia] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -171,7 +169,7 @@ export const MemoriesView: React.FC = () => {
     setIsSaving(true);
     setSaveError('');
     try {
-      const mediaList = selectedMedia.length > 0 ? selectedMedia : ['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800'];
+      const mediaList = selectedMedia;
       const created = await apiRequest(`/memories/${family.id}/memories`, {
         method: 'POST',
         body: JSON.stringify({
@@ -197,7 +195,7 @@ export const MemoriesView: React.FC = () => {
         album: 'Family Vacation',
         description: '',
       });
-      setSelectedMedia(['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800']);
+      setSelectedMedia([]);
     } catch (err: any) {
       console.error('Failed to save memory:', err);
       setSaveError(err?.message || 'Failed to save memory. Please check details and try again.');
@@ -265,70 +263,95 @@ export const MemoriesView: React.FC = () => {
       {/* 1. PHOTO TIMELINES */}
       {activeSubTab === 'ALBUMS' && (
         <div className="space-y-4">
-          {memories.map((mem) => (
-            <div key={mem.id} className="p-4 rounded-3xl bg-slate-800/90 border border-slate-700/80 space-y-3 shadow-md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-white">{mem.title}</h3>
-                  <div className="text-[11px] text-slate-400 flex items-center gap-3 mt-0.5">
-                    <span>📅 {formatDate(mem.date)}</span>
-                    {mem.location && <span>📍 {mem.location}</span>}
-                  </div>
-                </div>
-                <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">
-                  {mem.album}
-                </span>
-              </div>
-
-              {/* Photos & Videos Gallery Horizontal Scroll */}
-              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
-                {mem.photosList?.map((media, i) => {
-                  const isVid = isVideoMedia(media);
-                  return (
-                    <div
-                      key={i}
-                      onClick={() => setLightboxMedia({ url: media, type: isVid ? 'video' : 'image', title: mem.title })}
-                      className="relative min-w-[220px] max-w-[260px] h-40 rounded-2xl overflow-hidden border border-slate-700 shrink-0 bg-slate-950 cursor-pointer group shadow-md"
-                    >
-                      {isVid ? (
-                        <div className="w-full h-full relative flex items-center justify-center bg-black">
-                          <video src={media} className="w-full h-full object-cover opacity-80" preload="metadata" />
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-all">
-                            <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
-                              <Play className="w-5 h-5 ml-0.5 fill-current" />
-                            </div>
-                          </div>
-                          <span className="absolute bottom-2 left-2 text-[9px] bg-slate-900/90 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
-                            <Film className="w-3 h-3" /> VIDEO
-                          </span>
-                        </div>
-                      ) : (
-                        <img
-                          src={media}
-                          alt="Story"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      )}
-                      <div className="absolute top-2 right-2 bg-slate-900/80 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Eye className="w-3.5 h-3.5 text-white" />
-                      </div>
+          {memories.length > 0 ? (
+            memories.map((mem) => (
+              <div key={mem.id} className="p-4 rounded-3xl bg-slate-800/90 border border-slate-700/80 space-y-3 shadow-md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">{mem.title}</h3>
+                    <div className="text-[11px] text-slate-400 flex items-center gap-3 mt-0.5">
+                      <span>📅 {formatDate(mem.date)}</span>
+                      {mem.location && <span>📍 {mem.location}</span>}
                     </div>
-                  );
-                })}
-              </div>
-
-              {mem.description && (
-                <p className="text-xs text-slate-300 leading-relaxed italic">{mem.description}</p>
-              )}
-
-              {mem.taggedMembersList && (
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 pt-1 border-t border-slate-700/60">
-                  <span>Tagged:</span>
-                  <span className="text-amber-300 font-semibold">{mem.taggedMembersList.join(', ')}</span>
+                  </div>
+                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">
+                    {mem.album}
+                  </span>
                 </div>
+
+                {/* Photos & Videos Gallery Horizontal Scroll */}
+                {mem.photosList && mem.photosList.length > 0 && (
+                  <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+                    {mem.photosList.map((media, i) => {
+                      const isVid = isVideoMedia(media);
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => setLightboxMedia({ url: media, type: isVid ? 'video' : 'image', title: mem.title })}
+                          className="relative min-w-[220px] max-w-[260px] h-40 rounded-2xl overflow-hidden border border-slate-700 shrink-0 bg-slate-950 cursor-pointer group shadow-md"
+                        >
+                          {isVid ? (
+                            <div className="w-full h-full relative flex items-center justify-center bg-black">
+                              <video src={media} className="w-full h-full object-cover opacity-80" preload="metadata" />
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-all">
+                                <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
+                                  <Play className="w-5 h-5 ml-0.5 fill-current" />
+                                </div>
+                              </div>
+                              <span className="absolute bottom-2 left-2 text-[9px] bg-slate-900/90 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
+                                <Film className="w-3 h-3" /> VIDEO
+                              </span>
+                            </div>
+                          ) : (
+                            <img
+                              src={media}
+                              alt="Story"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          )}
+                          <div className="absolute top-2 right-2 bg-slate-900/80 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Eye className="w-3.5 h-3.5 text-white" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {mem.description && (
+                  <p className="text-xs text-slate-300 leading-relaxed italic">{mem.description}</p>
+                )}
+
+                {mem.taggedMembersList && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 pt-1 border-t border-slate-700/60">
+                    <span>Tagged:</span>
+                    <span className="text-amber-300 font-semibold">{mem.taggedMembersList.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="p-8 text-center rounded-3xl bg-slate-800/60 border border-dashed border-slate-700 space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto">
+                <Camera className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">No Family Memories Yet</h3>
+                <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
+                  Start capturing family vacations, celebrations, and precious moments to cherish forever.
+                </p>
+              </div>
+              {canUploadMemory && (
+                <button
+                  onClick={() => setShowAddMemory(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-amber-500 to-indigo-600 text-white rounded-xl text-xs font-bold shadow-md hover:opacity-95 transition-opacity inline-flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add First Memory</span>
+                </button>
               )}
             </div>
-          ))}
+          )}
         </div>
       )}
 
