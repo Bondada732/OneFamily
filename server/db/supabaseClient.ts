@@ -68,6 +68,9 @@ export function sanitizeForSupabase(tableName: string, record: any): any {
     delete copy.created_at;
   } else if (tableName === 'expenses') {
     delete copy.updated_at;
+    delete copy.detected_transaction_id;
+    delete copy.visibility;
+    delete copy.savePreference;
   } else if (tableName === 'emergency_profiles') {
     delete copy.created_at;
   }

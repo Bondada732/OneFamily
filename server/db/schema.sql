@@ -367,3 +367,70 @@ CREATE TABLE IF NOT EXISTS ai_conversations (
   created_at TEXT NOT NULL,
   FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS detected_transactions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  family_id TEXT NOT NULL,
+  source_type TEXT DEFAULT 'SMS',
+  source_hash TEXT,
+  transaction_type TEXT DEFAULT 'UPI',
+  direction TEXT DEFAULT 'DEBIT',
+  amount REAL NOT NULL,
+  currency TEXT DEFAULT 'INR',
+  merchant_raw TEXT,
+  merchant_normalized TEXT,
+  upi_id TEXT,
+  bank_name TEXT,
+  account_last4 TEXT,
+  transaction_reference TEXT,
+  transaction_datetime TEXT NOT NULL,
+  sms_received_datetime TEXT NOT NULL,
+  category_suggested TEXT,
+  category_confidence REAL DEFAULT 0.85,
+  status TEXT DEFAULT 'PENDING_REVIEW', -- PENDING_REVIEW, CONFIRMED, EDITED_CONFIRMED, IGNORED
+  duplicate_of TEXT,
+  visibility TEXT DEFAULT 'PRIVATE',
+  location JSONB,
+  location_latitude REAL,
+  location_longitude REAL,
+  location_accuracy_meters REAL,
+  location_captured_at TEXT,
+  location_source TEXT DEFAULT 'NONE',
+  location_confidence TEXT DEFAULT 'NONE',
+  location_status TEXT DEFAULT 'NOT_CAPTURED',
+  location_label TEXT,
+  location_match_timestamp_type TEXT DEFAULT 'NONE',
+  location_time_difference_seconds REAL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS merchant_preferences (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  merchant TEXT NOT NULL,
+  preferred_category TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS smart_capture_settings (
+  id TEXT PRIMARY KEY,
+  family_id TEXT NOT NULL UNIQUE,
+  enabled BOOLEAN DEFAULT FALSE,
+  sms_enabled BOOLEAN DEFAULT FALSE,
+  notification_enabled BOOLEAN DEFAULT FALSE,
+  auto_categorization BOOLEAN DEFAULT TRUE,
+  daily_review BOOLEAN DEFAULT TRUE,
+  notification_mode TEXT DEFAULT 'BATCH',
+  privacy_mode BOOLEAN DEFAULT FALSE,
+  historical_scan_days INTEGER DEFAULT 7,
+  location_capture_enabled BOOLEAN DEFAULT TRUE,
+  location_retention_hours INTEGER DEFAULT 48,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE CASCADE
+);
+
