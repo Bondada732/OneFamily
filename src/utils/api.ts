@@ -1,4 +1,4 @@
-export const DEFAULT_SERVER_URL = 'http://10.160.2.158:4000';
+export const DEFAULT_SERVER_URL = 'https://onefamily-ydkb.onrender.com';
 
 export const getApiHost = (): string => {
   if (typeof window !== 'undefined') {

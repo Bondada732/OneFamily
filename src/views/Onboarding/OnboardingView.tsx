@@ -943,7 +943,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">Backend Server Host</h3>
-                  <p className="text-[10px] text-slate-400">Configure PC Wi-Fi IP for phone sync</p>
+                  <p className="text-[10px] text-slate-400">Live Render Cloud HTTPS Endpoint</p>
                 </div>
               </div>
               <button
@@ -955,7 +955,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-slate-300 font-semibold">Server URL (PC IP Address & Port)</label>
+              <label className="text-xs text-slate-300 font-semibold">Server URL (Cloud Backend or Local)</label>
               <input
                 type="text"
                 value={serverHostInput}
@@ -963,11 +963,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                   setServerHostInput(e.target.value);
                   setServerTestStatus({ testing: false });
                 }}
-                placeholder="http://10.160.2.158:4000"
+                placeholder="https://onefamily-ydkb.onrender.com"
                 className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono placeholder-slate-600 focus:border-[#16C7F2] outline-none"
               />
               <p className="text-[10px] text-slate-400">
-                Make sure your phone is connected to the same Wi-Fi network as your computer.
+                Connected to live 24/7 cloud server on Render. Works on any 4G/5G or Wi-Fi network.
               </p>
             </div>
 
