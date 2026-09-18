@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { DetectedTransaction } from '../../services/smartExpense/types.js';
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
+import { openExpenseLocationInMaps } from '../../services/smartExpense/ExpenseLocationMapsHelper.js';
 import { useFamily } from '../../context/FamilyContext.js';
 import { SmartExpenseDiagnosticsModal } from './SmartExpenseDiagnosticsModal.js';
 import { Activity } from 'lucide-react';
@@ -355,10 +356,18 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
                             </>
                           )}
                           {tx.location?.locationLabel && (
-                            <span className="inline-flex items-center gap-1 text-[#16C7F2] font-semibold bg-[#16C7F2]/10 px-1.5 py-0.5 rounded-md border border-[#16C7F2]/25">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openExpenseLocationInMaps(tx);
+                              }}
+                              className="inline-flex items-center gap-1 text-[#16C7F2] hover:text-cyan-300 font-semibold bg-[#16C7F2]/10 hover:bg-[#16C7F2]/20 px-1.5 py-0.5 rounded-md border border-[#16C7F2]/25 transition-colors cursor-pointer"
+                              title="View location in Google Maps"
+                            >
                               <MapPin className="w-2.5 h-2.5" />
                               <span>{tx.location.locationLabel}</span>
-                            </span>
+                            </button>
                           )}
                         </div>
                       </div>

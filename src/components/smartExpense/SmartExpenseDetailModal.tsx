@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Check, Tag, Calendar, FileText, Store, MapPin, Trash2, Sparkles } from 'lucide-react';
+import { X, Check, Tag, Calendar, FileText, Store, MapPin, Trash2, Sparkles, ExternalLink, Navigation } from 'lucide-react';
 import { DetectedTransaction } from '../../services/smartExpense/types.js';
+import { ExpenseLocationMapsHelper, openExpenseLocationInMaps } from '../../services/smartExpense/ExpenseLocationMapsHelper.js';
 
 interface SmartExpenseDetailModalProps {
   isOpen: boolean;
@@ -59,12 +60,17 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
   const [savePreference, setSavePreference] = useState(true);
 
   const locContext = transaction.location;
+  const displayInfo = ExpenseLocationMapsHelper.getLocationDisplayInfo(transaction);
 
   const handleClearLocation = () => {
     setLocation('');
     if (transaction.id && onRemoveLocation) {
       onRemoveLocation(transaction.id);
     }
+  };
+
+  const handleOpenGoogleMaps = () => {
+    ExpenseLocationMapsHelper.openInMaps(transaction);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -151,9 +157,9 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
           </div>
 
           {/* Location Context */}
-          <div className="space-y-1">
+          <div className="space-y-2 p-3 rounded-2xl bg-slate-900/80 border border-slate-800">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+              <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-[#16C7F2]" />
                 <span>Location Context</span>
               </label>
@@ -161,7 +167,7 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
                 <button
                   type="button"
                   onClick={handleClearLocation}
-                  className="text-[10px] text-slate-400 hover:text-red-400 flex items-center gap-0.5"
+                  className="text-[10px] text-slate-400 hover:text-red-400 flex items-center gap-1 transition-colors"
                   title="Remove location"
                 >
                   <Trash2 className="w-2.5 h-2.5" />
@@ -169,26 +175,62 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
                 </button>
               )}
             </div>
+
+            {/* Display info badge / subtitle */}
+            {displayInfo.hasLocation && (
+              <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span className="text-[#16C7F2]">📍</span>
+                      <span>{displayInfo.displayLabel}</span>
+                    </div>
+                    {displayInfo.subLabel && (
+                      <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                        {displayInfo.confidence === 'HIGH' && (
+                          <Sparkles className="w-2.5 h-2.5 text-[#55D98A]" />
+                        )}
+                        <span>{displayInfo.subLabel}</span>
+                      </p>
+                    )}
+                  </div>
+                  {displayInfo.confidence && displayInfo.confidence !== 'NONE' && (
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0 ${
+                      displayInfo.confidence === 'HIGH'
+                        ? 'bg-[#55D98A]/20 text-[#55D98A] border border-[#55D98A]/30'
+                        : displayInfo.confidence === 'MEDIUM'
+                        ? 'bg-[#FFD21F]/20 text-[#FFD21F] border border-[#FFD21F]/30'
+                        : 'bg-slate-700 text-slate-300'
+                    }`}>
+                      {displayInfo.confidence}
+                    </span>
+                  )}
+                </div>
+
+                {/* Google Maps Button - only shown if mapsUrl exists */}
+                {displayInfo.mapsUrl && (
+                  <button
+                    type="button"
+                    onClick={handleOpenGoogleMaps}
+                    className="w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-slate-800 to-slate-850 hover:from-slate-700 hover:to-slate-750 text-[#16C7F2] hover:text-white text-[11px] font-bold border border-[#16C7F2]/30 hover:border-[#16C7F2]/60 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <Navigation className="w-3 h-3 text-[#16C7F2]" />
+                    <span>Open in Google Maps</span>
+                    <ExternalLink className="w-2.5 h-2.5 opacity-70 ml-0.5" />
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="relative">
               <input
                 type="text"
                 placeholder="e.g. Jubilee Hills, Hyderabad"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-800/90 border border-slate-700 focus:border-[#16C7F2] text-white font-medium focus:outline-none placeholder-slate-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-800/90 border border-slate-700 focus:border-[#16C7F2] text-white font-medium focus:outline-none placeholder-slate-500 text-xs"
               />
             </div>
-            {locContext && locContext.confidence && locContext.confidence !== 'NONE' && (
-              <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5">
-                <span className="flex items-center gap-1 text-[#16C7F2]">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  <span>Match Confidence: <strong>{locContext.confidence}</strong></span>
-                </span>
-                {locContext.accuracyMeters && (
-                  <span>Accuracy: ±{Math.round(locContext.accuracyMeters)}m</span>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Date */}
