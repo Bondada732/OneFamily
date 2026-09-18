@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Heart, Users, Sparkles, TrendingUp, FolderLock, ArrowRight, Check, Plus, KeyRound, LogIn, Copy, Share2, CheckCircle2, UserPlus, Sparkle, AlertCircle, Mail, RotateCcw, ArrowLeft, Send } from 'lucide-react';
+import { ShieldCheck, Heart, Users, Sparkles, TrendingUp, FolderLock, ArrowRight, Check, Plus, KeyRound, LogIn, Copy, Share2, CheckCircle2, UserPlus, Sparkle, AlertCircle, Mail, RotateCcw, ArrowLeft, Send, Wifi, Server, Settings, RefreshCw, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
+import { getApiHost, setCustomApiHost, testServerConnection, DEFAULT_SERVER_URL } from '../../utils/api.js';
 
 interface OnboardingViewProps {
   onComplete: () => void;
@@ -9,6 +10,35 @@ interface OnboardingViewProps {
 export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) => {
   const { registerHead, joinFamily, login, sendRegistrationOtp, verifyRegistrationOtp, family } = useAuth();
   const [mode, setMode] = useState<'SIGN_IN' | 'REGISTER_HEAD' | 'VERIFY_HEAD_OTP' | 'JOIN_FAMILY' | 'SUCCESS_KEY' | 'SLIDES'>('SIGN_IN');
+  
+  // Server connection configuration state
+  const [showServerModal, setShowServerModal] = useState(false);
+  const [serverHostInput, setServerHostInput] = useState(getApiHost());
+  const [serverTestStatus, setServerTestStatus] = useState<{ testing: boolean; success?: boolean; latencyMs?: number; error?: string }>({ testing: false });
+
+  const handleTestConnection = async (hostToTest?: string) => {
+    const target = hostToTest || serverHostInput;
+    setServerTestStatus({ testing: true });
+    const res = await testServerConnection(target);
+    setServerTestStatus({
+      testing: false,
+      success: res.success,
+      latencyMs: res.latencyMs,
+      error: res.error,
+    });
+  };
+
+  const handleSaveServerHost = () => {
+    setCustomApiHost(serverHostInput);
+    setShowServerModal(false);
+    setSignInError('');
+  };
+
+  const handleResetServerHost = () => {
+    setServerHostInput(DEFAULT_SERVER_URL);
+    setCustomApiHost(DEFAULT_SERVER_URL);
+    setServerTestStatus({ testing: false });
+  };
   
   // Sign In state
   const [signInEmail, setSignInEmail] = useState('');
@@ -866,6 +896,23 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
         </div>
       )}
 
+      {/* Server Connection Badge */}
+      <div className="pt-2 text-center">
+        <button
+          type="button"
+          onClick={() => {
+            setShowServerModal(true);
+            handleTestConnection();
+          }}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-[10px] text-slate-400 hover:text-white hover:border-[#16C7F2]/40 transition-all cursor-pointer shadow-sm"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Server:</span>
+          <span className="text-[#16C7F2] font-mono">{getApiHost().replace(/^https?:\/\//, '')}</span>
+          <Settings className="w-3 h-3 text-slate-400 ml-0.5" />
+        </button>
+      </div>
+
       {/* Bottom Footer Info */}
       <div className="pt-2 text-center">
         {mode !== 'SLIDES' ? (
@@ -884,6 +931,96 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
           </button>
         )}
       </div>
+
+      {/* Server Settings Modal */}
+      {showServerModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-[#0D152D] border border-slate-700/80 rounded-3xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#16C7F2]/15 border border-[#16C7F2]/30 flex items-center justify-center text-[#16C7F2]">
+                  <Server className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Backend Server Host</h3>
+                  <p className="text-[10px] text-slate-400">Configure PC Wi-Fi IP for phone sync</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowServerModal(false)}
+                className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs text-slate-300 font-semibold">Server URL (PC IP Address & Port)</label>
+              <input
+                type="text"
+                value={serverHostInput}
+                onChange={(e) => {
+                  setServerHostInput(e.target.value);
+                  setServerTestStatus({ testing: false });
+                }}
+                placeholder="http://10.160.2.158:4000"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono placeholder-slate-600 focus:border-[#16C7F2] outline-none"
+              />
+              <p className="text-[10px] text-slate-400">
+                Make sure your phone is connected to the same Wi-Fi network as your computer.
+              </p>
+            </div>
+
+            {/* Test Connection Results */}
+            {serverTestStatus.testing ? (
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#16C7F2]" />
+                <span>Pinging server at {serverHostInput}...</span>
+              </div>
+            ) : serverTestStatus.success === true ? (
+              <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Connected successfully! Latency: {serverTestStatus.latencyMs}ms</span>
+              </div>
+            ) : serverTestStatus.error ? (
+              <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{serverTestStatus.error}</span>
+              </div>
+            ) : null}
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleTestConnection()}
+                disabled={serverTestStatus.testing}
+                className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${serverTestStatus.testing ? 'animate-spin' : ''}`} />
+                <span>Test Ping</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveServerHost}
+                className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#16C7F2] to-indigo-600 hover:opacity-95 text-xs font-bold text-white shadow-md flex items-center justify-center gap-1.5 transition-opacity"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Save Host</span>
+              </button>
+            </div>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={handleResetServerHost}
+                className="text-[10px] text-slate-400 hover:text-slate-300 underline"
+              >
+                Reset to Default ({DEFAULT_SERVER_URL})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

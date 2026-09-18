@@ -1,18 +1,70 @@
+export const DEFAULT_SERVER_URL = 'http://10.160.2.158:4000';
+
+export const getApiHost = (): string => {
+  if (typeof window !== 'undefined') {
+    const savedHost = localStorage.getItem('onefamily_api_host');
+    if (savedHost) {
+      return savedHost.replace(/\/$/, '');
+    }
+  }
+  const envUrl = (import.meta as any).env?.VITE_API_URL;
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
+  }
+  return DEFAULT_SERVER_URL;
+};
+
+export const setCustomApiHost = (host: string): void => {
+  if (typeof window !== 'undefined') {
+    const cleanHost = host.trim().replace(/\/$/, '');
+    if (cleanHost) {
+      localStorage.setItem('onefamily_api_host', cleanHost);
+    } else {
+      localStorage.removeItem('onefamily_api_host');
+    }
+  }
+};
+
+export const testServerConnection = async (
+  targetHost?: string
+): Promise<{ success: boolean; latencyMs?: number; error?: string }> => {
+  const host = targetHost ? targetHost.replace(/\/$/, '') : getApiHost();
+  const testUrl = `${host}/api/health`;
+  const startTime = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(testUrl, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      return { success: true, latencyMs: Date.now() - startTime };
+    }
+    return { success: false, error: `Server returned status ${res.status}` };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.name === 'AbortError' ? 'Connection timed out (4s)' : (err.message || 'Cannot reach server'),
+    };
+  }
+};
+
 export const getApiBase = (): string => {
-  // If deployed on Vercel or cloud with a custom backend URL
   const envUrl = (import.meta as any).env?.VITE_API_URL;
   if (envUrl) {
     return `${envUrl.replace(/\/$/, '')}/api`;
   }
 
   if (typeof window !== 'undefined') {
-    // Custom host saved in localStorage
     const savedHost = localStorage.getItem('onefamily_api_host');
     if (savedHost) {
       return `${savedHost.replace(/\/$/, '')}/api`;
     }
 
-    // If accessed via Vite dev server port (e.g. mobile browser at 192.168.1.6:5173 or localhost:5173)
+    // If accessed via Vite dev server port (e.g. mobile browser at 10.160.2.158:5173 or localhost:5173)
     if (window.location.port === '5173') {
       return '/api';
     }
@@ -23,7 +75,7 @@ export const getApiBase = (): string => {
       (window.location.hostname === 'localhost' && window.location.port === '') ||
       (window as any).Capacitor?.isNativePlatform?.()
     ) {
-      return 'http://192.168.1.6:4000/api';
+      return `${DEFAULT_SERVER_URL}/api`;
     }
   }
   return '/api';
