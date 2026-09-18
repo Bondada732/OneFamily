@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, Check, ArrowRight, Tag, Calendar, FileText, Store, CreditCard } from 'lucide-react';
+import { X, Check, Tag, Calendar, FileText, Store, MapPin, Trash2, Sparkles } from 'lucide-react';
 import { DetectedTransaction } from '../../services/smartExpense/types.js';
 
 interface SmartExpenseDetailModalProps {
   isOpen: boolean;
+  familyId?: string;
   transaction: DetectedTransaction | null;
   onClose: () => void;
   onConfirm: (overrides: {
@@ -12,8 +13,10 @@ interface SmartExpenseDetailModalProps {
     category_name?: string;
     date?: string;
     notes?: string;
+    location?: string;
     savePreference?: boolean;
   }) => void;
+  onRemoveLocation?: (transactionId: string) => void;
 }
 
 const CATEGORIES = [
@@ -37,9 +40,11 @@ const CATEGORIES = [
 
 export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = ({
   isOpen,
+  familyId = '',
   transaction,
   onClose,
   onConfirm,
+  onRemoveLocation,
 }) => {
   if (!isOpen || !transaction) return null;
 
@@ -50,7 +55,17 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
     transaction.transactionDateTime ? transaction.transactionDateTime.split('T')[0] : new Date().toISOString().split('T')[0]
   );
   const [notes, setNotes] = useState('');
+  const [location, setLocation] = useState(transaction.location?.locationLabel || '');
   const [savePreference, setSavePreference] = useState(true);
+
+  const locContext = transaction.location;
+
+  const handleClearLocation = () => {
+    setLocation('');
+    if (transaction.id && onRemoveLocation) {
+      onRemoveLocation(transaction.id);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +75,7 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
       category_name: category,
       date,
       notes: notes.trim(),
+      location: location.trim(),
       savePreference,
     });
     onClose();
@@ -67,7 +83,7 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn select-none">
-      <div className="w-full max-w-sm rounded-3xl bg-[#0D152D] border border-slate-700/80 shadow-2xl p-5 space-y-4 text-slate-100">
+      <div className="w-full max-w-sm rounded-3xl bg-[#0D152D] border border-slate-700/80 shadow-2xl p-5 space-y-4 text-slate-100 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -83,7 +99,7 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-3 text-xs">
           {/* Amount */}
           <div className="space-y-1">
             <label className="text-[11px] font-bold text-slate-300">Amount (₹)</label>
@@ -132,6 +148,47 @@ export const SmartExpenseDetailModal: React.FC<SmartExpenseDetailModalProps> = (
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Location Context */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-[#16C7F2]" />
+                <span>Location Context</span>
+              </label>
+              {location && (
+                <button
+                  type="button"
+                  onClick={handleClearLocation}
+                  className="text-[10px] text-slate-400 hover:text-red-400 flex items-center gap-0.5"
+                  title="Remove location"
+                >
+                  <Trash2 className="w-2.5 h-2.5" />
+                  <span>Remove</span>
+                </button>
+              )}
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="e.g. Jubilee Hills, Hyderabad"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-800/90 border border-slate-700 focus:border-[#16C7F2] text-white font-medium focus:outline-none placeholder-slate-500"
+              />
+            </div>
+            {locContext && locContext.confidence && locContext.confidence !== 'NONE' && (
+              <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5">
+                <span className="flex items-center gap-1 text-[#16C7F2]">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>Match Confidence: <strong>{locContext.confidence}</strong></span>
+                </span>
+                {locContext.accuracyMeters && (
+                  <span>Accuracy: ±{Math.round(locContext.accuracyMeters)}m</span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Date */}

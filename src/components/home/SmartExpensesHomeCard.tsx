@@ -56,7 +56,13 @@ export const SmartExpensesHomeCard: React.FC<SmartExpensesHomeCardProps> = ({
                   <span className="font-semibold text-white">
                     {isPrivacyMode ? '••••' : `₹${pendingTotal.toLocaleString('en-IN')}`}
                   </span>{' '}
-                  detected • review to confirm
+                  detected
+                  {pendingTransactions.find((t) => t.location?.locationLabel)?.location?.locationLabel && (
+                    <span className="text-[#16C7F2] font-semibold">
+                      {' '}• 📍 {pendingTransactions.find((t) => t.location?.locationLabel)?.location?.locationLabel}
+                    </span>
+                  )}
+                  {' '}• review to confirm
                 </>
               ) : (
                 "You're all caught up"

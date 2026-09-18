@@ -5,11 +5,13 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
 import com.onefamily.app.plugins.SmsTransactionPlugin;
+import com.onefamily.app.plugins.LocationContextPlugin;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(SmsTransactionPlugin.class);
+        registerPlugin(LocationContextPlugin.class);
         super.onCreate(savedInstanceState);
 
         try {

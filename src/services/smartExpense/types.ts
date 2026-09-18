@@ -39,6 +39,59 @@ export type NotificationMode = 'INSTANT' | 'BATCH' | 'OFF';
 
 export type VisibilityMode = 'PRIVATE' | 'SHARED_WITH_ADMIN' | 'FAMILY_SHARED';
 
+export type LocationStatus =
+  | 'AVAILABLE'
+  | 'APPROXIMATE'
+  | 'STALE'
+  | 'UNAVAILABLE'
+  | 'PERMISSION_DENIED'
+  | 'NOT_CAPTURED';
+
+export type LocationSource =
+  | 'LIVE_LOCATION'
+  | 'LOCATION_SNAPSHOT'
+  | 'CACHED_LOCATION'
+  | 'NONE';
+
+export type LocationConfidence = 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+
+export type LocationMatchTimestampType =
+  | 'TRANSACTION_TIME'
+  | 'SMS_RECEIVED_TIME'
+  | 'NONE';
+
+export interface TransactionLocationContext {
+  latitude: number | null;
+  longitude: number | null;
+  accuracyMeters: number | null;
+  capturedAt: string | null;
+  source: LocationSource;
+  confidence: LocationConfidence;
+  status: LocationStatus;
+  locationLabel: string;
+  matchTimestampType: LocationMatchTimestampType;
+  timeDifferenceSeconds: number | null;
+}
+
+export interface LocationSnapshot {
+  id?: string;
+  latitude: number;
+  longitude: number;
+  accuracyMeters: number;
+  capturedAt: string; // ISO 8601 string
+  source: LocationSource;
+  status?: LocationStatus;
+  locationLabel?: string;
+}
+
+export interface LocationPermissionDetail {
+  fineLocationGranted: boolean;
+  coarseLocationGranted: boolean;
+  locationServicesEnabled: boolean;
+  permissionState: PermissionState;
+  precision: 'PRECISE' | 'APPROXIMATE' | 'NONE';
+}
+
 export interface DetectedTransaction {
   id: string;
   userId: string;
@@ -63,6 +116,7 @@ export interface DetectedTransaction {
 
   transactionReference?: string;
   transactionDateTime: string;
+  smsReceivedDateTime?: string;
   detectedAt: string;
 
   categorySuggested: string;
@@ -71,6 +125,8 @@ export interface DetectedTransaction {
   status: TransactionStatus;
   duplicateOfTransactionId?: string;
   visibility: VisibilityMode;
+
+  location?: TransactionLocationContext;
 
   sourceMetadata?: {
     sender?: string;
@@ -97,12 +153,14 @@ export interface ParsedTransactionResult {
   accountLast4?: string;
   transactionReference?: string;
   transactionDateTime?: string;
+  smsReceivedDateTime?: string;
   categorySuggested?: string;
   categoryConfidence?: number;
   isTransfer?: boolean;
   isRefund?: boolean;
   parserUsed?: string;
   rawSourceHash?: string;
+  location?: TransactionLocationContext;
 }
 
 export interface SmartCaptureSettings {
@@ -114,6 +172,10 @@ export interface SmartCaptureSettings {
   notificationMode: NotificationMode;
   privacyMode: boolean;
   historicalScanDays: number;
+  locationCaptureEnabled: boolean;
+  locationPrecision: 'APPROXIMATE' | 'PRECISE';
+  locationRetentionHours: number; // 24, 72, 168 (7 days)
+  showLocationOnExpenses: boolean;
 }
 
 export interface SmsPermissionDetail {
@@ -140,5 +202,13 @@ export interface SmartExpenseDiagnostics {
   pendingQueueCount: number;
   notificationCaptureImplemented: boolean;
   notificationStatusMessage: string;
+  // Location Diagnostics
+  locationPermissionGranted?: boolean;
+  locationServicesEnabled?: boolean;
+  locationPrecision?: 'PRECISE' | 'APPROXIMATE' | 'NONE';
+  lastLocationSnapshot?: LocationSnapshot | null;
+  lastMatchedLocation?: string;
+  lastMatchConfidence?: LocationConfidence;
+  lastTimeDifferenceSeconds?: number | null;
+  snapshotStoreCount?: number;
 }
-

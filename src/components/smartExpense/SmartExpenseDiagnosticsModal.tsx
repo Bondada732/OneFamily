@@ -309,7 +309,65 @@ export const SmartExpenseDiagnosticsModal: React.FC<SmartExpenseDiagnosticsModal
             </div>
           </div>
 
-          {/* 4. Notification Capture Note */}
+          {/* 4. Location Context Engine Diagnostics */}
+          <div className="bg-[#0D152D] border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between font-bold text-slate-200">
+              <span className="flex items-center gap-1.5">
+                <span className="text-[#16C7F2]">📍</span>
+                <span>Location Context & Geocoding Engine</span>
+              </span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                diagnostics?.locationPermissionGranted
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-slate-700 text-slate-300'
+              }`}>
+                {diagnostics?.locationPermissionGranted ? 'ACTIVE' : 'OFF / DENIED'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                <span className="text-slate-400 block text-[10px]">Location Services</span>
+                <span className="font-semibold text-white block mt-0.5">
+                  {diagnostics?.locationServicesEnabled ? (
+                    <span className="text-emerald-400">✓ Enabled (GPS/Net)</span>
+                  ) : (
+                    <span className="text-amber-400">Disabled in OS</span>
+                  )}
+                </span>
+                <span className="text-[9px] text-slate-400 block mt-1">
+                  Precision: {diagnostics?.locationPrecision || 'APPROXIMATE'}
+                </span>
+              </div>
+
+              <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                <span className="text-slate-400 block text-[10px]">Stored Snapshots</span>
+                <span className="font-semibold text-white block mt-0.5">
+                  {diagnostics?.snapshotStoreCount || 0} snapshots in store
+                </span>
+                <span className="text-[9px] text-slate-400 block mt-1">
+                  Retention: 72h max cache
+                </span>
+              </div>
+            </div>
+
+            {diagnostics?.lastLocationSnapshot && (
+              <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Latest Context:</span>
+                  <span className="font-bold text-[#16C7F2]">
+                    📍 {diagnostics.lastLocationSnapshot.locationLabel || 'Nearby Area'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Accuracy: ±{Math.round(diagnostics.lastLocationSnapshot.accuracyMeters)}m</span>
+                  <span>Captured: {new Date(diagnostics.lastLocationSnapshot.capturedAt).toLocaleTimeString()}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 5. Notification Capture Note */}
           <div className="bg-[#0D152D] border border-slate-800 rounded-xl p-3.5 space-y-1.5">
             <div className="flex items-center justify-between font-bold text-slate-300">
               <span className="flex items-center gap-1.5">

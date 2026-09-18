@@ -104,6 +104,7 @@ router.post('/:id/detected', requirePermission('FINANCE_EDIT'), (req: AuthReques
       continue;
     }
 
+    const locObj = t.location || null;
     const newRecord = {
       id: t.id || `dt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       user_id: userId,
@@ -121,11 +122,23 @@ router.post('/:id/detected', requirePermission('FINANCE_EDIT'), (req: AuthReques
       account_last4: t.account_last4 || '',
       transaction_reference: t.transaction_reference || '',
       transaction_datetime: t.transaction_datetime || new Date().toISOString(),
+      sms_received_datetime: t.sms_received_datetime || new Date().toISOString(),
       category_suggested: t.category_suggested || 'Miscellaneous',
       category_confidence: typeof t.category_confidence === 'number' ? t.category_confidence : 0.85,
       status: 'PENDING_REVIEW',
       duplicate_of: null,
       visibility: t.visibility || 'PRIVATE',
+      location: locObj,
+      location_latitude: locObj?.latitude ?? t.location_latitude ?? null,
+      location_longitude: locObj?.longitude ?? t.location_longitude ?? null,
+      location_accuracy_meters: locObj?.accuracyMeters ?? t.location_accuracy_meters ?? null,
+      location_captured_at: locObj?.capturedAt ?? t.location_captured_at ?? null,
+      location_source: locObj?.source ?? t.location_source ?? 'NONE',
+      location_confidence: locObj?.confidence ?? t.location_confidence ?? 'NONE',
+      location_status: locObj?.status ?? t.location_status ?? 'NOT_CAPTURED',
+      location_label: locObj?.locationLabel ?? t.location_label ?? '',
+      location_match_timestamp_type: locObj?.matchTimestampType ?? t.location_match_timestamp_type ?? 'NONE',
+      location_time_difference_seconds: locObj?.timeDifferenceSeconds ?? t.location_time_difference_seconds ?? null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -167,6 +180,8 @@ router.post('/:id/confirm/:transactionId', requirePermission('FINANCE_EDIT'), (r
   const finalCategoryName = category_name || dt.category_suggested || 'Miscellaneous';
   const finalDate = date || (dt.transaction_datetime ? dt.transaction_datetime.split('T')[0] : new Date().toISOString().split('T')[0]);
 
+  const finalLocation = req.body.location !== undefined ? req.body.location : (dt.location?.locationLabel || dt.location_label || '');
+
   // Create real expense in Ledger
   const newExpense = {
     id: `exp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -181,7 +196,7 @@ router.post('/:id/confirm/:transactionId', requirePermission('FINANCE_EDIT'), (r
     payment_method: dt.transaction_type === 'UPI' ? 'UPI' : 'Bank Transfer',
     merchant: finalMerchant,
     notes: notes || `Auto-captured via ${dt.source_type}${dt.transaction_reference ? ` (Ref: ${dt.transaction_reference})` : ''}`,
-    location: '',
+    location: finalLocation,
     receipt_url: '',
     split_type: 'EQUAL',
     detected_transaction_id: dt.id,
@@ -198,6 +213,7 @@ router.post('/:id/confirm/:transactionId', requirePermission('FINANCE_EDIT'), (r
     category_suggested: finalCategoryName,
     merchant_normalized: finalMerchant,
     amount: finalAmount,
+    location_label: finalLocation,
     updated_at: new Date().toISOString(),
   });
 
@@ -220,7 +236,7 @@ router.post('/:id/confirm/:transactionId', requirePermission('FINANCE_EDIT'), (r
     }
   }
 
-  logActivity(familyId, req.user!.id, req.user!.name, 'Confirmed Smart Expense', 'FINANCE', `Approved smart expense ₹${finalAmount} for ${finalMerchant} (${finalCategoryName})`);
+  logActivity(familyId, req.user!.id, req.user!.name, 'Confirmed Smart Expense', 'FINANCE', `Approved smart expense ₹${finalAmount} for ${finalMerchant} (${finalCategoryName})${finalLocation ? ` at ${finalLocation}` : ''}`);
 
   res.json({
     success: true,
@@ -258,7 +274,7 @@ router.post('/:id/bulk-confirm', requirePermission('FINANCE_EDIT'), (req: AuthRe
       payment_method: dt.transaction_type === 'UPI' ? 'UPI' : 'Bank Transfer',
       merchant: dt.merchant_normalized || dt.merchant_raw || 'Merchant',
       notes: `Auto-captured via ${dt.source_type}`,
-      location: '',
+      location: dt.location?.locationLabel || dt.location_label || '',
       receipt_url: '',
       split_type: 'EQUAL',
       detected_transaction_id: dt.id,
@@ -285,7 +301,35 @@ router.post('/:id/bulk-confirm', requirePermission('FINANCE_EDIT'), (req: AuthRe
   });
 });
 
-// 6. Ignore a Detected Transaction
+// 6. Delete / Remove Location from a Detected Transaction
+router.delete('/:id/detected/:transactionId/location', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { transactionId } = req.params;
+
+  const dt = db.findOne('detected_transactions', (t) => t.id === transactionId && t.family_id === familyId);
+  if (!dt) {
+    return res.status(404).json({ error: 'Detected transaction not found' });
+  }
+
+  db.update('detected_transactions', (t) => t.id === transactionId, {
+    location: null,
+    location_latitude: null,
+    location_longitude: null,
+    location_accuracy_meters: null,
+    location_captured_at: null,
+    location_source: 'NONE',
+    location_confidence: 'NONE',
+    location_status: 'NOT_CAPTURED',
+    location_label: '',
+    location_match_timestamp_type: 'NONE',
+    location_time_difference_seconds: null,
+    updated_at: new Date().toISOString(),
+  });
+
+  res.json({ success: true, message: 'Location removed from detected transaction' });
+});
+
+// 7. Ignore a Detected Transaction
 router.post('/:id/ignore/:transactionId', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
   const { transactionId } = req.params;
@@ -335,6 +379,10 @@ router.get('/:id/settings', (req: AuthRequest, res) => {
     notification_mode: 'BATCH',
     privacy_mode: false,
     historical_scan_days: 7,
+    location_capture_enabled: false,
+    location_precision: 'APPROXIMATE',
+    location_retention_hours: 72,
+    show_location_on_expenses: true,
   };
 
   res.json({ settings });
@@ -362,6 +410,10 @@ router.put('/:id/settings', (req: AuthRequest, res) => {
       notification_mode: 'BATCH',
       privacy_mode: false,
       historical_scan_days: 7,
+      location_capture_enabled: false,
+      location_precision: 'APPROXIMATE',
+      location_retention_hours: 72,
+      show_location_on_expenses: true,
       ...newSettings,
       created_at: new Date().toISOString(),
     });

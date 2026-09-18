@@ -1,7 +1,16 @@
 import { apiRequest } from '../../utils/api.js';
-import { DetectedTransaction, SmartCaptureSettings, PermissionState, ParsedTransactionResult, SmsPermissionDetail, SmartExpenseDiagnostics } from './types.js';
+import {
+  DetectedTransaction,
+  SmartCaptureSettings,
+  PermissionState,
+  ParsedTransactionResult,
+  SmsPermissionDetail,
+  SmartExpenseDiagnostics,
+  TransactionLocationContext,
+} from './types.js';
 import { AndroidSmsCaptureProvider, WebCaptureProvider, TransactionCaptureProvider } from './TransactionCaptureProvider.js';
 import { TransactionParserPipeline } from './TransactionParser.js';
+import { ExpenseLocationService } from './ExpenseLocationService.js';
 
 class SmartExpenseManager {
   private provider: TransactionCaptureProvider = new AndroidSmsCaptureProvider();
@@ -16,7 +25,7 @@ class SmartExpenseManager {
     return this.webProvider;
   };
 
-  // Check detailed permissions (READ_SMS & RECEIVE_SMS individually)
+  // Check detailed SMS permissions
   public checkDetailedPermissions = async (): Promise<SmsPermissionDetail> => {
     const provider = await this.getProvider();
     if (provider.checkDetailedPermissions) {
@@ -53,13 +62,10 @@ class SmartExpenseManager {
     return { accessible: false, count: 0, error: 'Provider does not support SMS count' };
   };
 
-  // Run full system diagnostics
+  // Run full system diagnostics (SMS + Location + Native Plugin)
   public runDiagnostics = async (): Promise<SmartExpenseDiagnostics> => {
     const provider = await this.getProvider();
-    if (provider.runDiagnostics) {
-      return await provider.runDiagnostics();
-    }
-    return {
+    let diag: SmartExpenseDiagnostics = {
       readSmsPermission: false,
       receiveSmsPermission: false,
       smsInboxAccessible: false,
@@ -71,6 +77,23 @@ class SmartExpenseManager {
       notificationCaptureImplemented: false,
       notificationStatusMessage: 'Web mode',
     };
+
+    if (provider.runDiagnostics) {
+      diag = await provider.runDiagnostics();
+    }
+
+    try {
+      const locDiag = await ExpenseLocationService.getLocationDiagnostics();
+      diag.locationPermissionGranted = locDiag.locationPermissionGranted;
+      diag.locationServicesEnabled = locDiag.locationServicesEnabled;
+      diag.locationPrecision = locDiag.locationPrecision;
+      diag.lastLocationSnapshot = locDiag.lastLocationSnapshot;
+      diag.snapshotStoreCount = locDiag.snapshotStoreCount;
+    } catch (e) {
+      console.warn('Diagnostics location check error:', e);
+    }
+
+    return diag;
   };
 
   // Drain pending SMS captured while app was closed or in background
@@ -116,13 +139,52 @@ class SmartExpenseManager {
     }
   }
 
-  // 2. Ingest Batch of Newly Detected Transactions
-  public async ingestDetectedTransactions(familyId: string, parsedList: ParsedTransactionResult[]): Promise<{ ingestedCount: number; duplicatesCount: number }> {
+  // 2. Ingest Batch of Newly Detected Transactions (with Location Enrichment)
+  public async ingestDetectedTransactions(
+    familyId: string,
+    parsedList: ParsedTransactionResult[]
+  ): Promise<{ ingestedCount: number; duplicatesCount: number }> {
     if (!familyId || !parsedList || parsedList.length === 0) {
       return { ingestedCount: 0, duplicatesCount: 0 };
     }
 
-    const payload = parsedList.map((p) => ({
+    const settings = await this.getSettings(familyId);
+
+    // Location enrichment pipeline
+    const enrichedList: ParsedTransactionResult[] = [];
+    for (const p of parsedList) {
+      let locContext = p.location;
+      if (!locContext && settings.locationCaptureEnabled) {
+        try {
+          locContext = await ExpenseLocationService.findBestLocationForTransaction(
+            p.transactionDateTime,
+            p.smsReceivedDateTime,
+            true,
+            settings.locationRetentionHours
+          );
+        } catch (locErr) {
+          console.warn('Location enrichment failed for transaction, continuing without location:', locErr);
+        }
+      }
+
+      enrichedList.push({
+        ...p,
+        location: locContext || {
+          latitude: null,
+          longitude: null,
+          accuracyMeters: null,
+          capturedAt: null,
+          source: 'NONE',
+          confidence: 'NONE',
+          status: settings.locationCaptureEnabled ? 'UNAVAILABLE' : 'NOT_CAPTURED',
+          locationLabel: '',
+          matchTimestampType: 'NONE',
+          timeDifferenceSeconds: null,
+        },
+      });
+    }
+
+    const payload = enrichedList.map((p) => ({
       source_type: 'SMS',
       source_hash: p.rawSourceHash,
       transaction_type: p.transactionType || 'UPI',
@@ -136,9 +198,11 @@ class SmartExpenseManager {
       account_last4: p.accountLast4,
       transaction_reference: p.transactionReference,
       transaction_datetime: p.transactionDateTime || new Date().toISOString(),
+      sms_received_datetime: p.smsReceivedDateTime || new Date().toISOString(),
       category_suggested: p.categorySuggested,
       category_confidence: p.categoryConfidence,
       visibility: 'PRIVATE',
+      location: p.location,
     }));
 
     try {
@@ -166,6 +230,7 @@ class SmartExpenseManager {
       category_name?: string;
       date?: string;
       notes?: string;
+      location?: string;
       savePreference?: boolean;
     }
   ): Promise<boolean> {
@@ -211,7 +276,21 @@ class SmartExpenseManager {
     }
   }
 
-  // 6. Get Settings
+  // 6. Remove Location from a Detected Expense
+  public async removeTransactionLocation(familyId: string, transactionId: string): Promise<boolean> {
+    if (!familyId || !transactionId) return false;
+    try {
+      const res = await apiRequest(`/smart-expenses/${familyId}/detected/${transactionId}/location`, {
+        method: 'DELETE',
+      });
+      return !!res.success;
+    } catch (err) {
+      console.error('Failed to remove location from transaction:', err);
+      return false;
+    }
+  }
+
+  // 7. Get Settings
   public async getSettings(familyId: string): Promise<SmartCaptureSettings> {
     const defaultSettings: SmartCaptureSettings = {
       enabled: false,
@@ -222,6 +301,10 @@ class SmartExpenseManager {
       notificationMode: 'BATCH',
       privacyMode: false,
       historicalScanDays: 7,
+      locationCaptureEnabled: false,
+      locationPrecision: 'APPROXIMATE',
+      locationRetentionHours: 72,
+      showLocationOnExpenses: true,
     };
 
     if (!familyId) return defaultSettings;
@@ -237,13 +320,17 @@ class SmartExpenseManager {
         notificationMode: s.notification_mode || 'BATCH',
         privacyMode: !!s.privacy_mode,
         historicalScanDays: s.historical_scan_days || 7,
+        locationCaptureEnabled: !!s.location_capture_enabled,
+        locationPrecision: s.location_precision || 'APPROXIMATE',
+        locationRetentionHours: s.location_retention_hours || 72,
+        showLocationOnExpenses: s.show_location_on_expenses !== false,
       };
     } catch {
       return defaultSettings;
     }
   }
 
-  // 7. Update Settings
+  // 8. Update Settings
   public updateSettings = async (familyId: string, settings: Partial<SmartCaptureSettings>): Promise<boolean> => {
     if (!familyId) return false;
     try {
@@ -256,6 +343,10 @@ class SmartExpenseManager {
       if (settings.notificationMode !== undefined) payload.notification_mode = settings.notificationMode;
       if (settings.privacyMode !== undefined) payload.privacy_mode = settings.privacyMode;
       if (settings.historicalScanDays !== undefined) payload.historical_scan_days = settings.historicalScanDays;
+      if (settings.locationCaptureEnabled !== undefined) payload.location_capture_enabled = settings.locationCaptureEnabled;
+      if (settings.locationPrecision !== undefined) payload.location_precision = settings.locationPrecision;
+      if (settings.locationRetentionHours !== undefined) payload.location_retention_hours = settings.locationRetentionHours;
+      if (settings.showLocationOnExpenses !== undefined) payload.show_location_on_expenses = settings.showLocationOnExpenses;
 
       await apiRequest(`/smart-expenses/${familyId}/settings`, {
         method: 'PUT',
@@ -268,7 +359,7 @@ class SmartExpenseManager {
     }
   };
 
-  // 8. Run Historical Scan
+  // 9. Run Historical Scan
   public runHistoricalScan = async (familyId: string, days: number = 7): Promise<{ detectedCount: number; message?: string }> => {
     const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
     const hasPlugin = !!(window as any).Capacitor?.Plugins?.SmsTransactionPlugin;
@@ -298,7 +389,7 @@ class SmartExpenseManager {
     };
   };
 
-  // 9. Parse and Ingest Single Raw SMS Text (for manual testing / paste)
+  // 10. Parse and Ingest Single Raw SMS Text (for manual testing / paste)
   public parseAndIngestRawSms = async (
     familyId: string,
     text: string
@@ -329,6 +420,7 @@ class SmartExpenseManager {
         message: 'Could not extract financial transaction details from the pasted message. Ensure it has an amount (e.g. Rs 500) and debit/transfer information.',
       };
     }
+
     const res = await this.ingestDetectedTransactions(effectiveFamilyId, [parsed]);
     if (res.ingestedCount > 0) {
       return {
@@ -343,7 +435,7 @@ class SmartExpenseManager {
     };
   };
 
-  // 10. Real-time Live SMS listener on device
+  // 11. Real-time Live SMS listener on device
   public startLiveCapture = async (familyId: string, onNewTransaction?: () => void): Promise<void> => {
     if (this.isCapturing || !familyId) return;
 
@@ -383,6 +475,25 @@ class SmartExpenseManager {
   };
 
   private mapServerToClient(item: any): DetectedTransaction {
+    let locContext: TransactionLocationContext | undefined = undefined;
+
+    if (item.location && typeof item.location === 'object') {
+      locContext = item.location;
+    } else if (item.location_label || item.location_status || item.location_latitude) {
+      locContext = {
+        latitude: item.location_latitude ?? null,
+        longitude: item.location_longitude ?? null,
+        accuracyMeters: item.location_accuracy_meters ?? null,
+        capturedAt: item.location_captured_at ?? null,
+        source: item.location_source || 'NONE',
+        confidence: item.location_confidence || 'NONE',
+        status: item.location_status || 'NOT_CAPTURED',
+        locationLabel: item.location_label || '',
+        matchTimestampType: item.location_match_timestamp_type || 'NONE',
+        timeDifferenceSeconds: item.location_time_difference_seconds ?? null,
+      };
+    }
+
     return {
       id: item.id,
       userId: item.user_id,
@@ -400,11 +511,13 @@ class SmartExpenseManager {
       accountLast4: item.account_last4,
       transactionReference: item.transaction_reference,
       transactionDateTime: item.transaction_datetime,
+      smsReceivedDateTime: item.sms_received_datetime,
       detectedAt: item.created_at,
       categorySuggested: item.category_suggested || 'Miscellaneous',
       categoryConfidence: typeof item.category_confidence === 'number' ? item.category_confidence : 0.85,
       status: item.status,
       visibility: item.visibility || 'PRIVATE',
+      location: locContext,
       createdAt: item.created_at,
       updatedAt: item.updated_at,
     };

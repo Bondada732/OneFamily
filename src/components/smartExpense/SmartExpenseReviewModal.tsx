@@ -18,6 +18,7 @@ import {
   Settings,
   ClipboardPaste,
   Send,
+  MapPin,
 } from 'lucide-react';
 import { DetectedTransaction } from '../../services/smartExpense/types.js';
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
@@ -339,7 +340,7 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400 mt-0.5">
                           <span>{formatDate(tx.transactionDateTime || tx.detectedAt)}</span>
                           {tx.bankName && (
                             <>
@@ -352,6 +353,12 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
                               <span>•</span>
                               <span className="truncate max-w-[100px]">{tx.upiId}</span>
                             </>
+                          )}
+                          {tx.location?.locationLabel && (
+                            <span className="inline-flex items-center gap-1 text-[#16C7F2] font-semibold bg-[#16C7F2]/10 px-1.5 py-0.5 rounded-md border border-[#16C7F2]/25">
+                              <MapPin className="w-2.5 h-2.5" />
+                              <span>{tx.location.locationLabel}</span>
+                            </span>
                           )}
                         </div>
                       </div>
@@ -419,8 +426,16 @@ export const SmartExpenseReviewModal: React.FC<SmartExpenseReviewModalProps> = (
                         </span>
                         <Check className="w-3.5 h-3.5 text-[#55D98A]" />
                       </div>
-                      <p className="text-[11px] text-slate-400">
-                        {formatDate(tx.transactionDateTime)} • {tx.categorySuggested}
+                      <p className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                        <span>{formatDate(tx.transactionDateTime)}</span>
+                        <span>•</span>
+                        <span>{tx.categorySuggested}</span>
+                        {tx.location?.locationLabel && (
+                          <>
+                            <span>•</span>
+                            <span className="text-[#16C7F2]">📍 {tx.location.locationLabel}</span>
+                          </>
+                        )}
                       </p>
                     </div>
 
