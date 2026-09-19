@@ -581,8 +581,8 @@ export const VaultView: React.FC = () => {
 
       {/* Upload & Add Document Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in">
-          <div className="w-full max-w-md bg-[#07132B] border border-[#168BFF]/30 rounded-3xl p-4 sm:p-5 text-slate-100 shadow-2xl space-y-3.5 max-h-[92vh] flex flex-col my-auto overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto animate-fade-in">
+          <div className="w-full max-w-md min-h-[85vh] sm:min-h-0 max-h-[96vh] bg-[#07132B] border border-[#168BFF]/30 rounded-3xl p-4 sm:p-5 text-slate-100 shadow-2xl space-y-3.5 flex flex-col my-auto overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             
             {/* Header matching Image 2 */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 shrink-0">
@@ -627,233 +627,235 @@ export const VaultView: React.FC = () => {
               onChange={handleDocumentFileSelected}
             />
 
-            <form onSubmit={handleSaveDocument} className="space-y-3.5 overflow-y-auto pr-1 flex-1 custom-scrollbar">
+            <form onSubmit={handleSaveDocument} className="space-y-3.5 flex-1 flex flex-col justify-between">
               
-              {/* Select Document Type Grid matching Image 2 */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Select Document Type</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { id: 'Passport', label: 'Passport', icon: BookOpen, preset: 'passport.pdf', category: 'doc_identity', defaultTitle: 'Passport' },
-                    { id: 'Insurance', label: 'Insurance', icon: Shield, preset: 'insurance.pdf', category: 'doc_insurance', defaultTitle: 'Health / Life Insurance' },
-                    { id: 'Aadhaar', label: 'Aadhaar', icon: CreditCard, preset: 'aadhaar.pdf', category: 'doc_identity', defaultTitle: 'Aadhaar Card' },
-                    { id: 'Others', label: 'Others', icon: MoreHorizontal, preset: null, category: 'doc_misc', defaultTitle: '' }
-                  ].map((item) => {
-                    const Icon = item.icon;
-                    const isSelected = selectedDocType === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedDocType(item.id);
-                          if (item.category && categories.some(c => c.id === item.category)) {
-                            setNewDoc(prev => ({
-                              ...prev,
-                              category_id: item.category,
-                              title: prev.title ? prev.title : item.defaultTitle
-                            }));
-                          }
-                          if (item.preset) {
-                            handleSimulateOCRUpload(item.preset);
-                          }
-                        }}
-                        className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl border transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#168BFF]/20 border-[#16C7F2] text-white shadow-lg shadow-[#168BFF]/20 ring-1 ring-[#16C7F2]/50'
-                            : 'bg-[#030E22]/90 border-[#168BFF]/20 text-slate-400 hover:text-slate-200 hover:border-[#168BFF]/40'
-                        }`}
-                      >
-                        <Icon className={`w-5 h-5 mb-1 ${isSelected ? 'text-[#16C7F2]' : 'text-slate-400'}`} />
-                        <span className="text-[11px] font-semibold truncate max-w-full">{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Upload Document / Scan from Camera Section */}
-              {!uploadedFile ? (
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-2 bg-[#030E22]/80 hover:bg-[#168BFF]/10 border border-[#168BFF]/25 rounded-xl text-center text-xs text-slate-300 flex items-center justify-center gap-1.5 font-medium transition-all cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5 text-[#16C7F2]" />
-                    <span>Choose File / PDF</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="p-2 bg-[#030E22]/80 hover:bg-[#168BFF]/10 border border-[#168BFF]/25 rounded-xl text-center text-xs text-slate-300 flex items-center justify-center gap-1.5 font-medium transition-all cursor-pointer"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Scan Camera</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="p-2.5 bg-[#030E22]/90 border border-emerald-500/40 rounded-xl flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 overflow-hidden">
-                    {uploadedFile.type === 'IMAGE' ? (
-                      <img
-                        src={uploadedFile.dataUrl}
-                        alt="Preview"
-                        className="w-9 h-9 object-cover rounded-lg shrink-0 border border-slate-700"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-lg bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0 font-bold text-[11px]">
-                        PDF
-                      </div>
-                    )}
-                    <div className="overflow-hidden">
-                      <div className="text-xs font-bold text-white truncate">{uploadedFile.name}</div>
-                      <div className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                        <FileCheck className="w-3 h-3" />
-                        <span>{uploadedFile.sizeKb} KB • Ready to save</span>
-                      </div>
-                    </div>
+              <div className="space-y-3">
+                {/* Select Document Type Grid matching Image 2 */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Select Document Type</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: 'Passport', label: 'Passport', icon: BookOpen, preset: 'passport.pdf', category: 'doc_identity', defaultTitle: 'Passport' },
+                      { id: 'Insurance', label: 'Insurance', icon: Shield, preset: 'insurance.pdf', category: 'doc_insurance', defaultTitle: 'Health / Life Insurance' },
+                      { id: 'Aadhaar', label: 'Aadhaar', icon: CreditCard, preset: 'aadhaar.pdf', category: 'doc_identity', defaultTitle: 'Aadhaar Card' },
+                      { id: 'Others', label: 'Others', icon: MoreHorizontal, preset: null, category: 'doc_misc', defaultTitle: '' }
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const isSelected = selectedDocType === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedDocType(item.id);
+                            if (item.category && categories.some(c => c.id === item.category)) {
+                              setNewDoc(prev => ({
+                                ...prev,
+                                category_id: item.category,
+                                title: prev.title ? prev.title : item.defaultTitle
+                              }));
+                            }
+                            if (item.preset) {
+                              handleSimulateOCRUpload(item.preset);
+                            }
+                          }}
+                          className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#168BFF]/20 border-[#16C7F2] text-white shadow-lg shadow-[#168BFF]/20 ring-1 ring-[#16C7F2]/50'
+                              : 'bg-[#030E22]/90 border-[#168BFF]/20 text-slate-400 hover:text-slate-200 hover:border-[#168BFF]/40'
+                          }`}
+                        >
+                          <Icon className={`w-5 h-5 mb-1 ${isSelected ? 'text-[#16C7F2]' : 'text-slate-400'}`} />
+                          <span className="text-[11px] font-semibold truncate max-w-full">{item.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setUploadedFile(null)}
-                    className="p-1 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors shrink-0 ml-2 cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
-              )}
 
-              {showOCRResult && (
-                <div className="p-2.5 bg-[#168BFF]/15 border border-[#168BFF]/30 rounded-xl text-xs text-cyan-300 flex items-start gap-2 animate-fadeIn">
-                  <Sparkles className="w-4 h-4 text-[#16C7F2] shrink-0 mt-0.5" />
-                  <span>
-                    AI extracted <strong className="text-white">{showOCRResult.documentType}</strong> ({showOCRResult.documentNumber}). Expiry: {showOCRResult.expiryDate || 'N/A'}.
-                  </span>
-                </div>
-              )}
-
-              {/* Document Title */}
-              <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
-                  <FileText className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />
-                  <span>Document Title <span className="text-cyan-400">*</span></span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Indian Passport — Raj"
-                  value={newDoc.title}
-                  onChange={(e) => setNewDoc({ ...newDoc, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2] transition-all"
-                />
-              </div>
-
-              {/* Vault Folder */}
-              <div>
-                <CustomSelect
-                  label="Vault Folder"
-                  labelIcon={Folder}
-                  value={newDoc.category_id}
-                  onChange={(val) => setNewDoc({ ...newDoc, category_id: val })}
-                  options={categories.map((c) => ({
-                    value: c.id,
-                    label: c.name,
-                  }))}
-                  className="!bg-[#030E22]/90 !border-[#168BFF]/30"
-                />
-              </div>
-
-              {/* Owner / Holder & Expiry Date */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  {familyMembers && familyMembers.length > 0 ? (
-                    <CustomSelect
-                      label="Owner / Holder"
-                      labelIcon={User}
-                      value={newDoc.owner_name}
-                      onChange={(val) => setNewDoc({ ...newDoc, owner_name: val })}
-                      options={[
-                        { value: 'All Family', label: 'All Family', icon: '👨‍👩‍👧' },
-                        ...familyMembers.map((m) => ({
-                          value: m.name,
-                          label: `${m.name} (${m.relationship || m.role})`,
-                          icon: '👤',
-                        })),
-                      ]}
-                      className="!bg-[#030E22]/90 !border-[#168BFF]/30"
-                    />
-                  ) : (
-                    <div>
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
-                        <User className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />
-                        <span>Owner / Holder</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={newDoc.owner_name}
-                        onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
-                        className="w-full px-3.5 py-2.5 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
-                      />
+                {/* Upload Document / Scan from Camera Section */}
+                {!uploadedFile ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 bg-[#030E22]/80 hover:bg-[#168BFF]/10 border border-[#168BFF]/25 rounded-xl text-center text-xs text-slate-300 flex items-center justify-center gap-1.5 font-medium transition-all cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-[#16C7F2]" />
+                      <span>Choose File / PDF</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="p-2 bg-[#030E22]/80 hover:bg-[#168BFF]/10 border border-[#168BFF]/25 rounded-xl text-center text-xs text-slate-300 flex items-center justify-center gap-1.5 font-medium transition-all cursor-pointer"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Scan Camera</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-2.5 bg-[#030E22]/90 border border-emerald-500/40 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      {uploadedFile.type === 'IMAGE' ? (
+                        <img
+                          src={uploadedFile.dataUrl}
+                          alt="Preview"
+                          className="w-9 h-9 object-cover rounded-lg shrink-0 border border-slate-700"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0 font-bold text-[11px]">
+                          PDF
+                        </div>
+                      )}
+                      <div className="overflow-hidden">
+                        <div className="text-xs font-bold text-white truncate">{uploadedFile.name}</div>
+                        <div className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                          <FileCheck className="w-3 h-3" />
+                          <span>{uploadedFile.sizeKb} KB • Ready to save</span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setUploadedFile(null)}
+                      className="p-1 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors shrink-0 ml-2 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {showOCRResult && (
+                  <div className="p-2.5 bg-[#168BFF]/15 border border-[#168BFF]/30 rounded-xl text-xs text-cyan-300 flex items-start gap-2 animate-fadeIn">
+                    <Sparkles className="w-4 h-4 text-[#16C7F2] shrink-0 mt-0.5" />
+                    <span>
+                      AI extracted <strong className="text-white">{showOCRResult.documentType}</strong> ({showOCRResult.documentNumber}). Expiry: {showOCRResult.expiryDate || 'N/A'}.
+                    </span>
+                  </div>
+                )}
+
+                {/* Document Title */}
                 <div>
-                  <CustomDatePicker
-                    label="Expiry Date"
-                    labelIcon={Calendar}
-                    value={newDoc.expiry_date}
-                    onChange={(newDate) => setNewDoc({ ...newDoc, expiry_date: newDate })}
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
+                    <FileText className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />
+                    <span>Document Title <span className="text-cyan-400">*</span></span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Indian Passport — Raj"
+                    value={newDoc.title}
+                    onChange={(e) => setNewDoc({ ...newDoc, title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2] transition-all"
+                  />
+                </div>
+
+                {/* Vault Folder */}
+                <div>
+                  <CustomSelect
+                    label="Vault Folder"
+                    labelIcon={Folder}
+                    value={newDoc.category_id}
+                    onChange={(val) => setNewDoc({ ...newDoc, category_id: val })}
+                    options={categories.map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                    }))}
                     className="!bg-[#030E22]/90 !border-[#168BFF]/30"
                   />
                 </div>
-              </div>
 
-              {/* Document / Policy Number */}
-              <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
-                  <Hash className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />
-                  <span>Document / Policy Number</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Z4928104"
-                  value={newDoc.document_number}
-                  onChange={(e) => setNewDoc({ ...newDoc, document_number: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2] transition-all"
-                />
-              </div>
-
-              {/* Set Renewal Reminder Card */}
-              <div className="p-3 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#168BFF]/20 border border-[#168BFF]/30 text-[#16C7F2] flex items-center justify-center shrink-0">
-                    <Bell className="w-4 h-4" />
+                {/* Owner / Holder & Expiry Date */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    {familyMembers && familyMembers.length > 0 ? (
+                      <CustomSelect
+                        label="Owner / Holder"
+                        labelIcon={User}
+                        value={newDoc.owner_name}
+                        onChange={(val) => setNewDoc({ ...newDoc, owner_name: val })}
+                        options={[
+                          { value: 'All Family', label: 'All Family', icon: '👨‍👩‍👧' },
+                          ...familyMembers.map((m) => ({
+                            value: m.name,
+                            label: `${m.name} (${m.relationship || m.role})`,
+                            icon: '👤',
+                          })),
+                        ]}
+                        className="!bg-[#030E22]/90 !border-[#168BFF]/30"
+                      />
+                    ) : (
+                      <div>
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
+                          <User className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />
+                          <span>Owner / Holder</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={newDoc.owner_name}
+                          onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
+                          className="w-full px-3.5 py-2.5 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
+                        />
+                      </div>
+                    )}
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">Set Renewal Reminder</div>
-                    <div className="text-[10px] text-slate-400">Auto-reminder 30 days before expiry</div>
+                    <CustomDatePicker
+                      label="Expiry Date"
+                      labelIcon={Calendar}
+                      value={newDoc.expiry_date}
+                      onChange={(newDate) => setNewDoc({ ...newDoc, expiry_date: newDate })}
+                      className="!bg-[#030E22]/90 !border-[#168BFF]/30"
+                    />
                   </div>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={newDoc.auto_create_reminder}
-                  onClick={() => setNewDoc({ ...newDoc, auto_create_reminder: !newDoc.auto_create_reminder })}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    newDoc.auto_create_reminder ? 'bg-[#168BFF]' : 'bg-slate-700'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                      newDoc.auto_create_reminder ? 'translate-x-5' : 'translate-x-0'
-                    }`}
+
+                {/* Document / Policy Number */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
+                    <Hash className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />
+                    <span>Document / Policy Number</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Z4928104"
+                    value={newDoc.document_number}
+                    onChange={(e) => setNewDoc({ ...newDoc, document_number: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2] transition-all"
                   />
-                </button>
+                </div>
+
+                {/* Set Renewal Reminder Card */}
+                <div className="p-3 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#168BFF]/20 border border-[#168BFF]/30 text-[#16C7F2] flex items-center justify-center shrink-0">
+                      <Bell className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-white">Set Renewal Reminder</div>
+                      <div className="text-[10px] text-slate-400">Auto-reminder 30 days before expiry</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={newDoc.auto_create_reminder}
+                    onClick={() => setNewDoc({ ...newDoc, auto_create_reminder: !newDoc.auto_create_reminder })}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      newDoc.auto_create_reminder ? 'bg-[#168BFF]' : 'bg-slate-700'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                        newDoc.auto_create_reminder ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2 pt-1 shrink-0">
+              <div className="space-y-2 pt-2 mt-auto shrink-0">
                 <button
                   type="submit"
                   className="w-full py-3 bg-gradient-to-r from-[#168BFF] via-[#2F80ED] to-[#7B2CBF] hover:from-[#168BFF] hover:to-[#9D4EDD] active:scale-[0.99] text-white font-bold rounded-2xl text-xs shadow-lg shadow-[#168BFF]/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
