@@ -6,6 +6,7 @@ export interface CustomDatePickerProps {
   value: string; // YYYY-MM-DD
   onChange: (dateStr: string) => void;
   label?: string;
+  labelIcon?: React.ElementType;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -31,6 +32,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   value,
   onChange,
   label,
+  labelIcon: LabelIcon,
   placeholder = 'Select date',
   required = false,
   disabled = false,
@@ -152,8 +154,9 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   return (
     <div className="relative w-full">
       {label && (
-        <label className="block text-[11px] font-bold text-slate-300 mb-1">
-          {label} {required && <span className="text-red-400">*</span>}
+        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
+          {LabelIcon && <LabelIcon className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />}
+          <span>{label} {required && <span className="text-red-400">*</span>}</span>
         </label>
       )}
 

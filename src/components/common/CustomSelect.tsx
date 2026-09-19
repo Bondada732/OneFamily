@@ -15,6 +15,7 @@ export interface CustomSelectProps {
   onChange: (value: string) => void;
   options: SelectOption[] | string[];
   label?: string;
+  labelIcon?: React.ElementType;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -27,6 +28,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   onChange,
   options,
   label,
+  labelIcon: LabelIcon,
   placeholder = 'Select an option',
   disabled = false,
   className = '',
@@ -62,8 +64,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   return (
     <div className="relative w-full">
       {label && (
-        <label className="block text-xs font-semibold text-slate-300 mb-1">
-          {label} {required && <span className="text-red-400">*</span>}
+        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-1">
+          {LabelIcon && <LabelIcon className="w-3.5 h-3.5 text-[#16C7F2] shrink-0" />}
+          <span>{label} {required && <span className="text-red-400">*</span>}</span>
         </label>
       )}
 
