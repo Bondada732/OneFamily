@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Check,
@@ -15,6 +15,7 @@ import {
   Lock,
   Tag,
 } from 'lucide-react';
+import { CustomDatePicker } from './CustomDatePicker.js';
 
 export interface AddVaultModalProps {
   isOpen: boolean;
@@ -316,16 +317,12 @@ export const AddVaultModal: React.FC<AddVaultModalProps> = ({
           {/* 5. Expiry Date & Notes */}
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Expiry / Valid Till</label>
-              <div className="flex items-center bg-[#050811] border border-slate-700/80 rounded-xl px-3 py-2 text-white">
-                <Calendar className="w-3.5 h-3.5 text-[#F59E0B] mr-2 shrink-0" />
-                <input
-                  type="date"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                  className="w-full bg-transparent text-xs text-white outline-none"
-                />
-              </div>
+              <CustomDatePicker
+                label="Expiry / Valid Till"
+                value={expiryDate}
+                onChange={(newDate) => setExpiryDate(newDate)}
+                className="!bg-[#050811] !border-slate-700/80 text-xs text-white"
+              />
             </div>
 
             <div>

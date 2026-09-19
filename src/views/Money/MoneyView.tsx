@@ -7,6 +7,7 @@ import { formatCurrency, formatDate, getLocalDateString } from '../../utils/form
 import { apiRequest } from '../../utils/api.js';
 import { Expense, BudgetReport, Investment, Liability, Goal } from '../../types/index.js';
 import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
+import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -1608,12 +1609,11 @@ export const MoneyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Target Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Target Date"
                     value={newGoal.target_date}
-                    onChange={(e) => setNewGoal({ ...newGoal, target_date: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    onChange={(newDate) => setNewGoal({ ...newGoal, target_date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
               </div>
@@ -1899,12 +1899,11 @@ export const MoneyView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Expense Date</label>
-                <input
-                  type="date"
+                <CustomDatePicker
+                  label="Expense Date"
                   value={editingExpense.date}
-                  onChange={(e) => setEditingExpense({ ...editingExpense, date: e.target.value })}
-                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  onChange={(newDate) => setEditingExpense({ ...editingExpense, date: newDate })}
+                  className="!bg-slate-800 !border-slate-700 mt-1"
                 />
               </div>
 
@@ -2259,12 +2258,11 @@ export const MoneyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Target Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Target Date"
                     value={editingGoal.target_date}
-                    onChange={(e) => setEditingGoal({ ...editingGoal, target_date: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    onChange={(newDate) => setEditingGoal({ ...editingGoal, target_date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
               </div>

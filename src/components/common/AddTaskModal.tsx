@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Check,
@@ -17,6 +17,7 @@ import {
   Calendar,
   Tag,
 } from 'lucide-react';
+import { CustomDatePicker } from './CustomDatePicker.js';
 
 export interface AddTaskModalProps {
   isOpen: boolean;
@@ -349,35 +350,14 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
               </select>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-slate-300">Due Date</label>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickDate('today')}
-                    className="text-[9px] px-1 py-0.5 rounded bg-[#0D152D] text-[#38BDF8] border border-slate-700"
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickDate('tomorrow')}
-                    className="text-[9px] px-1 py-0.5 rounded bg-[#0D152D] text-[#38BDF8] border border-slate-700"
-                  >
-                    +1D
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center bg-[#050811] border border-slate-700/80 rounded-xl px-3 py-2 text-white">
-                <Calendar className="w-3.5 h-3.5 text-[#38BDF8] mr-2 shrink-0" />
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full bg-transparent text-xs text-white outline-none"
-                />
-              </div>
+            {/* Due Date */}
+            <div className="space-y-1">
+              <CustomDatePicker
+                label="Due Date (Optional)"
+                value={dueDate}
+                onChange={(newDate) => setDueDate(newDate)}
+                className="!bg-[#050811] !border-slate-700/80 text-xs text-white"
+              />
             </div>
           </div>
 

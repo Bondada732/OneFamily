@@ -26,6 +26,7 @@ import {
   Droplet,
 } from 'lucide-react';
 import { getLocalDateString } from '../../utils/formatters.js';
+import { CustomDatePicker } from './CustomDatePicker.js';
 
 export interface AddExpenseModalProps {
   isOpen: boolean;
@@ -368,28 +369,12 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
           {/* 6. Date & Time */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-[#B9D8FF]">Date</label>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setDate(getLocalDateString())}
-                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
-                    date === getLocalDateString()
-                      ? 'bg-[#FFD21F] text-[#03194A]'
-                      : 'bg-[#073B9E]/40 text-[#B9D8FF] hover:text-white'
-                  }`}
-                >
-                  Today
-                </button>
-              </div>
-            </div>
-            <input
-              type="date"
-              required
+            <CustomDatePicker
+              label="Date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-[#03194A] border border-[#168BFF]/35 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
+              onChange={(newDate) => setDate(newDate)}
+              required
+              className="!bg-[#03194A] !border-[#168BFF]/35 text-xs text-white"
             />
           </div>
 

@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
+import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { FamilyMember, TaskItem, GroceryItem, MaintenanceItem, EmergencyContact, EmergencyProfile } from '../../types/index.js';
 import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
 
@@ -2181,13 +2182,12 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Date of Birth 🎂 *</label>
-                  <input
-                    type="date"
-                    required
+                  <CustomDatePicker
+                    label="Date of Birth 🎂 *"
                     value={memberProfileForm.birth_date}
-                    onChange={(e) => setMemberProfileForm({ ...memberProfileForm, birth_date: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-amber-300 font-semibold outline-none focus:border-amber-400"
+                    onChange={(newDate) => setMemberProfileForm({ ...memberProfileForm, birth_date: newDate })}
+                    required
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
               </div>
@@ -2557,12 +2557,10 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Last Serviced Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Last Serviced Date"
                     value={newMaintenance.last_service_date}
-                    onChange={(e) => {
-                      const dateVal = e.target.value;
+                    onChange={(dateVal) => {
                       const interval = Number(newMaintenance.recurring_interval_months) || 6;
                       const d = new Date(dateVal || Date.now());
                       d.setMonth(d.getMonth() + interval);
@@ -2572,17 +2570,16 @@ export const FamilyView: React.FC = () => {
                         next_service_due: getLocalDateString(d),
                       });
                     }}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Next Due Date *</label>
-                  <input
-                    type="date"
-                    required
+                  <CustomDatePicker
+                    label="Next Due Date *"
                     value={newMaintenance.next_service_due}
-                    onChange={(e) => setNewMaintenance({ ...newMaintenance, next_service_due: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-amber-300 font-semibold outline-none"
+                    onChange={(newDate) => setNewMaintenance({ ...newMaintenance, next_service_due: newDate })}
+                    required
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
               </div>
@@ -2988,12 +2985,11 @@ export const FamilyView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Due Date</label>
-                <input
-                  type="date"
+                <CustomDatePicker
+                  label="Due Date"
                   value={editingTask.due_date || ''}
-                  onChange={(e) => setEditingTask({ ...editingTask, due_date: e.target.value })}
-                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  onChange={(newDate) => setEditingTask({ ...editingTask, due_date: newDate })}
+                  className="!bg-slate-800 !border-slate-700 mt-1"
                 />
               </div>
 
@@ -3141,21 +3137,19 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Last Service Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Last Service Date"
                     value={editingMaintenance.last_service_date || ''}
-                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, last_service_date: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    onChange={(newDate) => setEditingMaintenance({ ...editingMaintenance, last_service_date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Next Service Due</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Next Service Due"
                     value={editingMaintenance.next_service_due || ''}
-                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, next_service_due: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    onChange={(newDate) => setEditingMaintenance({ ...editingMaintenance, next_service_due: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
               </div>

@@ -16,6 +16,7 @@ import {
   Tag,
 } from 'lucide-react';
 import { getLocalDateString } from '../../utils/formatters.js';
+import { CustomDatePicker } from './CustomDatePicker.js';
 
 export interface AddIncomeModalProps {
   isOpen: boolean;
@@ -307,37 +308,15 @@ export const AddIncomeModal: React.FC<AddIncomeModalProps> = ({
             />
           </div>
 
-          {/* 5. Received Date with quick shortcuts */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-[#B9D8FF]">Received Date</label>
-              <div className="flex items-center gap-1.5">
-                {[
-                  { label: 'Today', mode: 'today' as const },
-                  { label: 'Yesterday', mode: 'yesterday' as const },
-                  { label: '1st of Month', mode: 'first' as const },
-                ].map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => handleQuickDate(item.mode)}
-                    className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#073B9E]/60 text-[#16C7F2] border border-[#168BFF]/30 hover:bg-[#168BFF]/30 transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center bg-[#03194A] border border-[#168BFF]/35 rounded-xl px-3 py-2 text-white">
-              <Calendar className="w-4 h-4 text-[#16C7F2] mr-2 shrink-0" />
-              <input
-                type="date"
-                required
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-transparent text-xs text-white outline-none"
-              />
-            </div>
+          {/* 5. Date */}
+          <div className="space-y-1">
+            <CustomDatePicker
+              label="Date Received"
+              value={date}
+              onChange={(newDate) => setDate(newDate)}
+              required
+              className="!bg-[#03194A] !border-[#168BFF]/35 text-xs text-white"
+            />
           </div>
 
           {/* 6. Notes (Optional) */}

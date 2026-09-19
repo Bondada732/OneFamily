@@ -4,6 +4,7 @@ import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { DocumentRecord } from '../../types/index.js';
 import { FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, Eye, Upload, Image as ImageIcon, X, FileCheck, Edit3, Trash2 } from 'lucide-react';
+import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 
 export const VaultView: React.FC = () => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
@@ -513,21 +514,19 @@ export const VaultView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Issue Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Issue Date"
                     value={editingDoc.issue_date || ''}
-                    onChange={(e) => setEditingDoc({ ...editingDoc, issue_date: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    onChange={(newDate) => setEditingDoc({ ...editingDoc, issue_date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Expiry Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Expiry Date"
                     value={editingDoc.expiry_date || ''}
-                    onChange={(e) => setEditingDoc({ ...editingDoc, expiry_date: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    onChange={(newDate) => setEditingDoc({ ...editingDoc, expiry_date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
               </div>
@@ -741,12 +740,11 @@ export const VaultView: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Expiry Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Expiry Date"
                     value={newDoc.expiry_date}
-                    onChange={(e) => setNewDoc({ ...newDoc, expiry_date: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    onChange={(newDate) => setNewDoc({ ...newDoc, expiry_date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
               </div>

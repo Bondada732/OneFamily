@@ -4,6 +4,7 @@ import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { Memory, VoiceMemory } from '../../types/index.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
+import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar, Image as ImageIcon, Video, Upload, X, Film, Eye, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 
 const PRESET_MEMORIES = [
@@ -656,12 +657,11 @@ export const MemoriesView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
+                    label="Date"
                     value={newMemory.date}
-                    onChange={(e) => setNewMemory({ ...newMemory, date: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    onChange={(newDate) => setNewMemory({ ...newMemory, date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
                   />
                 </div>
                 <div>
