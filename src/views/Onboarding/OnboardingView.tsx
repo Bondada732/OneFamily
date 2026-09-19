@@ -298,14 +298,27 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
   }
 
   return (
-    <div className="min-h-screen bg-[#020817] text-white flex flex-col justify-between selection:bg-cyan-500/30">
-      {/* Background Subtle Gradient Glow */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950/50 to-[#020817]" />
+    <div className="min-h-screen bg-[#020919] text-white flex flex-col selection:bg-cyan-500/30 overflow-x-hidden">
+      {/* Background Glow */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/15 via-[#030c1c] to-[#020713]" />
 
-      <div className="relative z-10 flex-1 flex flex-col">
-        {/* 1. TOP SAFE-AREA BRAND HEADER */}
-        <header className="pt-safe-mobile px-5 pt-3 pb-2 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+      {/* Discreet Floating Server Settings Button */}
+      <button
+        type="button"
+        onClick={() => {
+          setShowServerModal(true);
+          handleTestConnection();
+        }}
+        aria-label="Server Settings"
+        className="absolute top-safe right-3 z-30 mt-2 w-7 h-7 rounded-full bg-slate-950/40 backdrop-blur-md border border-slate-700/40 flex items-center justify-center text-slate-400 hover:text-cyan-300 transition-all opacity-60 hover:opacity-100 active:scale-95"
+      >
+        <Settings className="w-3.5 h-3.5" />
+      </button>
+
+      <div className="relative z-10 w-full max-w-md mx-auto flex flex-col min-h-screen">
+        {/* NON-SIGN_IN HEADER (For Create Family / Join with Key) */}
+        {mode !== 'SIGN_IN' && (
+          <header className="pt-safe-mobile px-5 pt-3 pb-2 flex items-center gap-2.5">
             <img
               src="/kinoraone-logo.png"
               alt="KinoraOne Logo"
@@ -320,52 +333,34 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                 One Home. One Family. One Future.
               </p>
             </div>
-          </div>
+          </header>
+        )}
 
-          {/* Discreet Server Host Settings Button */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowServerModal(true);
-              handleTestConnection();
-            }}
-            aria-label="Server Settings"
-            className="w-8 h-8 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-colors"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-        </header>
-
-        {/* 2. HERO IMAGE SECTION (3D Animated South Asian Family) */}
+        {/* 1. HERO IMAGE SECTION (Full Edge-to-Edge with Integrated KinoraOne Logo & Family Art) */}
         {mode === 'SIGN_IN' && (
-          <div className="relative w-full overflow-hidden flex items-center justify-center -mt-1 px-4">
-            <div className="relative w-full max-w-sm h-48 sm:h-56 rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src="/assets/images/login-family-hero.png"
-                alt="Family Operating System"
-                className="w-full h-full object-cover object-center"
-              />
-              {/* Bottom & Edge Smooth Dark Fades */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#020817] via-[#020817]/40 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#020817] to-transparent" />
-            </div>
+          <div className="relative w-full shrink-0">
+            <img
+              src="/assets/images/login-family-hero.png"
+              alt="KinoraOne - One Home. One Family. One Future."
+              className="w-full h-auto block object-contain"
+            />
           </div>
         )}
 
-        {/* 3. MAIN INTERACTIVE CONTAINER */}
-        <main className="px-5 pb-6 flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+        {/* 2. MAIN INTERACTIVE CONTAINER */}
+        <main className={`w-full ${mode === 'SIGN_IN' ? '-mt-4 px-4 pb-8' : 'px-4 pb-8 mt-2'}`}>
           {/* ================= MODE: SIGN_IN ================= */}
           {mode === 'SIGN_IN' && (
-            <div className="relative bg-[#061737]/85 backdrop-blur-xl border border-[#168BFF]/30 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-cyan-950/40 space-y-4 animate-fade-in -mt-3">
+            <div className="relative bg-[#06152F] border border-[#168BFF]/25 rounded-[32px] p-5 sm:p-6 shadow-2xl shadow-cyan-950/50 space-y-4 animate-fade-in">
               {/* Heading */}
               <div className="text-left space-y-1">
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                <h1 className="text-2xl font-extrabold text-white tracking-tight">
                   Welcome{' '}
-                  <span className="bg-gradient-to-r from-[#16C7F2] to-[#3B82F6] bg-clip-text text-transparent">
+                  <span className="text-[#16C7F2]">
                     Back
                   </span>
                 </h1>
-                <p className="text-xs text-slate-300 leading-relaxed font-normal">
+                <p className="text-xs text-slate-300 font-normal">
                   Sign in to continue your family's financial journey.
                 </p>
               </div>
@@ -381,56 +376,46 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
               {/* Form */}
               <form onSubmit={handleSignIn} className="space-y-3.5">
                 {/* Email / Member Name Input */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-200">
-                    Email Address or Member Name
-                  </label>
-                  <div className="relative flex items-center">
-                    <Mail className="w-4 h-4 text-cyan-400/70 absolute left-3.5 pointer-events-none" />
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. raj.sharma@example.com"
-                      value={signInEmail}
-                      onChange={(e) => setSignInEmail(e.target.value)}
-                      className="w-full pl-10 pr-3.5 py-3 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-2xl text-xs text-white placeholder-slate-500 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner"
-                    />
-                  </div>
+                <div className="relative flex items-center">
+                  <Mail className="w-4 h-4 text-[#16C7F2] absolute left-3.5 pointer-events-none" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Email Address or Member Name"
+                    value={signInEmail}
+                    onChange={(e) => setSignInEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3.5 bg-[#020b18] border border-[#168BFF]/40 rounded-2xl text-xs text-white placeholder-slate-400 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner"
+                  />
                 </div>
 
                 {/* Password / App PIN Input */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-200">
-                    Password
-                  </label>
-                  <div className="relative flex items-center">
-                    <Lock className="w-4 h-4 text-cyan-400/70 absolute left-3.5 pointer-events-none" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      placeholder="••••••••"
-                      value={signInPin}
-                      onChange={(e) => setSignInPin(e.target.value)}
-                      className="w-full pl-10 pr-10 py-3 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-2xl text-xs text-white placeholder-slate-500 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner tracking-wider"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 text-slate-400 hover:text-white transition-colors"
-                      aria-label="Toggle password visibility"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                <div className="relative flex items-center">
+                  <Lock className="w-4 h-4 text-[#16C7F2] absolute left-3.5 pointer-events-none" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Password"
+                    value={signInPin}
+                    onChange={(e) => setSignInPin(e.target.value)}
+                    className="w-full pl-10 pr-10 py-3.5 bg-[#020b18] border border-[#168BFF]/40 rounded-2xl text-xs text-white placeholder-slate-400 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 text-slate-400 hover:text-white transition-colors"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-cyan-300/80" />}
+                  </button>
                 </div>
 
                 {/* Primary Sign In Button */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full mt-1 py-3.5 bg-gradient-to-r from-[#0284C7] via-[#0EA5E9] to-[#06B6D4] hover:opacity-95 text-white font-bold rounded-2xl shadow-xl shadow-cyan-500/25 text-xs transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full mt-1.5 py-3.5 bg-gradient-to-r from-[#00A3FF] via-[#00C2FF] to-[#00E5FF] hover:opacity-90 text-[#021327] font-black rounded-2xl shadow-xl shadow-cyan-500/25 text-sm transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                   <span>{isSubmitting ? 'Signing In...' : 'Sign In'}</span>
                 </button>
               </form>
@@ -443,13 +428,13 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
               </div>
 
               {/* Bottom Action Row on ONE SINGLE HORIZONTAL LINE */}
-              <div className="flex items-center justify-center gap-3 py-0.5">
+              <div className="flex items-center justify-center gap-4 py-1">
                 <button
                   type="button"
                   onClick={() => { setMode('JOIN_FAMILY'); setJoinError(''); }}
-                  className="text-xs font-semibold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95"
+                  className="text-xs font-bold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95"
                 >
-                  <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
+                  <KeyRound className="w-4 h-4 text-cyan-400" />
                   <span>Join with Key</span>
                 </button>
 
@@ -458,15 +443,15 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                 <button
                   type="button"
                   onClick={() => { setMode('REGISTER_HEAD'); setHeadError(''); }}
-                  className="text-xs font-semibold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95"
+                  className="text-xs font-bold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95"
                 >
-                  <Users className="w-3.5 h-3.5 text-cyan-400" />
+                  <Users className="w-4 h-4 text-cyan-400" />
                   <span>Create Family</span>
                 </button>
               </div>
 
-              {/* Security Trust Footer */}
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+              {/* Security Trust Message in Natural Flow (28-36px below buttons) */}
+              <div className="pt-4 border-t border-slate-800/80 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
                 <Shield className="w-3.5 h-3.5 text-cyan-400/80" />
                 <span>Your data is safe with us</span>
               </div>
