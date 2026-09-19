@@ -7,6 +7,7 @@ import { formatDate, formatRelativeDays, getLocalDateString } from '../../utils/
 import { Calendar as CalendarIcon, Clock, Bell, Plus, Share2, ShieldAlert, CheckCircle2, ChevronRight } from 'lucide-react';
 import { WhatsAppShareModal } from '../../components/common/WhatsAppShareModal.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
+import { CustomSelect } from '../../components/common/CustomSelect.js';
 
 export const CalendarView: React.FC = () => {
   const { family, activeLanguage, hasPermission, currentUser } = useAuth();
@@ -208,20 +209,20 @@ export const CalendarView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Type</label>
-                  <select
+                  <CustomSelect
+                    label="Type"
                     value={newEvent.type}
-                    onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="BIRTHDAY">Birthday 🎂</option>
-                    <option value="ANNIVERSARY">Anniversary 💍</option>
-                    <option value="FUNCTION">Family Function 🎉</option>
-                    <option value="MEDICAL">Doctor / Medical 🏥</option>
-                    <option value="BILL">Bill Payment ⚡</option>
-                    <option value="SCHOOL">School / Exam 📚</option>
-                    <option value="TRAVEL">Travel / Vacation ✈️</option>
-                  </select>
+                    onChange={(val) => setNewEvent({ ...newEvent, type: val })}
+                    options={[
+                      { value: 'BIRTHDAY', label: 'Birthday', icon: '🎂' },
+                      { value: 'ANNIVERSARY', label: 'Anniversary', icon: '💍' },
+                      { value: 'FUNCTION', label: 'Family Function', icon: '🎉' },
+                      { value: 'MEDICAL', label: 'Doctor / Medical', icon: '🏥' },
+                      { value: 'BILL', label: 'Bill Payment', icon: '⚡' },
+                      { value: 'SCHOOL', label: 'School / Exam', icon: '📚' },
+                      { value: 'TRAVEL', label: 'Travel / Vacation', icon: '✈️' },
+                    ]}
+                  />
                 </div>
               </div>
 

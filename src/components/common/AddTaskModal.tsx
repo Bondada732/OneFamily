@@ -18,6 +18,7 @@ import {
   Tag,
 } from 'lucide-react';
 import { CustomDatePicker } from './CustomDatePicker.js';
+import { CustomSelect } from './CustomSelect.js';
 
 export interface AddTaskModalProps {
   isOpen: boolean;
@@ -335,19 +336,20 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({
           {/* 5. Assigned Member & Due Date */}
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Assign To</label>
-              <select
+              <CustomSelect
+                label="Assign To"
                 value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full px-3 py-2 bg-[#050811] border border-slate-700/80 rounded-xl text-xs text-white outline-none focus:border-[#38BDF8]"
-              >
-                <option value="All Family">👨‍👩‍👧 All Family</option>
-                {familyMembers.map((m) => (
-                  <option key={m.id} value={m.name}>
-                    👤 {m.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setAssignedTo(val)}
+                className="!bg-[#050811] !border-slate-700/80"
+                options={[
+                  { value: 'All Family', label: 'All Family', icon: '👨‍👩‍👧' },
+                  ...familyMembers.map((m) => ({
+                    value: m.name,
+                    label: m.name,
+                    icon: '👤',
+                  })),
+                ]}
+              />
             </div>
 
             {/* Due Date */}

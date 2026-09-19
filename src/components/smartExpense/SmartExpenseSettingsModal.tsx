@@ -3,6 +3,7 @@ import { X, Zap, Smartphone, Clock, MapPin, Trash2, ShieldCheck, Check, Navigati
 import { SmartCaptureSettings, PermissionState, LocationPermissionDetail } from '../../services/smartExpense/types.js';
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
 import { ExpenseLocationService } from '../../services/smartExpense/ExpenseLocationService.js';
+import { CustomSelect } from '../common/CustomSelect.js';
 
 interface SmartExpenseSettingsModalProps {
   isOpen: boolean;
@@ -195,30 +196,30 @@ export const SmartExpenseSettingsModal: React.FC<SmartExpenseSettingsModalProps>
             {settings.locationCaptureEnabled && (
               <div className="space-y-2.5 pt-2 border-t border-slate-700/80 text-[11px] animate-fadeIn">
                 {/* Precision */}
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300 font-medium">Precision Mode</span>
-                  <select
+                <div>
+                  <CustomSelect
+                    label="Precision Mode"
                     value={settings.locationPrecision || 'APPROXIMATE'}
-                    onChange={(e) => handleUpdateField('locationPrecision', e.target.value as any)}
-                    className="bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-[11px] focus:outline-none focus:border-[#16C7F2]"
-                  >
-                    <option value="APPROXIMATE">Approximate (Area / Locality)</option>
-                    <option value="PRECISE">Precise (Neighborhood / Landmark)</option>
-                  </select>
+                    onChange={(val) => handleUpdateField('locationPrecision', val as any)}
+                    options={[
+                      { value: 'APPROXIMATE', label: 'Approximate (Area / Locality)' },
+                      { value: 'PRECISE', label: 'Precise (Neighborhood / Landmark)' }
+                    ]}
+                  />
                 </div>
 
                 {/* Retention */}
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300 font-medium">Snapshot Retention</span>
-                  <select
-                    value={settings.locationRetentionHours || 72}
-                    onChange={(e) => handleUpdateField('locationRetentionHours', Number(e.target.value))}
-                    className="bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-[11px] focus:outline-none focus:border-[#16C7F2]"
-                  >
-                    <option value={24}>24 Hours</option>
-                    <option value={72}>72 Hours (Default)</option>
-                    <option value={168}>7 Days</option>
-                  </select>
+                <div>
+                  <CustomSelect
+                    label="Snapshot Retention"
+                    value={String(settings.locationRetentionHours || 72)}
+                    onChange={(val) => handleUpdateField('locationRetentionHours', Number(val))}
+                    options={[
+                      { value: '24', label: '24 Hours' },
+                      { value: '72', label: '72 Hours (Default)' },
+                      { value: '168', label: '7 Days' }
+                    ]}
+                  />
                 </div>
 
                 {/* Privacy Guarantee Note */}

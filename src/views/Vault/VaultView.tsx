@@ -5,6 +5,7 @@ import { apiRequest } from '../../utils/api.js';
 import { DocumentRecord } from '../../types/index.js';
 import { FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, Eye, Upload, Image as ImageIcon, X, FileCheck, Edit3, Trash2 } from 'lucide-react';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
+import { CustomSelect } from '../../components/common/CustomSelect.js';
 
 export const VaultView: React.FC = () => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
@@ -461,33 +462,30 @@ export const VaultView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Category</label>
-                  <select
+                  <CustomSelect
+                    label="Category"
                     value={editingDoc.category_id}
-                    onChange={(e) => setEditingDoc({ ...editingDoc, category_id: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setEditingDoc({ ...editingDoc, category_id: val })}
+                    options={categories.map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                    }))}
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Owner / Member</label>
-                  <select
+                  <CustomSelect
+                    label="Owner / Member"
                     value={editingDoc.owner_name}
-                    onChange={(e) => setEditingDoc({ ...editingDoc, owner_name: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="All Family">All Family</option>
-                    {familyMembers.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setEditingDoc({ ...editingDoc, owner_name: val })}
+                    options={[
+                      { value: 'All Family', label: 'All Family', icon: '👨‍👩‍👧' },
+                      ...familyMembers.map((m) => ({
+                        value: m.name,
+                        label: m.name,
+                        icon: '👤',
+                      })),
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -701,42 +699,40 @@ export const VaultView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Vault Folder</label>
-                <select
+                <CustomSelect
+                  label="Vault Folder"
                   value={newDoc.category_id}
-                  onChange={(e) => setNewDoc({ ...newDoc, category_id: e.target.value })}
-                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setNewDoc({ ...newDoc, category_id: val })}
+                  options={categories.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Owner / Holder</label>
                   {familyMembers && familyMembers.length > 0 ? (
-                    <select
+                    <CustomSelect
+                      label="Owner / Holder"
                       value={newDoc.owner_name}
-                      onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
-                      className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                    >
-                      {familyMembers.map((m) => (
-                        <option key={m.id} value={m.name}>
-                          {m.name} ({m.relationship})
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      value={newDoc.owner_name}
-                      onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
-                      className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                      onChange={(val) => setNewDoc({ ...newDoc, owner_name: val })}
+                      options={familyMembers.map((m) => ({
+                        value: m.name,
+                        label: `${m.name} (${m.relationship || m.role})`,
+                        icon: '👤',
+                      }))}
                     />
+                  ) : (
+                    <div>
+                      <label className="text-xs text-slate-300 font-semibold block mb-1">Owner / Holder</label>
+                      <input
+                        type="text"
+                        value={newDoc.owner_name}
+                        onChange={(e) => setNewDoc({ ...newDoc, owner_name: e.target.value })}
+                        className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                      />
+                    </div>
                   )}
                 </div>
                 <div>

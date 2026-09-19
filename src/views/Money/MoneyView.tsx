@@ -8,6 +8,7 @@ import { apiRequest } from '../../utils/api.js';
 import { Expense, BudgetReport, Investment, Liability, Goal } from '../../types/index.js';
 import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
+import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -1265,20 +1266,20 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Asset Type *</label>
-                  <select
+                  <CustomSelect
+                    label="Asset Type *"
                     value={newInvestment.type}
-                    onChange={(e) => setNewInvestment({ ...newInvestment, type: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="MUTUAL_FUND">Mutual Fund (SIP/Lump)</option>
-                    <option value="STOCK">Stocks / Equity</option>
-                    <option value="FIXED_DEPOSIT">Fixed Deposit / RD</option>
-                    <option value="GOLD">Physical Gold / SGB</option>
-                    <option value="PPF">PPF / EPF / NPS</option>
-                    <option value="REAL_ESTATE">Property / Real Estate</option>
-                    <option value="OTHER">Other Asset</option>
-                  </select>
+                    onChange={(val) => setNewInvestment({ ...newInvestment, type: val })}
+                    options={[
+                      { value: 'MUTUAL_FUND', label: 'Mutual Fund (SIP/Lump)', icon: '📈' },
+                      { value: 'STOCK', label: 'Stocks / Equity', icon: '📊' },
+                      { value: 'FIXED_DEPOSIT', label: 'Fixed Deposit / RD', icon: '🏦' },
+                      { value: 'GOLD', label: 'Physical Gold / SGB', icon: '🪙' },
+                      { value: 'PPF', label: 'PPF / EPF / NPS', icon: '🛡️' },
+                      { value: 'REAL_ESTATE', label: 'Property / Real Estate', icon: '🏡' },
+                      { value: 'OTHER', label: 'Other Asset', icon: '💎' },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Platform / Institution</label>
@@ -1334,18 +1335,16 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Owner / Holder</label>
-                  <select
+                  <CustomSelect
+                    label="Owner / Holder"
                     value={newInvestment.owner_name}
-                    onChange={(e) => setNewInvestment({ ...newInvestment, owner_name: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    {familyMembers.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name} ({m.relationship || m.role})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setNewInvestment({ ...newInvestment, owner_name: val })}
+                    options={familyMembers.map((m) => ({
+                      value: m.name,
+                      label: `${m.name} (${m.relationship || m.role})`,
+                      icon: '👤',
+                    }))}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Folio / Account No</label>
@@ -1417,19 +1416,19 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Loan Type *</label>
-                  <select
+                  <CustomSelect
+                    label="Loan Type *"
                     value={newLiability.type}
-                    onChange={(e) => setNewLiability({ ...newLiability, type: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="HOME_LOAN">Home Loan</option>
-                    <option value="VEHICLE_LOAN">Vehicle / Car Loan</option>
-                    <option value="PERSONAL_LOAN">Personal Loan</option>
-                    <option value="EDUCATION_LOAN">Education Loan</option>
-                    <option value="CREDIT_CARD">Credit Card Outstanding</option>
-                    <option value="OTHER">Other Debt</option>
-                  </select>
+                    onChange={(val) => setNewLiability({ ...newLiability, type: val })}
+                    options={[
+                      { value: 'HOME_LOAN', label: 'Home Loan', icon: '🏡' },
+                      { value: 'VEHICLE_LOAN', label: 'Vehicle / Car Loan', icon: '🚗' },
+                      { value: 'PERSONAL_LOAN', label: 'Personal Loan', icon: '💳' },
+                      { value: 'EDUCATION_LOAN', label: 'Education Loan', icon: '🎓' },
+                      { value: 'CREDIT_CARD', label: 'Credit Card Outstanding', icon: '💳' },
+                      { value: 'OTHER', label: 'Other Debt', icon: '📋' },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Bank / Lender</label>
@@ -1481,18 +1480,16 @@ export const MoneyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Borrower / Member</label>
-                  <select
+                  <CustomSelect
+                    label="Borrower / Member"
                     value={newLiability.owner_name}
-                    onChange={(e) => setNewLiability({ ...newLiability, owner_name: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    {familyMembers.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setNewLiability({ ...newLiability, owner_name: val })}
+                    options={familyMembers.map((m) => ({
+                      value: m.name,
+                      label: `${m.name} (${m.relationship || m.role})`,
+                      icon: '👤',
+                    }))}
+                  />
                 </div>
               </div>
 
@@ -1543,33 +1540,33 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Goal Category</label>
-                  <select
+                  <CustomSelect
+                    label="Goal Category"
                     value={newGoal.category}
-                    onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="EDUCATION">🎓 Education & College</option>
-                    <option value="HOME">🏡 Home / Real Estate</option>
-                    <option value="VACATION">✈️ Family Vacation</option>
-                    <option value="VEHICLE">🚗 Vehicle / Car</option>
-                    <option value="WEDDING">💍 Wedding / Function</option>
-                    <option value="EMERGENCY">🛡️ Emergency Safety Fund</option>
-                    <option value="RETIREMENT">🌴 Retirement</option>
-                    <option value="OTHER">✨ Other Milestone</option>
-                  </select>
+                    onChange={(val) => setNewGoal({ ...newGoal, category: val })}
+                    options={[
+                      { value: 'EDUCATION', label: 'Education & College', icon: '🎓' },
+                      { value: 'HOME', label: 'Home / Real Estate', icon: '🏡' },
+                      { value: 'VACATION', label: 'Family Vacation', icon: '✈️' },
+                      { value: 'VEHICLE', label: 'Vehicle / Car', icon: '🚗' },
+                      { value: 'WEDDING', label: 'Wedding / Function', icon: '💍' },
+                      { value: 'EMERGENCY', label: 'Emergency Safety Fund', icon: '🛡️' },
+                      { value: 'RETIREMENT', label: 'Retirement', icon: '🌴' },
+                      { value: 'OTHER', label: 'Other Milestone', icon: '✨' },
+                    ]}
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Priority</label>
-                  <select
+                  <CustomSelect
+                    label="Priority"
                     value={newGoal.priority}
-                    onChange={(e) => setNewGoal({ ...newGoal, priority: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="HIGH">High Priority</option>
-                    <option value="MEDIUM">Medium Priority</option>
-                    <option value="LOW">Low Priority</option>
-                  </select>
+                    onChange={(val) => setNewGoal({ ...newGoal, priority: val as any })}
+                    options={[
+                      { value: 'HIGH', label: 'High Priority', badge: '🔴' },
+                      { value: 'MEDIUM', label: 'Medium Priority', badge: '🟡' },
+                      { value: 'LOW', label: 'Low Priority', badge: '🟢' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -1862,39 +1859,36 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Category</label>
-                  <select
+                  <CustomSelect
+                    label="Category"
                     value={editingExpense.category_id}
-                    onChange={(e) => {
-                      const sel = categories.find((c) => (c.id || c.categoryId) === e.target.value);
+                    onChange={(val) => {
+                      const sel = categories.find((c) => (c.id || c.categoryId) === val);
                       setEditingExpense({
                         ...editingExpense,
-                        category_id: e.target.value,
+                        category_id: val,
                         category_name: sel ? (sel.name || sel.categoryName) : editingExpense.category_name,
                       });
                     }}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id || c.categoryId} value={c.id || c.categoryId}>
-                        {c.name || c.categoryName}
-                      </option>
-                    ))}
-                  </select>
+                    options={categories.map((c) => ({
+                      value: c.id || c.categoryId,
+                      label: c.name || c.categoryName,
+                    }))}
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Payment Method</label>
-                  <select
+                  <CustomSelect
+                    label="Payment Method"
                     value={editingExpense.payment_method}
-                    onChange={(e) => setEditingExpense({ ...editingExpense, payment_method: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="UPI">UPI / GPay / PhonePe</option>
-                    <option value="CREDIT_CARD">Credit Card</option>
-                    <option value="DEBIT_CARD">Debit Card</option>
-                    <option value="NET_BANKING">Net Banking</option>
-                    <option value="CASH">Cash</option>
-                  </select>
+                    onChange={(val) => setEditingExpense({ ...editingExpense, payment_method: val as any })}
+                    options={[
+                      { value: 'UPI', label: 'UPI / GPay / PhonePe', icon: '📱' },
+                      { value: 'CREDIT_CARD', label: 'Credit Card', icon: '💳' },
+                      { value: 'DEBIT_CARD', label: 'Debit Card', icon: '💳' },
+                      { value: 'NET_BANKING', label: 'Net Banking', icon: '🏦' },
+                      { value: 'CASH', label: 'Cash', icon: '💵' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -1960,21 +1954,21 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Asset Type</label>
-                  <select
+                  <CustomSelect
+                    label="Asset Type"
                     value={editingInvestment.type}
-                    onChange={(e) => setEditingInvestment({ ...editingInvestment, type: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="MUTUAL_FUND">Mutual Fund (SIP / Lumpsum)</option>
-                    <option value="STOCK">Indian Stocks / Equity</option>
-                    <option value="FIXED_DEPOSIT">Fixed Deposit (FD)</option>
-                    <option value="GOLD">Physical Gold / Sovereign Gold Bonds</option>
-                    <option value="PPF">PPF / EPF / NPS</option>
-                    <option value="REAL_ESTATE">Real Estate / Land / Flat</option>
-                    <option value="SAVINGS_ACCOUNT">Savings Bank Account</option>
-                    <option value="OTHER">Other Asset</option>
-                  </select>
+                    onChange={(val) => setEditingInvestment({ ...editingInvestment, type: val as any })}
+                    options={[
+                      { value: 'MUTUAL_FUND', label: 'Mutual Fund (SIP / Lump)', icon: '📈' },
+                      { value: 'STOCK', label: 'Indian Stocks / Equity', icon: '📊' },
+                      { value: 'FIXED_DEPOSIT', label: 'Fixed Deposit (FD)', icon: '🏦' },
+                      { value: 'GOLD', label: 'Physical Gold / SGB', icon: '🪙' },
+                      { value: 'PPF', label: 'PPF / EPF / NPS', icon: '🛡️' },
+                      { value: 'REAL_ESTATE', label: 'Real Estate / Land / Flat', icon: '🏡' },
+                      { value: 'SAVINGS_ACCOUNT', label: 'Savings Bank Account', icon: '💳' },
+                      { value: 'OTHER', label: 'Other Asset', icon: '💎' },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Institution / Platform</label>
@@ -2050,7 +2044,7 @@ export const MoneyView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Save Changes
                 </button>
@@ -2065,13 +2059,13 @@ export const MoneyView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Edit Loan / Liability</h3>
+              <h3 className="text-base font-bold text-white">Edit Loan / Debt Record</h3>
               <button onClick={() => setEditingLiability(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
             </div>
 
             <form onSubmit={handleUpdateLiability} className="space-y-3.5">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Loan Name / Title *</label>
+                <label className="text-xs text-slate-300 font-semibold">Loan / Debt Title *</label>
                 <input
                   type="text"
                   required
@@ -2083,19 +2077,19 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Loan Type</label>
-                  <select
+                  <CustomSelect
+                    label="Loan Type"
                     value={editingLiability.type}
-                    onChange={(e) => setEditingLiability({ ...editingLiability, type: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="HOME_LOAN">Home Loan</option>
-                    <option value="CAR_LOAN">Car / Auto Loan</option>
-                    <option value="PERSONAL_LOAN">Personal Loan</option>
-                    <option value="EDUCATION_LOAN">Education Loan</option>
-                    <option value="CREDIT_CARD">Credit Card Outstanding</option>
-                    <option value="OTHER">Other Debt</option>
-                  </select>
+                    onChange={(val) => setEditingLiability({ ...editingLiability, type: val as any })}
+                    options={[
+                      { value: 'HOME_LOAN', label: 'Home Loan', icon: '🏡' },
+                      { value: 'CAR_LOAN', label: 'Car / Auto Loan', icon: '🚗' },
+                      { value: 'PERSONAL_LOAN', label: 'Personal Loan', icon: '💳' },
+                      { value: 'EDUCATION_LOAN', label: 'Education Loan', icon: '🎓' },
+                      { value: 'CREDIT_CARD', label: 'Credit Card Outstanding', icon: '💳' },
+                      { value: 'OTHER', label: 'Other Debt', icon: '📋' },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Bank / Lender</label>
@@ -2195,33 +2189,33 @@ export const MoneyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Goal Category</label>
-                  <select
+                  <CustomSelect
+                    label="Goal Category"
                     value={editingGoal.category}
-                    onChange={(e) => setEditingGoal({ ...editingGoal, category: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="EDUCATION">Children Higher Education</option>
-                    <option value="HOME">Dream House / Flat Purchase</option>
-                    <option value="VEHICLE">New Car / Vehicle</option>
-                    <option value="RETIREMENT">Retirement Freedom Fund</option>
-                    <option value="EMERGENCY">Emergency 6-Month Reserve</option>
-                    <option value="TRAVEL">Annual Family Vacation / Tour</option>
-                    <option value="WEDDING">Wedding & Celebrations</option>
-                    <option value="OTHER">Other Milestone</option>
-                  </select>
+                    onChange={(val) => setEditingGoal({ ...editingGoal, category: val })}
+                    options={[
+                      { value: 'EDUCATION', label: 'Children Higher Education', icon: '🎓' },
+                      { value: 'HOME', label: 'Dream House / Flat Purchase', icon: '🏡' },
+                      { value: 'VEHICLE', label: 'New Car / Vehicle', icon: '🚗' },
+                      { value: 'RETIREMENT', label: 'Retirement Freedom Fund', icon: '🌴' },
+                      { value: 'EMERGENCY', label: 'Emergency 6-Month Reserve', icon: '🛡️' },
+                      { value: 'TRAVEL', label: 'Annual Family Vacation / Tour', icon: '✈️' },
+                      { value: 'WEDDING', label: 'Wedding & Celebrations', icon: '💍' },
+                      { value: 'OTHER', label: 'Other Milestone', icon: '✨' },
+                    ]}
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Priority</label>
-                  <select
+                  <CustomSelect
+                    label="Priority"
                     value={editingGoal.priority}
-                    onChange={(e) => setEditingGoal({ ...editingGoal, priority: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="HIGH">High Priority (Must-Have)</option>
-                    <option value="MEDIUM">Medium Priority</option>
-                    <option value="LOW">Low Priority (Flexible)</option>
-                  </select>
+                    onChange={(val) => setEditingGoal({ ...editingGoal, priority: val as any })}
+                    options={[
+                      { value: 'HIGH', label: 'High Priority (Must-Have)', badge: '🔴' },
+                      { value: 'MEDIUM', label: 'Medium Priority', badge: '🟡' },
+                      { value: 'LOW', label: 'Low Priority (Flexible)', badge: '🟢' },
+                    ]}
+                  />
                 </div>
               </div>
 

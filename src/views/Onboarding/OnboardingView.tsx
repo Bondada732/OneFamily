@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Users, ArrowRight, Check, KeyRound, Copy, Share2, CheckCircle2, AlertCircle, Mail, RotateCcw, ArrowLeft, Lock, Eye, EyeOff, Shield, Server, Settings, RefreshCw, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { getApiHost, setCustomApiHost, testServerConnection, DEFAULT_SERVER_URL } from '../../utils/api.js';
+import { CustomSelect } from '../../components/common/CustomSelect.js';
 
 interface OnboardingViewProps {
   onComplete: () => void;
@@ -514,16 +515,17 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300">Relationship</label>
-                    <select
+                    <CustomSelect
+                      label="Relationship"
                       value={headForm.relationship}
-                      onChange={(e) => setHeadForm({ ...headForm, relationship: e.target.value })}
-                      className="w-full mt-1 px-3 py-2 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
-                    >
-                      <option value="Father / Family Head">Father / Head</option>
-                      <option value="Mother / Family Head">Mother / Head</option>
-                      <option value="Self / Family Head">Self / Head</option>
-                    </select>
+                      onChange={(val) => setHeadForm({ ...headForm, relationship: val })}
+                      options={[
+                        { value: 'Father / Family Head', label: 'Father / Head' },
+                        { value: 'Mother / Family Head', label: 'Mother / Head' },
+                        { value: 'Self / Family Head', label: 'Self / Head' }
+                      ]}
+                      buttonClassName="w-full mt-1 px-3 py-2 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2] flex items-center justify-between transition-all"
+                    />
                   </div>
                 </div>
 
@@ -741,21 +743,22 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-300">Relationship</label>
-                    <select
+                    <CustomSelect
+                      label="Relationship"
                       value={joinForm.relationship}
-                      onChange={(e) => setJoinForm({ ...joinForm, relationship: e.target.value })}
-                      className="w-full mt-1 px-3 py-2 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2]"
-                    >
-                      <option value="Spouse">Spouse</option>
-                      <option value="Son">Son</option>
-                      <option value="Daughter">Daughter</option>
-                      <option value="Mother / Grandmother">Grandmother</option>
-                      <option value="Father / Grandfather">Grandfather</option>
-                      <option value="Brother">Brother</option>
-                      <option value="Sister">Sister</option>
-                      <option value="Family Member">Other Member</option>
-                    </select>
+                      onChange={(val) => setJoinForm({ ...joinForm, relationship: val })}
+                      options={[
+                        { value: 'Spouse', label: 'Spouse' },
+                        { value: 'Son', label: 'Son' },
+                        { value: 'Daughter', label: 'Daughter' },
+                        { value: 'Mother / Grandmother', label: 'Grandmother' },
+                        { value: 'Father / Grandfather', label: 'Grandfather' },
+                        { value: 'Brother', label: 'Brother' },
+                        { value: 'Sister', label: 'Sister' },
+                        { value: 'Family Member', label: 'Other Member' }
+                      ]}
+                      buttonClassName="w-full mt-1 px-3 py-2 bg-[#030E22]/90 border border-[#168BFF]/30 rounded-xl text-xs text-white outline-none focus:border-[#16C7F2] flex items-center justify-between transition-all"
+                    />
                   </div>
                 </div>
 

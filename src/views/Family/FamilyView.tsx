@@ -4,6 +4,7 @@ import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
+import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { FamilyMember, TaskItem, GroceryItem, MaintenanceItem, EmergencyContact, EmergencyProfile } from '../../types/index.js';
 import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
 
@@ -1833,11 +1834,10 @@ export const FamilyView: React.FC = () => {
               {/* Role & Relationship Selectors */}
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300">Family Role</label>
-                  <select
+                  <CustomSelect
+                    label="Family Role"
                     value={approvalRole}
-                    onChange={(e) => {
-                      const newRole = e.target.value;
+                    onChange={(newRole) => {
                       setApprovalRole(newRole);
                       if (newRole === 'CHILD') {
                         setApprovalPermissions(['TASK_VIEW', 'TASK_EDIT', 'MEMORY_VIEW', 'CALENDAR_VIEW', 'AI_USE']);
@@ -1848,26 +1848,28 @@ export const FamilyView: React.FC = () => {
                       } else {
                         setApprovalPermissions([
                           'FINANCE_VIEW',
-                          'FINANCE_EDIT',
-                          'INVESTMENT_VIEW',
+                          'FINANCE_ADD',
                           'DOCUMENT_VIEW',
-                          'DOCUMENT_UPLOAD',
+                          'DOCUMENT_ADD',
                           'EMERGENCY_VIEW',
-                          'MEMORY_VIEW',
-                          'CALENDAR_VIEW',
                           'TASK_VIEW',
                           'TASK_EDIT',
+                          'MEMORY_VIEW',
+                          'MEMORY_ADD',
+                          'CALENDAR_VIEW',
+                          'CALENDAR_EDIT',
                           'AI_USE',
                         ]);
                       }
                     }}
-                    className="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="ADULT">Adult Member</option>
-                    <option value="SPOUSE">Spouse / Co-Admin</option>
-                    <option value="CHILD">Child / Dependent</option>
-                    <option value="VIEWER">Viewer Only</option>
-                  </select>
+                    options={[
+                      { value: 'HEAD', label: '👑 Family Head (Admin)' },
+                      { value: 'SPOUSE', label: '🤝 Co-Head / Spouse (Full Access)' },
+                      { value: 'ADULT', label: '👤 Adult Member (Standard)' },
+                      { value: 'CHILD', label: '🧒 Child / Teen (Protected)' },
+                      { value: 'VIEWER', label: '👵 Elder / Viewer (Care)' },
+                    ]}
+                  />
                 </div>
 
                 <div>
@@ -2018,32 +2020,32 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Assign To</label>
-                  <select
+                  <CustomSelect
+                    label="Assign To"
                     value={newTaskAssignee}
-                    onChange={(e) => setNewTaskAssignee(e.target.value)}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="All Family">All Family</option>
-                    {familyMembers.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name} ({m.relationship || m.role})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setNewTaskAssignee(val)}
+                    options={[
+                      { value: 'All Family', label: 'All Family', icon: '👨‍👩‍👧' },
+                      ...familyMembers.map((m) => ({
+                        value: m.name,
+                        label: `${m.name} (${m.relationship || m.role})`,
+                        icon: '👤',
+                      })),
+                    ]}
+                  />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Priority</label>
-                  <select
+                  <CustomSelect
+                    label="Priority"
                     value={newTaskPriority}
-                    onChange={(e) => setNewTaskPriority(e.target.value as any)}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                  </select>
+                    onChange={(val) => setNewTaskPriority(val as any)}
+                    options={[
+                      { value: 'LOW', label: 'Low', badge: '🟢' },
+                      { value: 'MEDIUM', label: 'Medium', badge: '🟡' },
+                      { value: 'HIGH', label: 'High', badge: '🔴' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -2344,17 +2346,17 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Role & Permissions</label>
-                  <select
+                  <CustomSelect
+                    label="Role & Permissions"
                     value={newMemberData.role}
-                    onChange={(e) => setNewMemberData({ ...newMemberData, role: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="SPOUSE">Co-Head / Spouse (Full Access)</option>
-                    <option value="ADULT">Adult (General Access)</option>
-                    <option value="CHILD">Teen / Child (Protected)</option>
-                    <option value="VIEWER">Grandparent / Elder (Care)</option>
-                  </select>
+                    onChange={(val) => setNewMemberData({ ...newMemberData, role: val })}
+                    options={[
+                      { value: 'SPOUSE', label: 'Co-Head / Spouse (Full Access)', icon: '🤝' },
+                      { value: 'ADULT', label: 'Adult (General Access)', icon: '👤' },
+                      { value: 'CHILD', label: 'Teen / Child (Protected)', icon: '🧒' },
+                      { value: 'VIEWER', label: 'Grandparent / Elder (Care)', icon: '👵' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -2416,19 +2418,18 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Category</label>
-                  <select
+                  <CustomSelect
+                    label="Category"
                     value={newGroceryCategory}
-                    onChange={(e) => setNewGroceryCategory(e.target.value)}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    {availableWishCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                    <option value="__CUSTOM__">➕ Add Custom Category...</option>
-                  </select>
+                    onChange={(val) => setNewGroceryCategory(val)}
+                    options={[
+                      ...availableWishCategories.map((cat) => ({
+                        value: cat.id,
+                        label: cat.name,
+                      })),
+                      { value: '__CUSTOM__', label: '➕ Add Custom Category...' },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Estimated Price (₹)</label>
@@ -2517,41 +2518,41 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Category</label>
-                  <select
+                  <CustomSelect
+                    label="Category"
                     value={newMaintenance.service_type}
-                    onChange={(e) => setNewMaintenance({ ...newMaintenance, service_type: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="APPLIANCE">❄️ AC / Appliance</option>
-                    <option value="WATER_PURIFIER">💧 RO Water Purifier</option>
-                    <option value="VEHICLE">🚗 Car / Bike Service</option>
-                    <option value="ELECTRICAL">⚡ Inverter / Solar</option>
-                    <option value="PLUMBING">🔧 Plumbing / Chimney</option>
-                    <option value="OTHER">🛠️ Other Equipment</option>
-                  </select>
+                    onChange={(val) => setNewMaintenance({ ...newMaintenance, service_type: val })}
+                    options={[
+                      { value: 'APPLIANCE', label: 'AC / Appliance', icon: '❄️' },
+                      { value: 'WATER_PURIFIER', label: 'RO Water Purifier', icon: '💧' },
+                      { value: 'VEHICLE', label: 'Car / Bike Service', icon: '🚗' },
+                      { value: 'ELECTRICAL', label: 'Inverter / Solar', icon: '⚡' },
+                      { value: 'PLUMBING', label: 'Plumbing / Chimney', icon: '🔧' },
+                      { value: 'OTHER', label: 'Other Equipment', icon: '🛠️' },
+                    ]}
+                  />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Service Frequency</label>
-                  <select
+                  <CustomSelect
+                    label="Service Frequency"
                     value={newMaintenance.recurring_interval_months}
-                    onChange={(e) => {
-                      const interval = Number(e.target.value) || 6;
+                    onChange={(val) => {
+                      const interval = Number(val) || 6;
                       const d = new Date(newMaintenance.last_service_date || Date.now());
                       d.setMonth(d.getMonth() + interval);
                       setNewMaintenance({
                         ...newMaintenance,
-                        recurring_interval_months: e.target.value,
+                        recurring_interval_months: val,
                         next_service_due: getLocalDateString(d),
                       });
                     }}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
-                  >
-                    <option value="3">Every 3 Months</option>
-                    <option value="6">Every 6 Months</option>
-                    <option value="12">Every 1 Year (Annual)</option>
-                    <option value="24">Every 2 Years</option>
-                  </select>
+                    options={[
+                      { value: '3', label: 'Every 3 Months' },
+                      { value: '6', label: 'Every 6 Months' },
+                      { value: '12', label: 'Every 1 Year (Annual)' },
+                      { value: '24', label: 'Every 2 Years' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -2687,20 +2688,20 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Category Type</label>
-                  <select
+                  <CustomSelect
+                    label="Category Type"
                     value={contactForm.type}
-                    onChange={(e) => setContactForm({ ...contactForm, type: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-500"
-                  >
-                    <option value="PERSONAL">Family / Relative</option>
-                    <option value="DOCTOR">Doctor / Physician</option>
-                    <option value="HOSPITAL">Hospital / Clinic</option>
-                    <option value="AMBULANCE">Ambulance Service</option>
-                    <option value="POLICE">Police / Helpline</option>
-                    <option value="INSURANCE">Insurance TPA</option>
-                    <option value="OTHER">Other Service</option>
-                  </select>
+                    onChange={(val) => setContactForm({ ...contactForm, type: val as any })}
+                    options={[
+                      { value: 'PERSONAL', label: 'Family / Relative', icon: '👨‍👩‍👧' },
+                      { value: 'DOCTOR', label: 'Doctor / Physician', icon: '👨‍⚕️' },
+                      { value: 'HOSPITAL', label: 'Hospital / Clinic', icon: '🏥' },
+                      { value: 'AMBULANCE', label: 'Ambulance Service', icon: '🚑' },
+                      { value: 'POLICE', label: 'Police / Helpline', icon: '🚓' },
+                      { value: 'INSURANCE', label: 'Insurance TPA', icon: '🛡️' },
+                      { value: 'OTHER', label: 'Other Service', icon: '📞' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -2823,22 +2824,22 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Blood Group *</label>
-                  <select
+                  <CustomSelect
+                    label="Blood Group *"
                     value={profileForm.blood_group}
-                    onChange={(e) => setProfileForm({ ...profileForm, blood_group: e.target.value })}
-                    className="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-rose-400 font-bold outline-none focus:border-rose-500"
-                  >
-                    <option value="A+">A Positive (A+)</option>
-                    <option value="A-">A Negative (A-)</option>
-                    <option value="B+">B Positive (B+)</option>
-                    <option value="B-">B Negative (B-)</option>
-                    <option value="O+">O Positive (O+)</option>
-                    <option value="O-">O Negative (O-)</option>
-                    <option value="AB+">AB Positive (AB+)</option>
-                    <option value="AB-">AB Negative (AB-)</option>
-                    <option value="Unknown">Unknown</option>
-                  </select>
+                    onChange={(val) => setProfileForm({ ...profileForm, blood_group: val })}
+                    options={[
+                      { value: 'A+', label: 'A Positive (A+)', badge: '🩸' },
+                      { value: 'A-', label: 'A Negative (A-)', badge: '🩸' },
+                      { value: 'B+', label: 'B Positive (B+)', badge: '🩸' },
+                      { value: 'B-', label: 'B Negative (B-)', badge: '🩸' },
+                      { value: 'O+', label: 'O Positive (O+)', badge: '🩸' },
+                      { value: 'O-', label: 'O Negative (O-)', badge: '🩸' },
+                      { value: 'AB+', label: 'AB Positive (AB+)', badge: '🩸' },
+                      { value: 'AB-', label: 'AB Negative (AB-)', badge: '🩸' },
+                      { value: 'Unknown', label: 'Unknown' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -2955,32 +2956,32 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Assign To</label>
-                  <select
+                  <CustomSelect
+                    label="Assign To"
                     value={editingTask.assigned_to_name}
-                    onChange={(e) => setEditingTask({ ...editingTask, assigned_to_name: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="All Family">All Family</option>
-                    {familyMembers.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name} ({m.relationship || m.role})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setEditingTask({ ...editingTask, assigned_to_name: val })}
+                    options={[
+                      { value: 'All Family', label: 'All Family', icon: '👨‍👩‍👧' },
+                      ...familyMembers.map((m) => ({
+                        value: m.name,
+                        label: `${m.name} (${m.relationship || m.role})`,
+                        icon: '👤',
+                      })),
+                    ]}
+                  />
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Priority</label>
-                  <select
+                  <CustomSelect
+                    label="Priority"
                     value={editingTask.priority}
-                    onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                  </select>
+                    onChange={(val) => setEditingTask({ ...editingTask, priority: val as any })}
+                    options={[
+                      { value: 'LOW', label: 'Low', badge: '🟢' },
+                      { value: 'MEDIUM', label: 'Medium', badge: '🟡' },
+                      { value: 'HIGH', label: 'High', badge: '🔴' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -3044,18 +3045,15 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Category</label>
-                  <select
+                  <CustomSelect
+                    label="Category"
                     value={editingGrocery.category || 'WISH'}
-                    onChange={(e) => setEditingGrocery({ ...editingGrocery, category: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    {availableWishCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setEditingGrocery({ ...editingGrocery, category: val })}
+                    options={availableWishCategories.map((cat) => ({
+                      value: cat.id,
+                      label: cat.name,
+                    }))}
+                  />
                 </div>
               </div>
 
@@ -3111,18 +3109,18 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Type</label>
-                  <select
+                  <CustomSelect
+                    label="Type"
                     value={editingMaintenance.service_type || 'APPLIANCE'}
-                    onChange={(e) => setEditingMaintenance({ ...editingMaintenance, service_type: e.target.value as any })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  >
-                    <option value="APPLIANCE">Appliance (AC, Fridge)</option>
-                    <option value="WATER_PURIFIER">Water Purifier (RO)</option>
-                    <option value="VEHICLE">Car / Bike / EV</option>
-                    <option value="ELECTRICAL">Inverter / Solar / Geyser</option>
-                    <option value="OTHER">Other Equipment</option>
-                  </select>
+                    onChange={(val) => setEditingMaintenance({ ...editingMaintenance, service_type: val as any })}
+                    options={[
+                      { value: 'APPLIANCE', label: 'Appliance (AC, Fridge)', icon: '❄️' },
+                      { value: 'WATER_PURIFIER', label: 'Water Purifier (RO)', icon: '💧' },
+                      { value: 'VEHICLE', label: 'Car / Bike / EV', icon: '🚗' },
+                      { value: 'ELECTRICAL', label: 'Inverter / Solar / Geyser', icon: '⚡' },
+                      { value: 'OTHER', label: 'Other Equipment', icon: '🛠️' },
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-slate-300 font-semibold">Interval (Months)</label>
