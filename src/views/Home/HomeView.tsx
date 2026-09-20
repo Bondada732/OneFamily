@@ -824,8 +824,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
     );
   }
 
-  const { snapshot, goals, recentMemories, today } = dashboard;
-  const rawNetWorth = snapshot.netWorth || 0;
+  const snapshot = dashboard?.snapshot || {
+    netWorth: 0,
+    monthlySpending: 0,
+    totalSavings: 0,
+    monthlyBudget: 100000,
+  };
+  const goals = dashboard?.goals || [];
+  const recentMemories = dashboard?.recentMemories || [];
+  const today = dashboard?.today;
+  const rawNetWorth = snapshot?.netWorth || 0;
   const netWorthDisplay = Math.abs(rawNetWorth);
   const firstName = currentUser?.name?.split(' ')[0] || 'Rambabu';
   const locationCity = family?.location?.split(',')[0] || 'India';
@@ -1503,20 +1511,29 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           const currentYear = today.getFullYear();
 
           const memberBirthdays = (familyMembers || [])
-            .filter((m) => m.birth_date)
-            .map((m) => {
-              const bDate = new Date(m.birth_date!);
-              let nextBday = new Date(currentYear, bDate.getMonth(), bDate.getDate());
-              if (nextBday < today && nextBday.getDate() !== today.getDate()) {
-                nextBday = new Date(currentYear + 1, bDate.getMonth(), bDate.getDate());
-              }
-              const diffDays = Math.ceil((nextBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-              return {
-                member: m,
-                diffDays: diffDays < 0 ? 0 : diffDays,
-                bDateStr: formatDate(nextBday.toISOString().split('T')[0]),
-              };
+            .filter((m) => {
+              if (!m?.birth_date) return false;
+              const d = new Date(m.birth_date);
+              return !isNaN(d.getTime());
             })
+            .map((m) => {
+              try {
+                const bDate = new Date(m.birth_date!);
+                let nextBday = new Date(currentYear, bDate.getMonth(), bDate.getDate());
+                if (nextBday < today && nextBday.getDate() !== today.getDate()) {
+                  nextBday = new Date(currentYear + 1, bDate.getMonth(), bDate.getDate());
+                }
+                const diffDays = Math.ceil((nextBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return {
+                  member: m,
+                  diffDays: diffDays < 0 ? 0 : diffDays,
+                  bDateStr: formatDate(nextBday.toISOString().split('T')[0]),
+                };
+              } catch {
+                return null;
+              }
+            })
+            .filter((item): item is NonNullable<typeof item> => item !== null)
             .sort((a, b) => a.diffDays - b.diffDays);
 
           const nearest = memberBirthdays.length > 0 ? memberBirthdays[0] : null;
@@ -1542,7 +1559,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                   <div className={`text-xs font-bold transition-colors ${
                     isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-[#7EDCFF]'
                   }`}>
-                    {nearest ? `${nearest.member.name.split(' ')[0]}'s Birthday 🎂` : "Family Birthday 🎂"}
+                    {nearest ? `${(nearest.member?.name || 'Family Member').split(' ')[0]}'s Birthday 🎂` : "Family Birthday 🎂"}
                   </div>
                   <div className={`text-[10px] mt-0.5 ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
                     {nearest

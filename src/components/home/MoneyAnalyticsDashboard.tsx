@@ -75,12 +75,13 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
   };
 
   const todayStr = formatYMD(now);
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
 
   // Filter this month's expenses
-  const monthExpenses = expenses.filter((e) => {
-    if (!e.date) return false;
+  const monthExpenses = safeExpenses.filter((e) => {
+    if (!e || !e.date) return false;
     const d = new Date(e.date);
-    return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    return !isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() === currentMonth;
   });
 
   // Calculate actual total spent this month
@@ -95,19 +96,19 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
 
   // Today's spending
   const todaySpent = hasRealExpenses
-    ? expenses
-        .filter((e) => e.date?.startsWith(todayStr))
+    ? safeExpenses
+        .filter((e) => e && e.date?.startsWith(todayStr))
         .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
     : 0;
 
   // This week's spending (last 7 days)
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const thisWeekSpent = hasRealExpenses
-    ? expenses
+    ? safeExpenses
         .filter((e) => {
-          if (!e.date) return false;
+          if (!e || !e.date) return false;
           const d = new Date(e.date);
-          return d >= oneWeekAgo && d <= now;
+          return !isNaN(d.getTime()) && d >= oneWeekAgo && d <= now;
         })
         .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
     : 0;
@@ -126,8 +127,8 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
 
     let amt = 0;
     if (hasRealExpenses) {
-      amt = expenses
-        .filter((e) => e.date?.startsWith(ymd))
+      amt = safeExpenses
+        .filter((e) => e && e.date?.startsWith(ymd))
         .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
     } else {
       if (i === 12) amt = 1200;
@@ -151,13 +152,13 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
   const usableH = svgHeight - paddingY * 2;
 
   const points = days14.map((d, index) => {
-    const x = paddingX + (index / (days14.length - 1)) * usableW;
+    const x = paddingX + (index / Math.max(1, days14.length - 1)) * usableW;
     const y = paddingY + usableH - (d.amount / maxDayAmt) * usableH;
     return { x, y, label: d.label, amount: d.amount };
   });
 
   // Smooth Bezier line builder
-  let pathD = `M ${points[0].x} ${points[0].y}`;
+  let pathD = points.length > 0 ? `M ${points[0].x} ${points[0].y}` : '';
   for (let i = 0; i < points.length - 1; i++) {
     const p0 = points[i];
     const p1 = points[i + 1];
@@ -165,7 +166,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
     pathD += ` C ${midX} ${p0.y}, ${midX} ${p1.y}, ${p1.x} ${p1.y}`;
   }
 
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${svgHeight} L ${points[0].x} ${svgHeight} Z`;
+  const areaD = points.length > 0 ? `${pathD} L ${points[points.length - 1].x} ${svgHeight} L ${points[0].x} ${svgHeight} Z` : '';
 
   // Top Categories breakdown with distinct colors
   let topCategoriesList: { name: string; amount: number; color: string; percent: number }[] = [];
