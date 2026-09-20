@@ -17,7 +17,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     try {
-      const saved = localStorage.getItem(storageKey);
+      const saved = localStorage.getItem(storageKey) || localStorage.getItem('kinora_theme_mode');
       if (saved === 'light' || saved === 'dark') {
         return saved;
       }
@@ -30,7 +30,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // When user switches or logs in, load user-specific preference
   useEffect(() => {
     try {
-      const userSaved = localStorage.getItem(storageKey);
+      const userSaved = localStorage.getItem(storageKey) || localStorage.getItem('kinora_theme_mode');
       if (userSaved === 'light' || userSaved === 'dark') {
         setThemeState(userSaved);
       }
@@ -43,6 +43,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, theme);
+      localStorage.setItem('kinora_theme_mode', theme);
     } catch {
       // ignore
     }

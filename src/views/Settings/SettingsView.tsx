@@ -132,7 +132,7 @@ export const SettingsView: React.FC = () => {
             activeSettingsTab === 'PREFERENCES' ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md' : 'text-slate-400'
           }`}
         >
-          Language
+          Theme & Lang
         </button>
       </div>
 
