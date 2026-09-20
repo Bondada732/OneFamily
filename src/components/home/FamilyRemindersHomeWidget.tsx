@@ -6,6 +6,7 @@ import {
   Send,
   Sparkles,
   ChevronRight,
+  Plus,
 } from 'lucide-react';
 import { ActiveOccasionReminder } from '../../types/index.js';
 import { apiRequest } from '../../utils/api.js';
