@@ -95,16 +95,73 @@ export const FamilyRemindersHomeWidget: React.FC<FamilyRemindersHomeWidgetProps>
     setShowWhatsAppModal(true);
   };
 
-  // If loading or if NO active birthdays/occasions are present, completely hide module from home screen
-  if (isLoading || (todayOccasions.length === 0 && upcomingOccasions.length === 0)) {
-    return null;
-  }
-
   return (
     <div className="space-y-3 animate-fade-in">
+      {/* 0. Fallback Empty State / Entry Point when no occasions are active */}
+      {!isLoading && todayOccasions.length === 0 && upcomingOccasions.length === 0 && (
+        <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
+          isLight
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+            : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
+        }`}>
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🎂</span>
+              <h3 className={`text-sm sm:text-base font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                Family & Friends Celebrations
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigateTab('friends')}
+              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+                isLight
+                  ? 'text-white bg-[#F05A28] hover:bg-[#E76F3C] border-[#F05A28] shadow-sm'
+                  : 'text-[#FF4D8D] hover:text-[#FF758F] bg-[#FF4D8D]/10 hover:bg-[#FF4D8D]/20 border-[#FF4D8D]/25'
+              }`}
+            >
+              <Plus className="w-3 h-3" />
+              <span>Add</span>
+            </button>
+          </div>
+
+          <div className={`p-3 rounded-xl flex items-center justify-between gap-3 ${
+            isLight ? 'bg-[#FFF8F1] border border-[#EAD6C4]' : 'bg-slate-900/60 border border-slate-800'
+          }`}>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 kinora-3d-icon-box ${
+                isLight ? 'bg-pink-100 text-pink-600 border-pink-200' : 'bg-pink-500/20 text-pink-400 border-pink-500/30'
+              }`}>
+                <Cake className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className={`text-xs font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                  Never miss a birthday or anniversary
+                </div>
+                <div className={`text-[10.5px] truncate ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
+                  Auto reminders & 1-click WhatsApp wishes
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onNavigateTab('friends')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all ${
+                isLight
+                  ? 'bg-[#F05A28] hover:bg-[#E76F3C] text-white shadow-sm'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+              }`}
+            >
+              Open Hub →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1. TODAY'S SPECIAL CELEBRATION (When an occasion is TODAY) */}
       {todayOccasions.length > 0 && (
-        <div className={`rounded-3xl p-4 border-2 relative overflow-hidden space-y-3 ${
+        <div className={`rounded-3xl p-4 border-2 relative overflow-hidden space-y-3 kinora-3d-card ${
           isLight
             ? 'bg-gradient-to-br from-[#FFF8EE] via-[#FFF0E0] to-[#FDF4EA] border-amber-500/40 shadow-[0_8px_24px_rgba(217,119,6,0.12)]'
             : 'bg-gradient-to-br from-[#1E1238] via-[#2A1648] to-[#121A3A] border-amber-400/60 shadow-[0_8px_30px_rgba(251,191,36,0.25)]'
@@ -228,16 +285,16 @@ export const FamilyRemindersHomeWidget: React.FC<FamilyRemindersHomeWidgetProps>
 
       {/* 2. UPCOMING BIRTHDAYS & OCCASIONS (Shown ONLY when there are active upcoming reminders) */}
       {upcomingOccasions.length > 0 && (
-        <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 ${
+        <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
           isLight
-            ? 'bg-[#EBE0D2] border border-[#DECFC0] shadow-[0_8px_24px_rgba(140,95,60,0.12)]'
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
             : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
         }`}>
           <div className="flex items-center justify-between px-1">
             <h3 className={`text-sm sm:text-base font-bold tracking-tight flex items-center gap-2 ${
-              isLight ? 'text-[#2A1B14]' : 'text-white'
+              isLight ? 'text-[#1F1F1F]' : 'text-white'
             }`}>
-              <span className={isLight ? 'text-[#C25425]' : 'text-[#FF4D8D]'}>❤️</span>
+              <span className={isLight ? 'text-[#D3542F]' : 'text-[#FF4D8D]'}>❤️</span>
               <span>Upcoming Celebrations</span>
               <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                 isLight

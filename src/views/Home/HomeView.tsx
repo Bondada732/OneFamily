@@ -895,8 +895,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
       </div>
 
-      {/* 2. 8 Quick Action Tabs (Single-Row 3D Revolving Circular Carousel - 1x2 Inch Cards) */}
+      {/* 2. Quick Action Tabs (Single-Row 3D Revolving Circular Carousel - 1x2 Inch Cards) */}
       <CircularQuickActions
+        onFriends={() => onNavigateTab('friends')}
         onAddExpense={() => setShowAddExpenseModal(true)}
         onWishList={() => setShowWishListModal(true)}
         onSetGoal={() => setShowSetGoalModal(true)}

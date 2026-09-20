@@ -8,6 +8,7 @@ import {
   CheckSquare,
   Wrench,
   ShieldAlert,
+  Cake,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.js';
 
@@ -32,6 +33,7 @@ interface CircularQuickActionsProps {
   onTasks: () => void;
   onMaintenance: () => void;
   onEmergency: () => void;
+  onFriends?: () => void;
 }
 
 export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
@@ -43,6 +45,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   onTasks,
   onMaintenance,
   onEmergency,
+  onFriends = () => {},
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -52,6 +55,19 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   const baseBgEnd = isLight ? 'rgba(240, 90, 40, 0.95)' : 'rgba(13, 21, 45, 0.95)';
 
   const items: QuickActionItem[] = [
+    {
+      id: 'birthdays',
+      name: 'Birthdays',
+      sub: 'Celebrations',
+      icon: Cake,
+      neonColor: '#E11D48',
+      pastelBg: '#FFE4E6',
+      glowShadow: isLight
+        ? '0 0 14px rgba(225, 29, 72, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(225, 29, 72, 0.65), inset 0 0 14px rgba(225, 29, 72, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(225, 29, 72, 0.28) 0%, ${baseBgEnd} 75%)`,
+      onClick: onFriends,
+    },
     {
       id: 'expense',
       name: 'Add Expense',
