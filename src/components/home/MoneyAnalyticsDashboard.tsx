@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from '../../context/ThemeContext.js';
 
 export interface ExpenseItem {
   id: string;
@@ -16,37 +17,37 @@ interface MoneyAnalyticsDashboardProps {
   isPrivacyMode?: boolean;
 }
 
-// Highly distinct vibrant colors for each category
+// Category chart colors matching official light theme palette
 const CATEGORY_COLORS: { [key: string]: string } = {
-  Rent: '#FF5722', // Deep Orange / Coral
-  Housing: '#FF5722',
-  Maintenance: '#FFB800', // Vibrant Amber / Gold
-  Utilities: '#F59E0B',
-  Groceries: '#00E676', // Bright Neon Green
-  'Food & Dining': '#FF2A6D', // Neon Rose
-  'Veg+Fruits': '#00D2FF', // Electric Cyan
-  Vegetables: '#00D2FF',
-  Fruits: '#38BDF8',
-  Shopping: '#9D4EDD', // Electric Purple
-  Healthcare: '#FF1744', // Red
-  Transport: '#3B82F6', // Blue
-  Education: '#10B981', // Emerald
-  Entertainment: '#F72585', // Fuchsia
-  Miscellaneous: '#64748B', // Slate
-  Other: '#64748B',
+  'Food & Dining': '#FFC107', // Food & Dining (Yellow)
+  Groceries: '#4CAF50', // Transport/Green
+  Shopping: '#FF7043', // Shopping (Orange)
+  Transport: '#4CAF50', // Transport (Green)
+  'Bills & Utilities': '#42A5F5', // Bills & Utilities (Blue)
+  Utilities: '#42A5F5',
+  Rent: '#FF7043',
+  Housing: '#FF7043',
+  Maintenance: '#FFC107',
+  'Veg+Fruits': '#4CAF50',
+  Vegetables: '#4CAF50',
+  Fruits: '#4CAF50',
+  Healthcare: '#FF6B6B',
+  Education: '#42A5F5',
+  Entertainment: '#AB47BC',
+  Miscellaneous: '#AB47BC',
+  Others: '#AB47BC',
+  Other: '#AB47BC',
 };
 
 const DISTINCT_PALETTE = [
-  '#00D2FF', // Cyan
-  '#FFB800', // Gold
-  '#00E676', // Green
-  '#FF2A6D', // Rose
-  '#9D4EDD', // Purple
-  '#FF5722', // Orange
-  '#3B82F6', // Blue
-  '#F72585', // Pink
-  '#06D6A0', // Teal
-  '#EAB308', // Yellow
+  '#FFC107', // Food & Dining (Yellow)
+  '#FF7043', // Shopping (Orange)
+  '#4CAF50', // Transport (Green)
+  '#42A5F5', // Bills & Utilities (Blue)
+  '#AB47BC', // Others (Purple)
+  '#22C55E', // Brand Green
+  '#F05A28', // Brand Orange
+  '#FFB74D', // Secondary Accent
 ];
 
 export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = ({
@@ -55,6 +56,8 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
   onNavigateTab,
   isPrivacyMode = false,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [hoveredDayIndex, setHoveredDayIndex] = useState<number | null>(null);
 
@@ -202,68 +205,101 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
 
   return (
     <div className="w-full space-y-3 pt-1 pb-1 select-none">
-      {/* 1. Header Section */}
-      <div className="space-y-0.5 px-0.5">
-        <h4 className="text-[9.5px] sm:text-[10.5px] font-bold tracking-wider text-slate-400 uppercase">
-          HEY! HERE'S WHERE YOUR MONEY WENT
-        </h4>
-        <div className="flex items-baseline gap-2">
-          <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            {isPrivacyMode ? '••••••' : `₹${displayTotalSpent.toLocaleString('en-IN')}`}
-          </span>
-          <span className="text-[11px] sm:text-xs font-medium text-slate-400">
-            spent this month
-          </span>
-        </div>
-      </div>
-
-      {/* 2. Four Metrics Cards with Distinct Figure Colors & Scaled Typography */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
-        {/* Card 1: TODAY (Cyan) */}
-        <div className="bg-[#0D152D]/95 border border-[#00D2FF]/25 hover:border-[#00D2FF]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
-          <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-wider text-slate-400 uppercase">
-            TODAY
-          </span>
-          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#00D2FF]">
-            {isPrivacyMode ? '••••' : `₹${todaySpent.toLocaleString('en-IN')}`}
-          </div>
-          <div className="h-2.5" />
-        </div>
-
-        {/* Card 2: THIS WEEK (Gold / Amber) */}
-        <div className="bg-[#0D152D]/95 border border-[#FFB800]/25 hover:border-[#FFB800]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
-          <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-wider text-slate-400 uppercase">
-            THIS WEEK
-          </span>
-          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#FFB800]">
-            {isPrivacyMode ? '••••' : `₹${thisWeekSpent.toLocaleString('en-IN')}`}
-          </div>
-          <div className="h-2.5" />
-        </div>
-
-        {/* Card 3: BUDGET LEFT (Emerald Green) */}
-        <div className="bg-[#0D152D]/95 border border-[#00E676]/25 hover:border-[#00E676]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
-          <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-wider text-slate-400 uppercase truncate">
-            BUDGET LEFT
-          </span>
-          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#00E676]">
-            {isPrivacyMode ? '••••••' : `₹${budgetLeft.toLocaleString('en-IN')}`}
-          </div>
-          <div className="text-[9.5px] font-bold text-[#00E676] mt-0.5 leading-none">
-            {percentUsed}% used
+      {/* 1. Main Expense Summary Container */}
+      <div className={`rounded-[28px] p-4 sm:p-5 transition-all kinora-3d-card ${
+        isLight
+          ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14),0_4px_10px_-2px_rgba(130,80,45,0.08)] space-y-3.5'
+          : 'bg-transparent space-y-3'
+      }`}>
+        {/* Header Section */}
+        <div className="space-y-1">
+          <h4 className={`text-[10px] sm:text-[11px] font-black tracking-wider uppercase ${isLight ? 'text-[#D3542F]' : 'text-slate-400'}`}>
+            HEY! HERE'S WHERE YOUR MONEY WENT
+          </h4>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+              {isPrivacyMode ? '••••••' : `₹${displayTotalSpent.toLocaleString('en-IN')}`}
+            </span>
+            <span className={`text-xs font-semibold ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
+              spent this month
+            </span>
           </div>
         </div>
 
-        {/* Card 4: TRANSACTIONS (Purple) */}
-        <div className="bg-[#0D152D]/95 border border-[#C084FC]/25 hover:border-[#C084FC]/50 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-md transition-all">
-          <span className="text-[8px] sm:text-[9px] font-bold tracking-tight text-slate-400 uppercase">
-            TRANSACTIONS
-          </span>
-          <div className="text-xs sm:text-sm font-black tracking-tight mt-1 truncate text-[#C084FC]">
-            {transactionCount}
+        {/* 2. Four Metrics Cards with 3D Model Tile Styling */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {/* Card 1: TODAY */}
+          <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
+              : 'bg-[#0D152D]/95 border border-[#00D2FF]/25 hover:border-[#00D2FF]/50 shadow-md'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
+                TODAY
+              </span>
+              <span className={`text-xs ${isLight ? 'text-[#A3A3A3]' : 'text-slate-400'}`}>›</span>
+            </div>
+            <div className={`text-xs sm:text-sm md:text-base font-black tracking-tight mt-0.5 ${isLight ? 'text-[#D3542F]' : 'text-[#00D2FF]'}`}>
+              {isPrivacyMode ? '••••' : `₹${todaySpent.toLocaleString('en-IN')}`}
+            </div>
           </div>
-          <div className="text-[8.5px] sm:text-[9px] font-medium text-[#C084FC]/80 mt-0.5 leading-none truncate">
-            avg ₹{Math.round(avgPerDay)}/d
+
+          {/* Card 2: THIS WEEK (Warm Highlight Card) */}
+          <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#FFB74D]/70 border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
+              : 'bg-[#0D152D]/95 border border-[#FFB800]/25 hover:border-[#FFB800]/50 shadow-md'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase ${isLight ? 'text-[#D3542F]' : 'text-slate-400'}`}>
+                THIS WEEK
+              </span>
+              <span className={`text-xs ${isLight ? 'text-[#D3542F]' : 'text-slate-400'}`}>›</span>
+            </div>
+            <div className={`text-xs sm:text-sm md:text-base font-black tracking-tight mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-[#FFB800]'}`}>
+              {isPrivacyMode ? '••••' : `₹${thisWeekSpent.toLocaleString('en-IN')}`}
+            </div>
+          </div>
+
+          {/* Card 3: BUDGET LEFT (Brand Green #22C55E) */}
+          <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
+              : 'bg-[#0D152D]/95 border border-[#00E676]/25 hover:border-[#00E676]/50 shadow-md'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase truncate ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
+                BUDGET LEFT
+              </span>
+              <span className={`text-xs ${isLight ? 'text-[#A3A3A3]' : 'text-slate-400'}`}>›</span>
+            </div>
+            <div className={`text-xs sm:text-sm md:text-base font-black tracking-tight mt-0.5 ${isLight ? 'text-[#22C55E]' : 'text-[#00E676]'}`}>
+              {isPrivacyMode ? '••••••' : `₹${budgetLeft.toLocaleString('en-IN')}`}
+            </div>
+            <div className={`text-[8.5px] sm:text-[9.5px] font-bold mt-0.5 leading-none ${isLight ? 'text-[#22C55E]' : 'text-[#00E676]'}`}>
+              {percentUsed}% used
+            </div>
+          </div>
+
+          {/* Card 4: TRANSACTIONS (Purple #AB47BC) */}
+          <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
+              : 'bg-[#0D152D]/95 border border-[#C084FC]/25 hover:border-[#C084FC]/50 shadow-md'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
+                TRANSACTIONS
+              </span>
+              <span className={`text-xs ${isLight ? 'text-[#A3A3A3]' : 'text-slate-400'}`}>›</span>
+            </div>
+            <div className={`text-xs sm:text-sm md:text-base font-black tracking-tight mt-0.5 ${isLight ? 'text-[#AB47BC]' : 'text-[#C084FC]'}`}>
+              {transactionCount}
+            </div>
+            <div className={`text-[8.5px] sm:text-[9px] font-medium mt-0.5 leading-none truncate ${isLight ? 'text-[#6B6B6B]' : 'text-[#C084FC]/80'}`}>
+              avg ₹{Math.round(avgPerDay)}/d
+            </div>
           </div>
         </div>
       </div>
@@ -271,11 +307,11 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
       {/* 3. Bottom Dual Cards: Interactive Last 14 days + Interactive Top categories */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {/* Left Card: Interactive Last 14 days chart */}
-        <div className="bg-[#0D152D]/95 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col justify-between shadow-lg relative overflow-hidden">
+        <div className={isLight ? "bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] rounded-[26px] p-4 flex flex-col justify-between shadow-[0_10px_24px_-4px_rgba(130,80,45,0.14),0_4px_8px_-2px_rgba(130,80,45,0.08)] relative overflow-hidden kinora-3d-card" : "bg-[#0D152D]/95 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col justify-between shadow-lg relative overflow-hidden"}>
           <div className="flex items-center justify-between mb-1.5">
-            <h5 className="text-xs sm:text-sm font-bold text-white tracking-tight">Last 14 days</h5>
+            <h5 className={`text-xs sm:text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Last 14 days</h5>
             {hoveredDayIndex !== null && (
-              <span className="text-[10.5px] font-semibold text-amber-400 animate-fadeIn">
+              <span className={`text-[10.5px] font-bold animate-fadeIn ${isLight ? 'text-[#D3542F]' : 'text-amber-400'}`}>
                 {days14[hoveredDayIndex].label}: ₹{days14[hoveredDayIndex].amount.toLocaleString('en-IN')}
               </span>
             )}
@@ -283,7 +319,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
 
           <div className="relative w-full h-28 flex flex-col justify-end pt-1">
             {/* Y-Axis subtle scale indicators */}
-            <div className="absolute left-0 top-0 bottom-5 flex flex-col justify-between text-[8.5px] text-slate-500 pointer-events-none select-none">
+            <div className={`absolute left-0 top-0 bottom-5 flex flex-col justify-between text-[8.5px] pointer-events-none select-none ${isLight ? 'text-[#A3A3A3]' : 'text-slate-500'}`}>
               <span>{maxDayAmt >= 1000 ? `₹${Math.round(maxDayAmt / 1000)}k` : maxDayAmt}</span>
               <span>0</span>
             </div>
@@ -299,22 +335,22 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
                 preserveAspectRatio="none"
               >
                 <defs>
-                  <linearGradient id="amberChartGradientInteractive" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#FFB800" stopOpacity="0.45" />
-                    <stop offset="65%" stopColor="#FFB800" stopOpacity="0.1" />
-                    <stop offset="100%" stopColor="#FFB800" stopOpacity="0.0" />
+                  <linearGradient id="chartGradientInteractive" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={isLight ? "#FDE0B2" : "#FFB800"} stopOpacity={isLight ? "0.60" : "0.45"} />
+                    <stop offset="65%" stopColor={isLight ? "#FDE0B2" : "#FFB800"} stopOpacity={isLight ? "0.20" : "0.1"} />
+                    <stop offset="100%" stopColor={isLight ? "#FDE0B2" : "#FFB800"} stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
 
                 {/* Area Gradient Fill */}
-                <path d={areaD} fill="url(#amberChartGradientInteractive)" />
+                <path d={areaD} fill="url(#chartGradientInteractive)" />
 
                 {/* Stroke Line */}
                 <path
                   d={pathD}
                   fill="none"
-                  stroke="#FFB800"
-                  strokeWidth="2.2"
+                  stroke={isLight ? "#F59E0B" : "#FFB800"}
+                  strokeWidth="2.4"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -345,7 +381,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
                           y1="0"
                           x2={pt.x}
                           y2={svgHeight}
-                          stroke="#FFB800"
+                          stroke={isLight ? "#D3542F" : "#FFB800"}
                           strokeWidth="1"
                           strokeDasharray="2 2"
                           opacity="0.8"
@@ -358,8 +394,8 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
                           cx={pt.x}
                           cy={pt.y}
                           r={isHovered ? 4.5 : 3.5}
-                          fill={isHovered ? '#FFFFFF' : '#FFB800'}
-                          stroke="#0D152D"
+                          fill={isHovered ? '#FFFFFF' : isLight ? '#D3542F' : '#FFB800'}
+                          stroke={isLight ? '#D3542F' : '#0D152D'}
                           strokeWidth="1.5"
                           className="transition-all duration-150"
                         />
@@ -371,7 +407,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
             </div>
 
             {/* X-Axis Date Labels with Clean Spacing */}
-            <div className="flex justify-between pl-5 pt-1 text-[9px] text-slate-400 font-medium select-none">
+            <div className={`flex justify-between pl-5 pt-1 text-[9px] font-medium select-none ${isLight ? 'text-[#A3A3A3]' : 'text-slate-400'}`}>
               <span>{days14[0]?.label}</span>
               <span>{days14[4]?.label}</span>
               <span>{days14[8]?.label}</span>
@@ -382,9 +418,9 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
         </div>
 
         {/* Right Card: Interactive Top categories Donut Chart */}
-        <div className="bg-[#0D152D]/95 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col justify-between shadow-lg relative">
+        <div className={isLight ? "bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] rounded-[26px] p-4 flex flex-col justify-between shadow-[0_10px_24px_-4px_rgba(130,80,45,0.14),0_4px_8px_-2px_rgba(130,80,45,0.08)] relative kinora-3d-card" : "bg-[#0D152D]/95 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col justify-between shadow-lg relative"}>
           <div className="flex items-center justify-between mb-2">
-            <h5 className="text-xs sm:text-sm font-bold text-white tracking-tight">Top categories</h5>
+            <h5 className={`text-xs sm:text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Top categories</h5>
             {activeCategory && (
               <span
                 className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-fadeIn"
@@ -412,7 +448,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
                   cy="50"
                   r={donutRadius}
                   fill="transparent"
-                  stroke="#16203D"
+                  stroke={isLight ? '#F8EDE0' : '#16203D'}
                   strokeWidth="14"
                 />
 
@@ -456,12 +492,12 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
                     <span className="text-[9px] font-bold leading-tight truncate max-w-[50px]" style={{ color: activeCategory.color }}>
                       {activeCategory.name}
                     </span>
-                    <span className="text-[10px] font-extrabold text-white leading-tight">
+                    <span className={`text-[10px] font-extrabold leading-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                       ₹{activeCategory.amount >= 1000 ? `${(activeCategory.amount / 1000).toFixed(1)}k` : activeCategory.amount}
                     </span>
                   </>
                 ) : (
-                  <span className="text-[9px] font-semibold text-slate-400">
+                  <span className={`text-[9.5px] font-bold ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
                     {topCategoriesList.length} Types
                   </span>
                 )}
@@ -478,7 +514,9 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
                     onMouseEnter={() => setHoveredCategory(cat.name)}
                     onMouseLeave={() => setHoveredCategory(null)}
                     className={`flex items-center justify-between gap-1.5 py-0.5 px-1.5 rounded-lg transition-all cursor-pointer ${
-                      isHovered ? 'bg-slate-800/80 scale-[1.02]' : 'hover:bg-slate-800/40'
+                      isHovered
+                        ? isLight ? 'bg-[#F8EDE0] scale-[1.02]' : 'bg-slate-800/80 scale-[1.02]'
+                        : isLight ? 'hover:bg-[#F8EDE0]/60' : 'hover:bg-slate-800/40'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -491,15 +529,19 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
                       />
                       <span
                         className={`font-medium truncate text-[11px] transition-colors ${
-                          isHovered ? 'text-white font-bold' : 'text-slate-300'
+                          isHovered
+                            ? isLight ? 'text-[#1F1F1F] font-bold' : 'text-white font-bold'
+                            : isLight ? 'text-[#6B6B6B]' : 'text-slate-300'
                         }`}
                       >
                         {cat.name}
                       </span>
                     </div>
                     <span
-                      className="font-bold text-white shrink-0 text-[11px] pl-1 font-mono"
-                      style={{ color: isHovered ? cat.color : '#FFFFFF' }}
+                      className={`font-bold shrink-0 text-[11px] pl-1 font-mono ${
+                        isLight ? 'text-[#1F1F1F]' : 'text-white'
+                      }`}
+                      style={{ color: isHovered ? cat.color : isLight ? '#1F1F1F' : '#FFFFFF' }}
                     >
                       {isPrivacyMode ? '••••' : `₹${cat.amount.toLocaleString('en-IN')}`}
                     </span>

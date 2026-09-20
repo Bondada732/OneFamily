@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
@@ -376,15 +377,15 @@ export const VaultView: React.FC = () => {
       </div>
 
       {/* Document Preview / Details Modal */}
-      {previewDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
+      {previewDoc && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in select-none">
+          <div className="w-full max-w-md bg-[#07132B] border border-[#168BFF]/30 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <FolderLock className="w-5 h-5 text-amber-400" />
                 <h3 className="text-base font-bold text-white truncate">{previewDoc.title}</h3>
               </div>
-              <button onClick={() => setPreviewDoc(null)} className="text-slate-400 hover:text-white">✕</button>
+              <button onClick={() => setPreviewDoc(null)} className="text-slate-400 hover:text-white cursor-pointer">✕</button>
             </div>
 
             {/* Document Preview Card */}
@@ -394,7 +395,7 @@ export const VaultView: React.FC = () => {
               </div>
             ) : (
               <div className="h-44 rounded-2xl overflow-hidden relative border border-slate-700 bg-slate-950 flex flex-col items-center justify-center p-4 text-center">
-                <FileText className="w-12 h-12 text-indigo-400 mb-2" />
+                <FileText className="w-12 h-12 text-[#16C7F2] mb-2" />
                 <div className="text-xs text-slate-200 font-bold truncate max-w-xs">{previewDoc.title}</div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
                   PDF Document • Encrypted Record
@@ -402,7 +403,7 @@ export const VaultView: React.FC = () => {
               </div>
             )}
 
-            <div className="space-y-1.5 text-xs text-slate-300 bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700">
+            <div className="space-y-1.5 text-xs text-slate-300 bg-slate-900/90 p-3.5 rounded-2xl border border-slate-800">
               <div><strong>Owner:</strong> {previewDoc.owner_name}</div>
               <div><strong>Document Number:</strong> {previewDoc.document_number || 'Confidential'}</div>
               <div><strong>Issuer:</strong> {previewDoc.issuer}</div>
@@ -416,7 +417,7 @@ export const VaultView: React.FC = () => {
                 download={`${previewDoc.title || 'document'}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all text-center"
+                className="flex-1 py-2.5 bg-gradient-to-r from-[#168BFF] to-[#0A56C2] hover:from-[#16C7F2] hover:to-[#168BFF] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all text-center"
               >
                 <Download className="w-4 h-4" />
                 <span>Open / Download</span>
@@ -427,7 +428,7 @@ export const VaultView: React.FC = () => {
                   onClick={() => {
                     setEditingDoc(previewDoc);
                   }}
-                  className="px-3 py-2.5 bg-slate-800 hover:bg-amber-500/20 border border-slate-700 text-slate-300 hover:text-amber-400 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-2.5 bg-slate-800 hover:bg-amber-500/20 border border-slate-700 text-slate-300 hover:text-amber-400 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Edit3 className="w-4 h-4" />
                   <span>Edit</span>
@@ -437,7 +438,7 @@ export const VaultView: React.FC = () => {
                 <button
                   type="button"
                   onClick={(e) => handleDeleteDoc(previewDoc.id, e)}
-                  className="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 border border-slate-700 text-slate-300 hover:text-rose-400 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 border border-slate-700 text-slate-300 hover:text-rose-400 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Delete</span>
@@ -445,16 +446,17 @@ export const VaultView: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit Document Modal */}
-      {editingDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      {editingDoc && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in select-none">
+          <div className="w-full max-w-md bg-[#07132B] border border-[#168BFF]/30 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">Edit Document Details</h3>
-              <button onClick={() => setEditingDoc(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+              <button onClick={() => setEditingDoc(null)} className="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
             </div>
 
             <form onSubmit={handleUpdateDoc} className="space-y-3.5">
@@ -576,13 +578,14 @@ export const VaultView: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Upload & Add Document Modal */}
-      {showUploadModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto animate-fade-in">
-          <div className="w-full max-w-md min-h-[85vh] sm:min-h-0 max-h-[96vh] bg-[#07132B] border border-[#168BFF]/30 rounded-3xl p-4 sm:p-5 text-slate-100 shadow-2xl space-y-3.5 flex flex-col my-auto overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      {showUploadModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto animate-fade-in">
+          <div className="w-full max-w-md bg-[#07132B] border border-[#168BFF]/30 rounded-3xl p-4 sm:p-5 text-slate-100 shadow-2xl space-y-3.5 flex flex-col max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             
             {/* Header matching Image 2 */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 shrink-0">
@@ -873,7 +876,8 @@ export const VaultView: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

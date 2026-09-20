@@ -5,15 +5,20 @@ import { apiRequest } from '../../utils/api.js';
 import { Memory, VoiceMemory } from '../../types/index.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
-import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar, Image as ImageIcon, Video, Upload, X, Film, Eye, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
+import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar, Image as ImageIcon, Video, Upload, X, Film, Eye, AlertCircle, Loader2, CheckCircle2, Trash2, Edit3, AlertTriangle } from 'lucide-react';
 
-const PRESET_MEMORIES = [
-  { url: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800', label: 'Family Vacation' },
-  { url: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=800', label: 'Diwali Gathering' },
-  { url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800', label: 'Birthday Party' },
-  { url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800', label: 'Family Reunion' },
-  { url: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800', label: 'Road Trip' },
-  { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800', label: 'Wedding / Function' },
+const MEMORY_ALBUMS = [
+  'Family Vacation',
+  'Diwali Gathering',
+  'Birthday Party',
+  'Marriage Anniversary',
+  'Engagement',
+  'Family Reunion',
+  'Festival & Puja',
+  'Road Trip',
+  'School / College Milestone',
+  'Weekend Outing',
+  'Other Moments',
 ];
 
 /**
@@ -23,7 +28,7 @@ const compressImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith('image/')) {
       const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onload = (event) => resolve(event.target?.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(file);
       return;
@@ -33,20 +38,20 @@ const compressImageFile = (file: File): Promise<string> => {
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        const MAX_WIDTH = 1280;
-        const MAX_HEIGHT = 1280;
+        const maxWidth = 1280;
+        const maxHeight = 1280;
         let width = img.width;
         let height = img.height;
 
         if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
           }
         } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round((width * MAX_HEIGHT) / height);
-            height = MAX_HEIGHT;
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
           }
         }
 
@@ -80,12 +85,12 @@ export const MemoriesView: React.FC = () => {
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const [selectedLanguageTab, setSelectedLanguageTab] = useState<'ORIGINAL' | 'HINDI' | 'TELUGU'>('ORIGINAL');
 
+  // Add Memory Modal State
   const [showAddMemory, setShowAddMemory] = useState(false);
   const [showRecordVoice, setShowRecordVoice] = useState(false);
-  const [lightboxMedia, setLightboxMedia] = useState<{ url: string; type: 'image' | 'video'; title?: string } | null>(null);
+  const [lightboxMedia, setLightboxMedia] = useState<{ url: string; type: 'image' | 'video'; title?: string; memoryId?: string; photoIndex?: number } | null>(null);
 
   const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
-  const [customMediaUrl, setCustomMediaUrl] = useState('');
   const [isProcessingMedia, setIsProcessingMedia] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -102,7 +107,30 @@ export const MemoriesView: React.FC = () => {
     description: '',
   });
 
+  // Edit Memory Modal State
+  const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    date: getLocalDateString(),
+    location: '',
+    album: 'Family Vacation',
+    description: '',
+  });
+  const [editSelectedMedia, setEditSelectedMedia] = useState<string[]>([]);
+  const [isEditingProcessingMedia, setIsEditingProcessingMedia] = useState(false);
+  const [isEditingSaving, setIsEditingSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+
+  const editGalleryInputRef = useRef<HTMLInputElement>(null);
+  const editCameraInputRef = useRef<HTMLInputElement>(null);
+  const editVideoInputRef = useRef<HTMLInputElement>(null);
+
+  // Delete Memory State
+  const [deletingMemory, setDeletingMemory] = useState<Memory | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const canUploadMemory = hasPermission('MEMORY_UPLOAD');
+  const canDeleteMemory = hasPermission('MEMORY_DELETE');
 
   useEffect(() => {
     if (!family?.id) return;
@@ -141,10 +169,22 @@ export const MemoriesView: React.FC = () => {
     }
   };
 
-  const handleAddCustomUrl = () => {
-    if (customMediaUrl.trim()) {
-      setSelectedMedia((prev) => [...prev, customMediaUrl.trim()]);
-      setCustomMediaUrl('');
+  const handleEditMediaFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsEditingProcessingMedia(true);
+    setEditError('');
+    try {
+      const promises = Array.from(files).map((file) => compressImageFile(file));
+      const results = await Promise.all(promises);
+      setEditSelectedMedia((prev) => [...prev, ...results]);
+    } catch (err) {
+      console.error('Failed to process edit media files:', err);
+      setEditError('Failed to process uploaded photos. Please try again.');
+    } finally {
+      setIsEditingProcessingMedia(false);
+      e.target.value = '';
     }
   };
 
@@ -152,8 +192,25 @@ export const MemoriesView: React.FC = () => {
     setSelectedMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleRemoveEditMedia = (index: number) => {
+    setEditSelectedMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const isVideoMedia = (url: string) => {
     return url.startsWith('data:video') || url.includes('.mp4') || url.includes('.webm') || url.includes('.mov') || url.includes('video');
+  };
+
+  const handleOpenEdit = (mem: Memory) => {
+    setEditingMemory(mem);
+    setEditFormData({
+      title: mem.title || '',
+      date: mem.date || getLocalDateString(),
+      location: mem.location || '',
+      album: mem.album || 'Family Vacation',
+      description: mem.description || '',
+    });
+    setEditSelectedMedia(mem.photosList || (typeof mem.photos === 'string' ? JSON.parse(mem.photos || '[]') : mem.photos) || []);
+    setEditError('');
   };
 
   const handleSaveMemory = async (e: React.FormEvent) => {
@@ -202,6 +259,108 @@ export const MemoriesView: React.FC = () => {
       setSaveError(err?.message || 'Failed to save memory. Please check details and try again.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleUpdateMemory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMemory || !family?.id) return;
+    if (!editFormData.title.trim()) {
+      setEditError('Please enter a title for the memory.');
+      return;
+    }
+
+    setIsEditingSaving(true);
+    setEditError('');
+    try {
+      await apiRequest(`/memories/${family.id}/memories/${editingMemory.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          title: editFormData.title.trim(),
+          date: editFormData.date,
+          location: editFormData.location.trim(),
+          album: editFormData.album,
+          description: editFormData.description.trim(),
+          photos: editSelectedMedia,
+        }),
+      });
+
+      setMemories((prev) =>
+        prev.map((m) =>
+          m.id === editingMemory.id
+            ? {
+                ...m,
+                title: editFormData.title.trim(),
+                date: editFormData.date,
+                location: editFormData.location.trim(),
+                album: editFormData.album,
+                description: editFormData.description.trim(),
+                photosList: editSelectedMedia,
+                photos: JSON.stringify(editSelectedMedia),
+              }
+            : m
+        )
+      );
+      setEditingMemory(null);
+    } catch (err: any) {
+      console.error('Failed to update memory:', err);
+      setEditError(err?.message || 'Failed to update memory. Please try again.');
+    } finally {
+      setIsEditingSaving(false);
+    }
+  };
+
+  const handleDeleteSinglePhoto = async (memId: string, photoIdx: number) => {
+    if (!family?.id) return;
+    const target = memories.find((m) => m.id === memId);
+    if (!target) return;
+
+    const currentPhotos = target.photosList || [];
+    if (currentPhotos.length <= 1) {
+      if (!confirm('This is the only photo in this memory. Deleting it will leave the memory with 0 photos. Do you want to proceed?')) {
+        return;
+      }
+    }
+
+    const updatedPhotos = currentPhotos.filter((_, idx) => idx !== photoIdx);
+    try {
+      await apiRequest(`/memories/${family.id}/memories/${memId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          photos: updatedPhotos,
+        }),
+      });
+
+      setMemories((prev) =>
+        prev.map((m) => (m.id === memId ? { ...m, photosList: updatedPhotos, photos: JSON.stringify(updatedPhotos) } : m))
+      );
+
+      if (lightboxMedia && lightboxMedia.memoryId === memId) {
+        setLightboxMedia(null);
+      }
+    } catch (err: any) {
+      console.error('Failed to delete photo:', err);
+      alert(err?.message || 'Failed to delete photo.');
+    }
+  };
+
+  const handleDeleteMemory = async (memId: string) => {
+    if (!family?.id) return;
+    setIsDeleting(true);
+    try {
+      await apiRequest(`/memories/${family.id}/memories/${memId}`, {
+        method: 'DELETE',
+      });
+      setMemories((prev) => prev.filter((m) => m.id !== memId));
+      setDeletingMemory(null);
+      if (editingMemory?.id === memId) {
+        setEditingMemory(null);
+      }
+    } catch (err: any) {
+      console.error('Failed to delete memory:', err);
+      alert(err?.message || 'Failed to delete memory.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -267,17 +426,40 @@ export const MemoriesView: React.FC = () => {
           {memories.length > 0 ? (
             memories.map((mem) => (
               <div key={mem.id} className="p-4 rounded-3xl bg-slate-800/90 border border-slate-700/80 space-y-3 shadow-md">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-white">{mem.title}</h3>
-                    <div className="text-[11px] text-slate-400 flex items-center gap-3 mt-0.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-white truncate">{mem.title}</h3>
+                    <div className="text-[11px] text-slate-400 flex items-center gap-3 mt-0.5 flex-wrap">
                       <span>📅 {formatDate(mem.date)}</span>
                       {mem.location && <span>📍 {mem.location}</span>}
                     </div>
                   </div>
-                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">
-                    {mem.album}
-                  </span>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2.5 py-1 rounded-full border border-indigo-500/30">
+                      {mem.album}
+                    </span>
+                    {canUploadMemory && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(mem)}
+                        className="p-1.5 rounded-xl bg-slate-700/80 hover:bg-slate-700 text-amber-300 hover:text-amber-200 border border-slate-600/80 transition-all shadow-sm"
+                        title="Edit Memory & Photos"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {canDeleteMemory && (
+                      <button
+                        type="button"
+                        onClick={() => setDeletingMemory(mem)}
+                        className="p-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 hover:text-rose-200 border border-rose-500/30 transition-all shadow-sm"
+                        title="Delete Memory"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Photos & Videos Gallery Horizontal Scroll */}
@@ -288,31 +470,50 @@ export const MemoriesView: React.FC = () => {
                       return (
                         <div
                           key={i}
-                          onClick={() => setLightboxMedia({ url: media, type: isVid ? 'video' : 'image', title: mem.title })}
-                          className="relative min-w-[220px] max-w-[260px] h-40 rounded-2xl overflow-hidden border border-slate-700 shrink-0 bg-slate-950 cursor-pointer group shadow-md"
+                          className="relative min-w-[220px] max-w-[260px] h-40 rounded-2xl overflow-hidden border border-slate-700 shrink-0 bg-slate-950 group shadow-md"
                         >
-                          {isVid ? (
-                            <div className="w-full h-full relative flex items-center justify-center bg-black">
-                              <video src={media} className="w-full h-full object-cover opacity-80" preload="metadata" />
-                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-all">
-                                <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
-                                  <Play className="w-5 h-5 ml-0.5 fill-current" />
+                          <div
+                            onClick={() => setLightboxMedia({ url: media, type: isVid ? 'video' : 'image', title: mem.title, memoryId: mem.id, photoIndex: i })}
+                            className="w-full h-full cursor-pointer"
+                          >
+                            {isVid ? (
+                              <div className="w-full h-full relative flex items-center justify-center bg-black">
+                                <video src={media} className="w-full h-full object-cover opacity-80" preload="metadata" />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-all">
+                                  <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg">
+                                    <Play className="w-5 h-5 ml-0.5 fill-current" />
+                                  </div>
                                 </div>
+                                <span className="absolute bottom-2 left-2 text-[9px] bg-slate-900/90 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
+                                  <Film className="w-3 h-3" /> VIDEO
+                                </span>
                               </div>
-                              <span className="absolute bottom-2 left-2 text-[9px] bg-slate-900/90 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
-                                <Film className="w-3 h-3" /> VIDEO
-                              </span>
+                            ) : (
+                              <img
+                                src={media}
+                                alt="Story"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            )}
+                            <div className="absolute bottom-2 right-2 bg-slate-900/80 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Eye className="w-3.5 h-3.5 text-white" />
                             </div>
-                          ) : (
-                            <img
-                              src={media}
-                              alt="Story"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          )}
-                          <div className="absolute top-2 right-2 bg-slate-900/80 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Eye className="w-3.5 h-3.5 text-white" />
                           </div>
+
+                          {/* Quick Delete Single Photo/Video Button */}
+                          {canUploadMemory && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSinglePhoto(mem.id, i);
+                              }}
+                              className="absolute top-2 right-2 bg-rose-600/90 hover:bg-rose-500 text-white p-1.5 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all z-10"
+                              title="Delete this photo/video"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       );
                     })}
@@ -617,42 +818,6 @@ export const MemoriesView: React.FC = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Preset moments picker */}
-                <div className="space-y-1 pt-1">
-                  <span className="text-[10px] text-slate-400">Or quick-add curated moments</span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {PRESET_MEMORIES.map((preset, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setSelectedMedia((prev) => [...prev, preset.url])}
-                        className="text-[9px] p-1.5 bg-slate-900/80 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 truncate font-medium flex items-center gap-1"
-                      >
-                        <Plus className="w-2.5 h-2.5 text-amber-400 shrink-0" />
-                        <span className="truncate">{preset.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Custom media URL */}
-                <div className="flex gap-1.5 pt-1">
-                  <input
-                    type="url"
-                    placeholder="Or paste image/video URL..."
-                    value={customMediaUrl}
-                    onChange={(e) => setCustomMediaUrl(e.target.value)}
-                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomUrl}
-                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs font-bold"
-                  >
-                    Add
-                  </button>
-                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -674,6 +839,21 @@ export const MemoriesView: React.FC = () => {
                     className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Album / Occasion Category</label>
+                <select
+                  value={newMemory.album}
+                  onChange={(e) => setNewMemory({ ...newMemory, album: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                >
+                  {MEMORY_ALBUMS.map((alb) => (
+                    <option key={alb} value={alb}>
+                      {alb}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -716,6 +896,293 @@ export const MemoriesView: React.FC = () => {
         </div>
       )}
 
+      {/* Edit Memory Modal */}
+      {editingMemory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">✏️</span>
+                <div>
+                  <h3 className="text-base font-bold text-white">Edit Family Memory</h3>
+                  <p className="text-[11px] text-slate-400">Update details, add or delete photos/videos</p>
+                </div>
+              </div>
+              <button onClick={() => setEditingMemory(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+
+            {/* Hidden native file inputs for Gallery & Camera in Edit Mode */}
+            <input
+              type="file"
+              ref={editGalleryInputRef}
+              onChange={handleEditMediaFilesSelected}
+              accept="image/*,video/*"
+              multiple
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={editCameraInputRef}
+              onChange={handleEditMediaFilesSelected}
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={editVideoInputRef}
+              onChange={handleEditMediaFilesSelected}
+              accept="video/*"
+              capture="environment"
+              className="hidden"
+            />
+
+            {editError && (
+              <div className="p-3 bg-rose-500/20 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            {isEditingProcessingMedia && (
+              <div className="p-2.5 bg-indigo-500/20 border border-indigo-500/40 rounded-xl text-xs text-indigo-300 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                <span>Optimizing photos for crisp display and fast upload...</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateMemory} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Weekend Picnic at Golconda Fort"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                />
+              </div>
+
+              {/* Photos & Videos Section */}
+              <div className="space-y-2.5 p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-amber-300 font-bold flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    <span>Memory Photos & Videos ({editSelectedMedia.length})</span>
+                  </label>
+                  <span className="text-[10px] text-slate-400">Click ✕ to remove any photo</span>
+                </div>
+
+                {/* Upload action buttons */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => editGalleryInputRef.current?.click()}
+                    disabled={isEditingProcessingMedia || isEditingSaving}
+                    className="p-2.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
+                  >
+                    <Upload className="w-4 h-4 text-indigo-300" />
+                    <span>From Gallery</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editCameraInputRef.current?.click()}
+                    disabled={isEditingProcessingMedia || isEditingSaving}
+                    className="p-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
+                  >
+                    <Camera className="w-4 h-4 text-amber-400" />
+                    <span>Take Snap</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editVideoInputRef.current?.click()}
+                    disabled={isEditingProcessingMedia || isEditingSaving}
+                    className="p-2.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
+                  >
+                    <Video className="w-4 h-4 text-purple-300" />
+                    <span>Record Clip</span>
+                  </button>
+                </div>
+
+                {/* Selected Media Grid with individual delete button */}
+                {editSelectedMedia.length > 0 ? (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[10px] text-slate-400 uppercase font-semibold">Current Media Preview ({editSelectedMedia.length})</span>
+                    <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+                      {editSelectedMedia.map((media, idx) => {
+                        const isVid = isVideoMedia(media);
+                        return (
+                          <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-600 aspect-video bg-black shadow">
+                            {isVid ? (
+                              <video src={media} className="w-full h-full object-cover opacity-80" />
+                            ) : (
+                              <img src={media} alt="Preview" className="w-full h-full object-cover" />
+                            )}
+                            <div className="absolute top-1 left-1">
+                              {isVid ? (
+                                <span className="bg-purple-600/90 text-white text-[8px] font-bold px-1 py-0.5 rounded">VIDEO</span>
+                              ) : (
+                                <span className="bg-indigo-600/90 text-white text-[8px] font-bold px-1 py-0.5 rounded">PHOTO</span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveEditMedia(idx)}
+                              className="absolute top-1 right-1 bg-rose-600 hover:bg-rose-500 text-white p-1 rounded-full shadow-lg transition-transform hover:scale-110"
+                              title="Delete this photo/video"
+                            >
+                              <X className="w-3 h-3 stroke-[3]" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-slate-900/60 border border-dashed border-slate-700 text-center text-xs text-slate-400">
+                    No photos or videos attached yet. Click above to add some.
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <CustomDatePicker
+                    label="Date"
+                    value={editFormData.date}
+                    onChange={(newDate) => setEditFormData({ ...editFormData, date: newDate })}
+                    className="!bg-slate-800 !border-slate-700 mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-300 font-semibold">Location</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Hyderabad"
+                    value={editFormData.location}
+                    onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Album / Occasion Category</label>
+                <select
+                  value={editFormData.album}
+                  onChange={(e) => setEditFormData({ ...editFormData, album: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                >
+                  {MEMORY_ALBUMS.map((alb) => (
+                    <option key={alb} value={alb}>
+                      {alb}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-300 font-semibold">Description / Story</label>
+                <textarea
+                  rows={2}
+                  placeholder="What made this moment special for our family?"
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-800">
+                {canDeleteMemory && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeletingMemory(editingMemory);
+                    }}
+                    className="px-3 py-2.5 bg-rose-500/15 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Memory</span>
+                  </button>
+                )}
+
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMemory(null)}
+                    disabled={isEditingSaving}
+                    className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isEditingSaving || isEditingProcessingMedia}
+                    className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  >
+                    {isEditingSaving ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <span>Save Changes</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Memory Confirmation Modal */}
+      {deletingMemory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm bg-slate-900 border border-rose-500/40 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 mx-auto flex items-center justify-center shadow-inner">
+              <Trash2 className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white">Delete Memory?</h3>
+              <p className="text-xs text-slate-300 mt-1.5">
+                Are you sure you want to permanently delete <strong className="text-white">"{deletingMemory.title}"</strong>?
+              </p>
+              <p className="text-[11px] text-slate-400 mt-1">
+                All photos and videos in this memory will be removed.
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setDeletingMemory(null)}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteMemory(deletingMemory.id)}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow-lg flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Yes, Delete</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Record Voice Memory Modal */}
       {showRecordVoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
@@ -752,12 +1219,25 @@ export const MemoriesView: React.FC = () => {
           >
             <div className="flex items-center justify-between p-3 bg-slate-900/90 border-b border-slate-800">
               <span className="text-xs font-bold text-white">{lightboxMedia.title || 'Memory Media'}</span>
-              <button
-                onClick={() => setLightboxMedia(null)}
-                className="p-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                {lightboxMedia.memoryId !== undefined && lightboxMedia.photoIndex !== undefined && canUploadMemory && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSinglePhoto(lightboxMedia.memoryId!, lightboxMedia.photoIndex!)}
+                    className="p-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/30 text-xs flex items-center gap-1 transition-colors"
+                    title="Delete this photo/video"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Photo</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setLightboxMedia(null)}
+                  className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div className="flex-1 flex items-center justify-center p-2 bg-black min-h-[300px]">
               {lightboxMedia.type === 'video' ? (

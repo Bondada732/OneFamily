@@ -19,6 +19,7 @@ import emergencyRouter from './routes/emergency.js';
 import aiRouter from './routes/ai.js';
 import searchRouter from './routes/search.js';
 import smartExpensesRouter from './routes/smartExpenses.js';
+import familyRemindersRouter from './routes/familyReminders.js';
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use('/api/emergency', emergencyRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/smart-expenses', smartExpensesRouter);
+app.use('/api/family-reminders', familyRemindersRouter);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

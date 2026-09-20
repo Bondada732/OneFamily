@@ -17,6 +17,7 @@ import {
   Watch,
   Tv,
 } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext.js';
 
 export interface AddWishModalProps {
   isOpen: boolean;
@@ -72,6 +73,9 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
   onToggleWish,
   onDeleteWish,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [title, setTitle] = useState('');
   const [estimatedCost, setEstimatedCost] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('WISH');
@@ -86,49 +90,42 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
   React.useEffect(() => {
     const customCatsMap = new Map<string, WishCategoryItem>();
 
-    // 1. Scan existing wishlist items for custom categories
+    // Load from saved custom categories in localStorage
+    try {
+      const savedCustoms: string[] = JSON.parse(localStorage.getItem('onefamily_custom_wish_categories') || '[]');
+      savedCustoms.forEach((name) => {
+        if (!WISH_CATEGORIES.some((c) => c.id.toUpperCase() === name.toUpperCase() || c.name.toLowerCase() === name.toLowerCase())) {
+          customCatsMap.set(name.toLowerCase(), {
+            id: name,
+            name: name,
+            icon: Tag,
+            color: isLight ? '#B84A1E' : '#19C9A7',
+            bgColor: isLight ? 'rgba(184, 74, 30, 0.16)' : 'rgba(25, 201, 167, 0.16)',
+            borderColor: isLight ? 'rgba(184, 74, 30, 0.50)' : 'rgba(25, 201, 167, 0.50)',
+          });
+        }
+      });
+    } catch {}
+
+    // Also scan existing items for dynamic category recovery
     if (Array.isArray(wishlistItems)) {
-      wishlistItems.forEach((item) => {
-        if (item.category) {
-          const match = WISH_CATEGORIES.find(
-            (c) => c.id.toUpperCase() === item.category.toUpperCase() || c.name.toLowerCase() === item.category.toLowerCase()
-          );
-          if (!match && !customCatsMap.has(item.category)) {
-            const displayName = item.category.startsWith('CAT_') ? 'Custom Wish' : item.category;
-            customCatsMap.set(item.category, {
-              id: item.category,
-              name: displayName,
-              icon: Tag,
-              color: '#16C7F2',
-              bgColor: 'rgba(22, 199, 242, 0.16)',
-              borderColor: 'rgba(22, 199, 242, 0.50)',
-            });
-          }
+      wishlistItems.forEach((w) => {
+        const cat = w.category || '';
+        if (cat && !WISH_CATEGORIES.some((c) => c.id.toUpperCase() === cat.toUpperCase() || c.name.toLowerCase() === cat.toLowerCase())) {
+          const displayName = cat.startsWith('CAT_') ? 'Custom Wish' : cat;
+          customCatsMap.set(cat.toLowerCase(), {
+            id: cat,
+            name: displayName,
+            icon: Tag,
+            color: isLight ? '#B84A1E' : '#19C9A7',
+            bgColor: isLight ? 'rgba(184, 74, 30, 0.16)' : 'rgba(25, 201, 167, 0.16)',
+            borderColor: isLight ? 'rgba(184, 74, 30, 0.50)' : 'rgba(25, 201, 167, 0.50)',
+          });
         }
       });
     }
-
-    // 2. Scan localStorage for custom wishlist categories
-    try {
-      const saved = JSON.parse(localStorage.getItem('onefamily_custom_wish_categories') || '[]');
-      if (Array.isArray(saved)) {
-        saved.forEach((catName: string) => {
-          if (catName && !customCatsMap.has(catName) && !WISH_CATEGORIES.some((c) => c.name.toLowerCase() === catName.toLowerCase() || c.id.toLowerCase() === catName.toLowerCase())) {
-            customCatsMap.set(catName, {
-              id: catName,
-              name: catName,
-              icon: Tag,
-              color: '#19C9A7',
-              bgColor: 'rgba(25, 201, 167, 0.16)',
-              borderColor: 'rgba(25, 201, 167, 0.50)',
-            });
-          }
-        });
-      }
-    } catch {}
-
     setCategoriesList([...WISH_CATEGORIES, ...Array.from(customCatsMap.values())]);
-  }, [wishlistItems]);
+  }, [wishlistItems, isLight]);
 
   if (!isOpen) return null;
 
@@ -165,9 +162,9 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
         id: cleanName,
         name: cleanName,
         icon: Tag,
-        color: '#19C9A7',
-        bgColor: 'rgba(25, 201, 167, 0.16)',
-        borderColor: 'rgba(25, 201, 167, 0.50)',
+        color: isLight ? '#B84A1E' : '#19C9A7',
+        bgColor: isLight ? 'rgba(184, 74, 30, 0.16)' : 'rgba(25, 201, 167, 0.16)',
+        borderColor: isLight ? 'rgba(184, 74, 30, 0.50)' : 'rgba(25, 201, 167, 0.50)',
       };
       setCategoriesList((prev) => [...prev, newCat]);
       setSelectedCategory(newCat.id);
@@ -192,7 +189,6 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
 
     try {
       setIsSubmitting(true);
-      // Ensure the category name is stored properly in the database
       const categoryToSave = selectedCategory.startsWith('CAT_') && selectedCatName 
         ? selectedCatName 
         : (selectedCategory || 'WISH');
@@ -205,6 +201,7 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
       setTitle('');
       setEstimatedCost('');
       setActiveTag(null);
+      onClose();
     } catch (err) {
       console.error('Error submitting wish:', err);
     } finally {
@@ -213,23 +210,35 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-[#0B1226] border-2 border-[#16C7F2]/40 rounded-[28px] p-4 sm:p-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 ${isLight ? 'bg-black/50' : 'bg-black/80'} backdrop-blur-md animate-fade-in`}>
+      <div className={`w-full max-w-md rounded-[28px] p-4 sm:p-5 space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden ${
+        isLight
+          ? 'bg-[#EFE4D6] border-2 border-[#DECFC0] text-[#2A1B14] shadow-[0_20px_60px_rgba(140,95,60,0.22)]'
+          : 'bg-[#0B1226] border-2 border-[#16C7F2]/40 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)]'
+      }`}>
         {/* Header */}
         <div className="flex items-center justify-between pb-1">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-[#16C7F2]/20 text-[#16C7F2] border border-[#16C7F2]/40">
+            <div className={`p-2 rounded-xl border ${
+              isLight
+                ? 'bg-[#F7D4BC] text-[#B84A1E] border-[#E8BC9E]'
+                : 'bg-[#16C7F2]/20 text-[#16C7F2] border-[#16C7F2]/40'
+            }`}>
               <Gift className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Family Wish List</h3>
-              <p className="text-[10px] text-slate-400">Shared with all family members</p>
+              <h3 className={`text-lg font-bold tracking-tight ${isLight ? 'text-[#2A1B14]' : 'text-white'}`}>Family Wish List</h3>
+              <p className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Shared with all family members</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[#0D152D] text-slate-400 hover:text-white transition-colors"
+            className={`p-1.5 rounded-full transition-colors ${
+              isLight
+                ? 'hover:bg-[#EBE0D2] text-[#634B3F] hover:text-[#2A1B14]'
+                : 'hover:bg-[#0D152D] text-slate-400 hover:text-white'
+            }`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -246,7 +255,11 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
                 onClick={() => handleSelectTag(tag)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
                   isSelected
-                    ? 'bg-[#16C7F2] text-[#03194A] border-white shadow-md shadow-[#16C7F2]/40 scale-105 font-bold'
+                    ? isLight
+                      ? 'bg-gradient-to-r from-[#D96632] to-[#B84A1E] text-white border-[#B84A1E] shadow-md shadow-[#B84A1E]/30 scale-105 font-bold'
+                      : 'bg-[#16C7F2] text-[#03194A] border-white shadow-md shadow-[#16C7F2]/40 scale-105 font-bold'
+                    : isLight
+                    ? 'bg-[#EBE0D2] hover:bg-[#DECFC0] text-[#634B3F] border-[#DECFC0]'
                     : 'bg-[#073B9E]/40 hover:bg-[#073B9E]/80 text-[#B9D8FF] border-[#168BFF]/25'
                 }`}
               >
@@ -259,15 +272,23 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
         <form onSubmit={handleSubmitForm} className="space-y-4">
           {/* 2. Amount / Est. Cost Input Box */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#B9D8FF]">Estimated Cost (Optional)</label>
-            <div className="flex items-center bg-[#03194A] border-2 border-[#168BFF]/40 focus-within:border-[#16C7F2] rounded-2xl px-4 py-3 shadow-inner transition-colors">
-              <span className="text-xl sm:text-2xl font-black text-[#55D98A] mr-2">₹</span>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>Estimated Cost (Optional)</label>
+            <div className={`flex items-center rounded-2xl px-4 py-3 shadow-inner transition-colors border-2 ${
+              isLight
+                ? 'bg-[#EBE0D2] border-[#DECFC0] focus-within:border-[#C25425]'
+                : 'bg-[#03194A] border-[#168BFF]/40 focus-within:border-[#16C7F2]'
+            }`}>
+              <span className={`text-xl sm:text-2xl font-black mr-2 ${isLight ? 'text-[#2E7D32]' : 'text-[#55D98A]'}`}>₹</span>
               <input
                 type="number"
                 placeholder="15000"
                 value={estimatedCost}
                 onChange={(e) => setEstimatedCost(e.target.value)}
-                className="w-full bg-transparent text-xl sm:text-2xl font-black text-white placeholder-slate-500 outline-none"
+                className={`w-full bg-transparent text-xl sm:text-2xl font-black outline-none ${
+                  isLight
+                    ? 'text-[#2A1B14] placeholder-[#947D70]'
+                    : 'text-white placeholder-slate-500'
+                }`}
               />
             </div>
           </div>
@@ -275,13 +296,15 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
           {/* 3. Category Grid */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-[#B9D8FF]">
-                Category: <span className="text-[#16C7F2] font-bold">{selectedCatName}</span>
+              <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>
+                Category: <span className={`font-bold ${isLight ? 'text-[#B84A1E]' : 'text-[#16C7F2]'}`}>{selectedCatName}</span>
               </label>
               <button
                 type="button"
                 onClick={() => setShowCustomInput(!showCustomInput)}
-                className="text-[11px] text-[#55D98A] hover:underline font-bold flex items-center gap-0.5"
+                className={`text-[11px] hover:underline font-bold flex items-center gap-0.5 ${
+                  isLight ? 'text-[#B84A1E]' : 'text-[#55D98A]'
+                }`}
               >
                 <Plus className="w-3 h-3" />
                 <span>Custom</span>
@@ -289,18 +312,28 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
             </div>
 
             {showCustomInput && (
-              <div className="p-2.5 rounded-xl bg-[#073B9E]/60 border border-[#168BFF]/40 flex items-center gap-2 animate-fade-in">
+              <div className={`p-2.5 rounded-xl border flex items-center gap-2 animate-fade-in ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0]'
+                  : 'bg-[#073B9E]/60 border-[#168BFF]/40'
+              }`}>
                 <input
                   type="text"
                   placeholder="New wish category (e.g. Gaming, Jewelry)"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  className="flex-1 px-3 py-1.5 bg-[#03194A] border border-[#168BFF]/40 rounded-lg text-xs text-white outline-none focus:border-[#16C7F2]"
+                  className={`flex-1 px-3 py-1.5 rounded-lg text-xs outline-none border ${
+                    isLight
+                      ? 'bg-[#F4EDE4] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                      : 'bg-[#03194A] border-[#168BFF]/40 text-white placeholder-slate-500 focus:border-[#16C7F2]'
+                  }`}
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomCategory}
-                  className="px-3 py-1.5 bg-[#19C9A7] text-[#03194A] font-bold text-xs rounded-lg hover:opacity-95"
+                  className={`px-3 py-1.5 font-bold text-xs rounded-lg hover:opacity-95 ${
+                    isLight ? 'bg-[#B84A1E] text-white' : 'bg-[#19C9A7] text-[#03194A]'
+                  }`}
                 >
                   Add
                 </button>
@@ -318,23 +351,53 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
                     onClick={() => handleSelectCategory(cat)}
                     className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all relative ${
                       isSelected
-                        ? 'bg-[rgba(22,199,242,0.22)] border-[#16C7F2] shadow-[0_0_14px_rgba(22,199,242,0.35)] scale-[1.03] ring-1 ring-[#16C7F2]'
+                        ? isLight
+                          ? 'bg-[#F7D4BC] border-[#E8BC9E] shadow-[0_4px_14px_rgba(184,74,30,0.18)] scale-[1.03] ring-1 ring-[#D96632]'
+                          : 'bg-[rgba(22,199,242,0.22)] border-[#16C7F2] shadow-[0_0_14px_rgba(22,199,242,0.35)] scale-[1.03] ring-1 ring-[#16C7F2]'
+                        : isLight
+                        ? 'bg-[#EBE0D2] hover:bg-[#E4D7C7] border-[#DECFC0] opacity-90 hover:opacity-100'
                         : 'bg-[#073B9E]/35 hover:bg-[#073B9E]/70 border-[#168BFF]/25 opacity-85 hover:opacity-100'
                     }`}
                   >
                     <div
                       className="w-8 h-8 rounded-xl flex items-center justify-center mb-1 transition-all"
                       style={{
-                        backgroundColor: isSelected ? 'rgba(22, 199, 242, 0.28)' : cat.bgColor,
-                        color: isSelected ? '#16C7F2' : cat.color,
-                        border: `1px solid ${isSelected ? '#16C7F2' : cat.borderColor}`,
+                        backgroundColor: isLight
+                          ? isSelected
+                            ? '#C25425'
+                            : '#E4D7C7'
+                          : isSelected
+                          ? 'rgba(22, 199, 242, 0.28)'
+                          : cat.bgColor,
+                        color: isLight
+                          ? isSelected
+                            ? '#FFFFFF'
+                            : '#634B3F'
+                          : isSelected
+                          ? '#16C7F2'
+                          : cat.color,
+                        border: `1px solid ${
+                          isLight
+                            ? isSelected
+                              ? '#B84A1E'
+                              : '#DECFC0'
+                            : isSelected
+                            ? '#16C7F2'
+                            : cat.borderColor
+                        }`,
                       }}
                     >
                       <IconComponent className="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <span
                       className={`text-[10.5px] font-bold text-center leading-tight truncate w-full ${
-                        isSelected ? 'text-white' : 'text-[#B9D8FF]'
+                        isSelected
+                          ? isLight
+                            ? 'text-[#2A1B14] font-black'
+                            : 'text-white'
+                          : isLight
+                          ? 'text-[#634B3F]'
+                          : 'text-[#B9D8FF]'
                       }`}
                     >
                       {cat.name}
@@ -346,12 +409,22 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowCustomInput(true)}
-                className="flex flex-col items-center justify-center p-2.5 rounded-2xl border border-dashed border-[#168BFF]/40 bg-[#073B9E]/20 hover:bg-[#073B9E]/50 text-[#16C7F2] transition-all"
+                className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border border-dashed transition-all ${
+                  isLight
+                    ? 'border-[#DECFC0] bg-[#EBE0D2]/50 hover:bg-[#EBE0D2] text-[#B84A1E]'
+                    : 'border-[#168BFF]/40 bg-[#073B9E]/20 hover:bg-[#073B9E]/50 text-[#16C7F2]'
+                }`}
               >
-                <div className="w-8 h-8 rounded-xl bg-[#16C7F2]/15 border border-[#16C7F2]/30 flex items-center justify-center mb-1 text-[#16C7F2]">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-1 border ${
+                  isLight
+                    ? 'bg-[#F7D4BC]/60 border-[#E8BC9E] text-[#B84A1E]'
+                    : 'bg-[#16C7F2]/15 border-[#16C7F2]/30 text-[#16C7F2]'
+                }`}>
                   <Plus className="w-4 h-4" />
                 </div>
-                <span className="text-[10.5px] font-bold text-center leading-tight text-[#B9D8FF]">
+                <span className={`text-[10.5px] font-bold text-center leading-tight ${
+                  isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'
+                }`}>
                   Custom
                 </span>
               </button>
@@ -360,14 +433,18 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
 
           {/* 4. "What" / Wish Item Description */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#B9D8FF]">Wish Item Title *</label>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>Wish Item Title *</label>
             <input
               type="text"
               required
               placeholder="e.g. Sony Wireless Headphones, Goa Vacation"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-[#03194A] border border-[#168BFF]/35 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 outline-none focus:border-[#16C7F2]"
+              className={`w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm outline-none border ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                  : 'bg-[#03194A] border-[#168BFF]/35 text-white placeholder-slate-500 focus:border-[#16C7F2]'
+              }`}
             />
           </div>
 
@@ -375,7 +452,11 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting || !title.trim()}
-            className="w-full py-3.5 bg-gradient-to-r from-[#168BFF] via-[#16C7F2] to-[#19C9A7] hover:opacity-95 disabled:opacity-50 text-[#03194A] font-black text-sm rounded-2xl shadow-[0_8px_25px_rgba(22,199,242,0.35)] flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+            className={`w-full py-3.5 hover:opacity-95 disabled:opacity-50 font-black text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer ${
+              isLight
+                ? 'bg-gradient-to-r from-[#D96632] via-[#C85928] to-[#B84A1E] text-white shadow-[0_8px_25px_rgba(184,74,30,0.35)]'
+                : 'bg-gradient-to-r from-[#168BFF] via-[#16C7F2] to-[#19C9A7] text-[#03194A] shadow-[0_8px_25px_rgba(22,199,242,0.35)]'
+            }`}
           >
             <Check className="w-5 h-5 stroke-[3]" />
             <span>Add to Family Wish List</span>
@@ -383,14 +464,14 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
         </form>
 
         {/* Existing Wish List Items Container */}
-        <div className="space-y-2 pt-2 border-t border-[#168BFF]/20">
-          <div className="flex items-center justify-between text-xs font-bold text-[#B9D8FF]">
+        <div className={`space-y-2 pt-2 border-t ${isLight ? 'border-[#DECFC0]' : 'border-[#168BFF]/20'}`}>
+          <div className={`flex items-center justify-between text-xs font-bold ${isLight ? 'text-[#2A1B14]' : 'text-[#B9D8FF]'}`}>
             <span>Shared Family Wishes ({wishlistItems.length})</span>
-            <span className="text-[10px] text-[#91A8C7] font-normal">Tap check to mark fulfilled</span>
+            <span className={`text-[10px] font-normal ${isLight ? 'text-[#634B3F]' : 'text-[#91A8C7]'}`}>Tap check to mark fulfilled</span>
           </div>
 
           {wishlistItems.length === 0 ? (
-            <div className="p-4 text-center text-xs text-[#91A8C7]">No wishes added yet. Make a wish above! ✨</div>
+            <div className={`p-4 text-center text-xs ${isLight ? 'text-[#634B3F]' : 'text-[#91A8C7]'}`}>No wishes added yet. Make a wish above! ✨</div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {wishlistItems.map((wish) => (
@@ -398,7 +479,11 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
                   key={wish.id}
                   className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
                     wish.is_purchased
-                      ? 'bg-[#03194A]/60 border-[#168BFF]/15 opacity-60'
+                      ? isLight
+                        ? 'bg-[#E4D7C7]/60 border-[#DECFC0] opacity-60'
+                        : 'bg-[#03194A]/60 border-[#168BFF]/15 opacity-60'
+                      : isLight
+                      ? 'bg-[#EBE0D2] border-[#DECFC0] shadow-sm'
                       : 'bg-[#073B9E]/50 border-[#168BFF]/35 shadow-sm'
                   }`}
                 >
@@ -408,33 +493,47 @@ export const AddWishModal: React.FC<AddWishModalProps> = ({
                       onClick={() => onToggleWish(wish.id)}
                       className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
                         wish.is_purchased
-                          ? 'bg-[#55D98A] border-[#55D98A] text-[#03194A]'
+                          ? 'bg-[#2E7D32] border-[#2E7D32] text-white'
+                          : isLight
+                          ? 'border-[#DECFC0] hover:border-[#C25425]'
                           : 'border-[#168BFF]/60 hover:border-[#16C7F2]'
                       }`}
                     >
                       {wish.is_purchased && <CheckCircle2 className="w-3.5 h-3.5" />}
                     </button>
                     <div className="min-w-0">
-                      <div className={`text-xs font-bold truncate ${wish.is_purchased ? 'line-through text-[#91A8C7]' : 'text-white'}`}>
+                      <div className={`text-xs font-bold truncate ${
+                        wish.is_purchased
+                          ? isLight ? 'line-through text-[#947D70]' : 'line-through text-[#91A8C7]'
+                          : isLight ? 'text-[#2A1B14]' : 'text-white'
+                      }`}>
                         {wish.item_name}
                       </div>
-                      <div className="text-[10px] text-[#B9D8FF] truncate mt-0.5">
-                        Added by <span className="text-[#FFD21F] font-semibold">{wish.added_by_name || 'Family'}</span>
+                      <div className={`text-[10px] truncate mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>
+                        Added by <span className={`font-semibold ${isLight ? 'text-[#B84A1E]' : 'text-[#FFD21F]'}`}>{wish.added_by_name || 'Family'}</span>
                         {wish.estimated_cost ? (
-                          <span className="text-[#55D98A] font-bold ml-1.5">• ₹{Number(wish.estimated_cost).toLocaleString('en-IN')}</span>
+                          <span className={`font-bold ml-1.5 ${isLight ? 'text-[#2E7D32]' : 'text-[#55D98A]'}`}>• ₹{Number(wish.estimated_cost).toLocaleString('en-IN')}</span>
                         ) : null}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[9px] bg-[#03194A] text-[#7EDCFF] px-2 py-0.5 rounded-full font-semibold border border-[#168BFF]/30">
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-semibold border ${
+                      isLight
+                        ? 'bg-[#F4EDE4] text-[#2A1B14] border-[#DECFC0]'
+                        : 'bg-[#03194A] text-[#7EDCFF] border-[#168BFF]/30'
+                    }`}>
                       {categoriesList.find((c) => c.id.toUpperCase() === (wish.category || '').toUpperCase() || c.name.toLowerCase() === (wish.category || '').toLowerCase())?.name || (wish.category && wish.category.startsWith('CAT_') ? 'Custom' : (wish.category || 'WISH'))}
                     </span>
                     <button
                       type="button"
                       onClick={() => onDeleteWish(wish.id)}
-                      className="p-1.5 text-[#91A8C7] hover:text-[#FF4D6D] transition-colors"
+                      className={`p-1.5 transition-colors ${
+                        isLight
+                          ? 'text-[#947D70] hover:text-[#C62828]'
+                          : 'text-[#91A8C7] hover:text-[#FF4D6D]'
+                      }`}
                       title="Delete wish"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

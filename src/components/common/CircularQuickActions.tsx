@@ -9,6 +9,7 @@ import {
   Wrench,
   ShieldAlert,
 } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext.js';
 
 export interface QuickActionItem {
   id: string;
@@ -16,6 +17,7 @@ export interface QuickActionItem {
   sub: string;
   icon: React.ElementType;
   neonColor: string;
+  pastelBg: string;
   glowShadow: string;
   bgGradient: string;
   onClick: () => void;
@@ -42,8 +44,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   onMaintenance,
   onEmergency,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const baseBgEnd = isLight ? 'rgba(240, 90, 40, 0.95)' : 'rgba(13, 21, 45, 0.95)';
 
   const items: QuickActionItem[] = [
     {
@@ -52,8 +58,11 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       sub: 'Quick Pay',
       icon: Receipt,
       neonColor: '#FF2A55',
-      glowShadow: '0 0 16px rgba(255, 42, 85, 0.65), inset 0 0 14px rgba(255, 42, 85, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 42, 85, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      pastelBg: '#FFE4E6',
+      glowShadow: isLight
+        ? '0 0 14px rgba(255, 42, 85, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(255, 42, 85, 0.65), inset 0 0 14px rgba(255, 42, 85, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(255, 42, 85, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onAddExpense,
     },
     {
@@ -61,9 +70,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       name: 'Wish List',
       sub: 'Dream Items',
       icon: Gift,
-      neonColor: '#00D2FF',
-      glowShadow: '0 0 16px rgba(0, 210, 255, 0.65), inset 0 0 14px rgba(0, 210, 255, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(0, 210, 255, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      neonColor: '#00A8E8',
+      pastelBg: '#E0F4FF',
+      glowShadow: isLight
+        ? '0 0 14px rgba(0, 168, 232, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(0, 210, 255, 0.65), inset 0 0 14px rgba(0, 210, 255, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(0, 210, 255, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onWishList,
     },
     {
@@ -71,9 +83,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       name: 'Set Goal',
       sub: 'Target Funds',
       icon: Target,
-      neonColor: '#00E676',
-      glowShadow: '0 0 16px rgba(0, 230, 118, 0.65), inset 0 0 14px rgba(0, 230, 118, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(0, 230, 118, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      neonColor: '#22C55E',
+      pastelBg: '#E7F9EA',
+      glowShadow: isLight
+        ? '0 0 14px rgba(34, 197, 94, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(0, 230, 118, 0.65), inset 0 0 14px rgba(0, 230, 118, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(0, 230, 118, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onSetGoal,
     },
     {
@@ -81,9 +96,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       name: 'Add Income',
       sub: 'Salary & More',
       icon: Wallet,
-      neonColor: '#B388FF',
-      glowShadow: '0 0 16px rgba(179, 136, 255, 0.65), inset 0 0 14px rgba(179, 136, 255, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(179, 136, 255, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      neonColor: '#8B5CF6',
+      pastelBg: '#EFE7FF',
+      glowShadow: isLight
+        ? '0 0 14px rgba(139, 92, 246, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(179, 136, 255, 0.65), inset 0 0 14px rgba(179, 136, 255, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(179, 136, 255, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onAddIncome,
     },
     {
@@ -91,9 +109,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       name: 'Vault',
       sub: 'KYC & Docs',
       icon: FolderLock,
-      neonColor: '#FFD600',
-      glowShadow: '0 0 16px rgba(255, 214, 0, 0.65), inset 0 0 14px rgba(255, 214, 0, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 214, 0, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      neonColor: '#FFB74D',
+      pastelBg: '#FFF4DF',
+      glowShadow: isLight
+        ? '0 0 14px rgba(255, 183, 77, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(255, 214, 0, 0.65), inset 0 0 14px rgba(255, 214, 0, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(255, 214, 0, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onVault,
     },
     {
@@ -101,9 +122,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       name: 'Tasks',
       sub: 'Daily To-Do',
       icon: CheckSquare,
-      neonColor: '#38BDF8',
-      glowShadow: '0 0 16px rgba(56, 189, 248, 0.65), inset 0 0 14px rgba(56, 189, 248, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(56, 189, 248, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      neonColor: '#42A5F5',
+      pastelBg: '#E0F4FF',
+      glowShadow: isLight
+        ? '0 0 14px rgba(66, 165, 245, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(56, 189, 248, 0.65), inset 0 0 14px rgba(56, 189, 248, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(56, 189, 248, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onTasks,
     },
     {
@@ -111,9 +135,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       name: 'Maintenance',
       sub: 'Appliance Care',
       icon: Wrench,
-      neonColor: '#FF6D00',
-      glowShadow: '0 0 16px rgba(255, 109, 0, 0.65), inset 0 0 14px rgba(255, 109, 0, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 109, 0, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      neonColor: '#FF7043',
+      pastelBg: '#FFF4DF',
+      glowShadow: isLight
+        ? '0 0 14px rgba(255, 112, 67, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(255, 109, 0, 0.65), inset 0 0 14px rgba(255, 109, 0, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(255, 109, 0, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onMaintenance,
     },
     {
@@ -121,9 +148,12 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
       name: 'Emergency',
       sub: '24/7 SOS',
       icon: ShieldAlert,
-      neonColor: '#FF1744',
-      glowShadow: '0 0 16px rgba(255, 23, 68, 0.65), inset 0 0 14px rgba(255, 23, 68, 0.25)',
-      bgGradient: 'linear-gradient(180deg, rgba(255, 23, 68, 0.22) 0%, rgba(13, 21, 45, 0.95) 75%)',
+      neonColor: '#FF6B6B',
+      pastelBg: '#FFE4E6',
+      glowShadow: isLight
+        ? '0 0 14px rgba(255, 107, 107, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(255, 23, 68, 0.65), inset 0 0 14px rgba(255, 23, 68, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(255, 23, 68, 0.28) 0%, ${baseBgEnd} 75%)`,
       onClick: onEmergency,
     },
   ];
@@ -216,15 +246,21 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
                 e.stopPropagation();
                 item.onClick();
               }}
-              className="relative shrink-0 rounded-[18px] p-0 overflow-hidden cursor-pointer active:scale-95 text-left focus:outline-none group select-none shadow-lg"
+              className="relative shrink-0 rounded-[20px] p-0 overflow-hidden cursor-pointer active:scale-95 text-left focus:outline-none group select-none transition-all kinora-3d-tile"
               style={{
-                width: '68px',
-                minWidth: '68px',
-                height: '76px',
-                border: `1.5px solid ${item.neonColor}`,
-                boxShadow: `${item.glowShadow}, 0 6px 16px -3px rgba(0, 0, 0, 0.75)`,
-                background: item.bgGradient,
-                borderRadius: '18px',
+                width: '76px',
+                minWidth: '76px',
+                height: '86px',
+                border: isLight ? undefined : `1.5px solid ${item.neonColor}`,
+                borderTop: isLight ? '1px solid rgba(255, 255, 255, 0.95)' : undefined,
+                borderBottom: isLight ? '3px solid #DEC8B2' : undefined,
+                borderLeft: isLight ? '1px solid #EAD6C4' : undefined,
+                borderRight: isLight ? '1px solid #EAD6C4' : undefined,
+                boxShadow: isLight
+                  ? '0 8px 18px -2px rgba(130, 80, 45, 0.16), 0 3px 6px rgba(130, 80, 45, 0.08), inset 0 1.5px 0.5px rgba(255, 255, 255, 0.95)'
+                  : `${item.glowShadow}, 0 6px 16px -3px rgba(0, 0, 0, 0.75)`,
+                background: isLight ? '#F3E3D3' : item.bgGradient,
+                borderRadius: '20px',
                 transformOrigin: '50% 120%',
                 willChange: 'transform',
                 backfaceVisibility: 'hidden',
@@ -233,31 +269,37 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
             >
               {/* Curved Glass Reflection Sheen */}
               <div
-                className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none"
+                className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/40 via-white/10 to-transparent pointer-events-none"
                 style={{
-                  borderTopLeftRadius: '16px',
-                  borderTopRightRadius: '16px',
+                  borderTopLeftRadius: '20px',
+                  borderTopRightRadius: '20px',
                 }}
               />
 
               {/* Card Interior */}
               <div className="relative z-10 w-full h-full p-2 flex flex-col justify-center items-center gap-1.5 text-center">
-                {/* Center Glowing Icon */}
+                {/* Center Pastel 3D Icon Squircle */}
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-md"
+                  className="w-10 h-10 rounded-[14px] flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-xs kinora-3d-icon-box"
                   style={{
-                    backgroundColor: 'rgba(5, 8, 17, 0.85)',
-                    border: `1.2px solid ${item.neonColor}`,
+                    backgroundColor: isLight ? item.pastelBg : 'rgba(5, 8, 17, 0.85)',
+                    border: isLight ? '1px solid rgba(255, 255, 255, 0.9)' : `1.2px solid ${item.neonColor}`,
                     color: item.neonColor,
-                    boxShadow: `0 0 10px ${item.neonColor}60`,
+                    boxShadow: isLight
+                      ? '0 3px 8px -1px rgba(100, 60, 30, 0.12), inset 0 1.5px 0.5px rgba(255, 255, 255, 0.95), inset 0 -1.5px 0 rgba(0, 0, 0, 0.06)'
+                      : `0 0 10px ${item.neonColor}60`,
                   }}
                 >
-                  <Icon className="w-4 h-4 stroke-[2.3]" />
+                  <Icon className="w-5 h-5 stroke-[2.2]" />
                 </div>
 
                 {/* Bottom Label */}
                 <div className="w-full px-0.5">
-                  <span className="block text-[9.5px] font-bold text-white leading-tight truncate drop-shadow-sm">
+                  <span
+                    className={`block text-[9.5px] sm:text-[10px] font-bold leading-tight ${
+                      isLight ? 'text-[#1F1F1F]' : 'text-white drop-shadow-sm'
+                    }`}
+                  >
                     {item.name}
                   </span>
                 </div>

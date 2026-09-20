@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useFamily } from '../../context/FamilyContext.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
@@ -16,12 +16,14 @@ import { AddEmergencyModal } from '../../components/common/AddEmergencyModal.js'
 import { CircularQuickActions } from '../../components/common/CircularQuickActions.js';
 import { MoneyAnalyticsDashboard } from '../../components/home/MoneyAnalyticsDashboard.js';
 import { SmartExpensesHomeCard } from '../../components/home/SmartExpensesHomeCard.js';
+import { FamilyRemindersHomeWidget } from '../../components/home/FamilyRemindersHomeWidget.js';
 import { SmartExpenseReviewModal } from '../../components/smartExpense/SmartExpenseReviewModal.js';
 import { SmartExpensePermissionModal } from '../../components/smartExpense/SmartExpensePermissionModal.js';
 import { SmartExpenseDetailModal } from '../../components/smartExpense/SmartExpenseDetailModal.js';
 import { SmartExpenseSettingsModal } from '../../components/smartExpense/SmartExpenseSettingsModal.js';
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
 import { DetectedTransaction, SmartCaptureSettings } from '../../services/smartExpense/types.js';
+import { useTheme } from '../../context/ThemeContext.js';
 import {
   Receipt,
   Gift,
@@ -420,6 +422,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const { dashboard, isLoading, refreshDashboard } = useFamily();
   const { activeLanguage, currentUser, family, hasPermission, familyMembers } = useAuth();
   const { isPrivacyMode, togglePrivacyMode } = useSecurity();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
   // Quick Action Modal States
@@ -436,6 +440,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [familyTasks, setFamilyTasks] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
+
+  // Last 5 recent expenses sorted by date/timestamp descending
+  const recentExpenses = useMemo(() => {
+    if (!Array.isArray(expenses)) return [];
+    return [...expenses]
+      .sort((a, b) => {
+        const timeA = new Date(a.date || a.expense_date || a.created_at || 0).getTime();
+        const timeB = new Date(b.date || b.expense_date || b.created_at || 0).getTime();
+        return timeB - timeA;
+      })
+      .slice(0, 5);
+  }, [expenses]);
 
   // Smart Expense State
   const [pendingSmartTx, setPendingSmartTx] = useState<DetectedTransaction[]>([]);
@@ -815,27 +831,67 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const locationCity = family?.location?.split(',')[0] || 'India';
 
   return (
-    <div className="p-3.5 space-y-3.5 text-[#F4F8FF] pb-24 animate-in fade-in duration-300">
-      {/* 2nd Line: Small Greeting + Temperature (Avatar removed per request) */}
-      <div className="flex items-center justify-between pt-0.5">
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs sm:text-sm font-semibold text-slate-200">
-              {getGreeting()},{' '}
-              <strong className="text-white font-black">{firstName}</strong>
-            </span>
-            <span className="text-xs">👋</span>
-          </div>
-          <p className="text-[10px] text-slate-400 italic mt-0.5 leading-tight">
-            "Small steps today, big dreams tomorrow."
-          </p>
-        </div>
+    <div className={`p-3.5 space-y-3.5 pb-24 animate-in fade-in duration-300 ${
+      isLight ? 'text-[#2A1B14]' : 'text-[#F4F8FF]'
+    }`}>
+      {/* Hero Greeting + Weather + Family Badge (Matching Reference 1 & 2) */}
+      <div className={`relative rounded-[26px] overflow-hidden kinora-3d-card ${
+        isLight
+          ? 'bg-gradient-to-r from-[#F8EDE0] via-[#F3E3D3] to-[#EAD6C4]/60 border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+          : 'bg-transparent'
+      }`}>
+        <div className={`p-4 sm:p-5 flex items-center justify-between gap-3 ${isLight ? 'relative min-h-[148px]' : ''}`}>
+          {/* Left: Weather Tag & Greeting */}
+          <div className={`space-y-2 min-w-0 z-10 ${isLight ? 'max-w-[56%]' : ''}`}>
+            {/* Weather Pill */}
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full shadow-sm border ${
+              isLight
+                ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#1F1F1F]'
+                : 'bg-[#0D152D] border-amber-500/30 text-white'
+            }`}>
+              <Sun className="w-3.5 h-3.5 text-[#FFC107] fill-[#FFC107]/20" />
+              <span className={`text-[10.5px] font-semibold ${isLight ? 'text-[#6B6B6B]' : 'text-slate-300'}`}>{locationCity}</span>
+              <span className="text-xs font-black">28°C</span>
+              <ChevronRight className="w-3 h-3 text-[#A3A3A3]" />
+            </div>
 
-        {/* Weather Card */}
-        <div className="flex items-center gap-1.5 bg-[#0D152D] border border-amber-500/30 px-2.5 py-1 rounded-full shadow-sm shrink-0">
-          <Sun className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-[10px] text-slate-300 font-medium">{locationCity}</span>
-          <span className="text-xs font-bold text-white">28°C</span>
+            <div>
+              <h2 className={`text-base sm:text-lg font-bold leading-tight ${
+                isLight ? 'text-[#1F1F1F]' : 'text-slate-200'
+              }`}>
+                {getGreeting()},
+              </h2>
+              <h1 className={`text-2xl sm:text-3xl font-black leading-tight flex items-center gap-1.5 mt-0.5 ${
+                isLight ? 'text-[#F05A28]' : 'text-white'
+              }`}>
+                <span>{firstName}</span>
+                <span className="text-xl">👋</span>
+              </h1>
+              <p className={`text-xs italic mt-1 leading-snug ${
+                isLight ? 'text-[#6B6B6B]' : 'text-slate-400'
+              }`}>
+                "Small steps today, big dreams tomorrow."
+              </p>
+            </div>
+          </div>
+
+          {/* Right: 3D Pixar Indian Family Photo (2nd Reference Image) with "Better Together ♡" Script */}
+          {isLight && (
+            <div className="relative shrink-0 w-[44%] h-full flex flex-col items-end justify-center">
+              {/* Better Together cursive tag at top-right of family */}
+              <div className="absolute -top-2 right-1 z-10 flex items-center gap-0.5 bg-[#FFF8F1]/95 backdrop-blur-xs px-2 py-0.5 rounded-full border border-[#EAD6C4] shadow-xs">
+                <span className="font-serif italic font-bold text-[#D3542F] text-[10px] sm:text-[11px] tracking-tight">
+                  Better Together
+                </span>
+                <span className="text-[#D3542F] text-[10px] font-bold">♡</span>
+              </div>
+              <img
+                src="/family-hero.jpg"
+                alt="Family Together"
+                className="w-full max-w-[175px] h-[125px] sm:h-[140px] object-cover object-top rounded-2xl ring-2 ring-[#EAD6C4] shadow-md transition-transform duration-300 hover:scale-[1.02]"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -850,6 +906,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         onMaintenance={() => setShowMaintenanceModal(true)}
         onEmergency={() => setShowEmergencyModal(true)}
       />
+
+      {/* 2.1. Upcoming Family & Friends Celebrations & Reminders (KinoraOne Module) */}
+      <FamilyRemindersHomeWidget onNavigateTab={onNavigateTab} />
 
       {/* 2.2. Spending Financial Analytics Dashboard (Matching Attached Image) */}
       <MoneyAnalyticsDashboard
@@ -870,15 +929,25 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       />
 
       {/* 2.4. Recent Expenses Section (Matching Reference Model Image) */}
-      <div className="bg-[#0D152D] border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5">
+      <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
+        isLight
+          ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+          : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
+      }`}>
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="text-[#FF4D6D]">✦</span>
+            <h3 className={`text-sm sm:text-base font-bold tracking-tight flex items-center gap-2 ${
+              isLight ? 'text-[#1F1F1F]' : 'text-white'
+            }`}>
+              <span className={isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'}>✦</span>
               <span>Recent Expenses</span>
-              {expenses.length > 0 && (
-                <span className="text-[11px] text-[#FF4D6D] font-bold bg-[#FF4D6D]/15 px-2 py-0.5 rounded-full border border-[#FF4D6D]/30">
-                  {Math.min(expenses.length, 5)}
+              {recentExpenses.length > 0 && (
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                  isLight
+                    ? 'text-[#D3542F] bg-[#D3542F]/12 border-[#D3542F]/30'
+                    : 'text-[#FF4D6D] bg-[#FF4D6D]/15 border-[#FF4D6D]/30'
+                }`}>
+                  {recentExpenses.length}
                 </span>
               )}
             </h3>
@@ -888,7 +957,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             <button
               type="button"
               onClick={() => setShowAddExpenseModal(true)}
-              className="text-[11px] text-[#FF4D6D] hover:text-[#FF758F] font-bold bg-[#FF4D6D]/10 hover:bg-[#FF4D6D]/20 px-2.5 py-1 rounded-lg border border-[#FF4D6D]/25 transition-all flex items-center gap-1"
+              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+                isLight
+                  ? 'text-white bg-[#F05A28] hover:bg-[#E76F3C] border-[#F05A28] shadow-sm'
+                  : 'text-[#FF4D6D] hover:text-[#FF758F] bg-[#FF4D6D]/10 hover:bg-[#FF4D6D]/20 border-[#FF4D6D]/25'
+              }`}
             >
               <Plus className="w-3 h-3" />
               <span>Add</span>
@@ -896,7 +969,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             <button
               type="button"
               onClick={() => onNavigateTab('money')}
-              className="text-[11px] text-slate-400 hover:text-white font-medium bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-slate-700/40 transition-all flex items-center gap-0.5"
+              className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all flex items-center gap-0.5 ${
+                isLight
+                  ? 'text-[#6B6B6B] hover:text-[#1F1F1F] bg-[#FFF8F1] hover:bg-[#F8EDE0] border-[#EAD6C4]'
+                  : 'text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border-slate-700/40'
+              }`}
             >
               <span>View All</span>
               <ChevronRight className="w-3 h-3" />
@@ -905,9 +982,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         </div>
 
         {/* Expenses List with Self-Color Light Boxes */}
-        {expenses && expenses.length > 0 ? (
-          <div className="divide-y divide-slate-800/60">
-            {expenses.slice(0, 8).map((exp) => {
+        {recentExpenses && recentExpenses.length > 0 ? (
+          <div className={`divide-y ${isLight ? 'divide-[#EAD6C4]' : 'divide-slate-800/60'}`}>
+            {recentExpenses.map((exp) => {
               const amountDisplay = isPrivacyMode
                 ? '••••'
                 : `₹${Number(exp.amount || 0).toLocaleString('en-IN')}`;
@@ -926,19 +1003,25 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               return (
                 <div
                   key={exp.id || Math.random()}
-                  className="flex items-center justify-between py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-all group"
+                  className={`flex items-center justify-between py-2.5 px-2 rounded-xl transition-all group ${
+                    isLight ? 'hover:bg-[#FFF8F1]/60' : 'hover:bg-white/[0.03]'
+                  }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Self Color Light Box with Category Picture/Icon */}
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${visual.boxClass}`}>
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 kinora-3d-icon-box ${visual.boxClass}`}>
                       <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs sm:text-sm font-semibold text-white truncate">
+                      <div className={`text-xs sm:text-sm font-semibold truncate ${
+                        isLight ? 'text-[#1F1F1F]' : 'text-white'
+                      }`}>
                         {merchantDisplay}
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1.5">
+                      <div className={`text-[11px] mt-0.5 truncate flex items-center gap-1.5 ${
+                        isLight ? 'text-[#6B6B6B]' : 'text-slate-400'
+                      }`}>
                         <span>{categoryDisplay}</span>
                         {dateDisplay && <span>•</span>}
                         {dateDisplay && <span>{dateDisplay}</span>}
@@ -946,7 +1029,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                     </div>
                   </div>
 
-                  <div className="text-xs sm:text-sm font-bold text-white text-right tracking-tight shrink-0 pl-3">
+                  <div className={`text-xs sm:text-sm font-bold text-right tracking-tight shrink-0 pl-3 ${
+                    isLight ? 'text-[#D3542F]' : 'text-white'
+                  }`}>
                     {amountDisplay}
                   </div>
                 </div>
@@ -955,10 +1040,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
         ) : (
           <div className="py-4 text-center">
-            <p className="text-xs text-slate-400">No expenses recorded yet.</p>
+            <p className={`text-xs ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>No expenses recorded yet.</p>
             <button
               onClick={() => setShowAddExpenseModal(true)}
-              className="mt-2 text-xs font-semibold text-[#FF4D6D] hover:underline"
+              className={`mt-2 text-xs font-semibold hover:underline ${
+                isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'
+              }`}
             >
               + Record your first expense
             </button>
@@ -967,14 +1054,24 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       </div>
 
       {/* 2.5. Family Tasks Section (Matching Reference Model Image) */}
-      <div className="bg-[#0D152D] border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5">
+      <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
+        isLight
+          ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+          : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
+      }`}>
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="text-[#FFB91F]">✦</span>
+            <h3 className={`text-sm sm:text-base font-bold tracking-tight flex items-center gap-2 ${
+              isLight ? 'text-[#1F1F1F]' : 'text-white'
+            }`}>
+              <span className={isLight ? 'text-[#FFC107]' : 'text-[#FFB91F]'}>✦</span>
               <span>Family Tasks</span>
               {familyTasks.length > 0 && (
-                <span className="text-[11px] text-[#FFB91F] font-bold bg-[#FFB91F]/15 px-2 py-0.5 rounded-full border border-[#FFB91F]/30">
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                  isLight
+                    ? 'text-amber-900 bg-amber-100 border-amber-300'
+                    : 'text-[#FFB91F] bg-[#FFB91F]/15 border-[#FFB91F]/30'
+                }`}>
                   {familyTasks.length}
                 </span>
               )}
@@ -984,7 +1081,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           <button
             type="button"
             onClick={() => setShowTaskModal(true)}
-            className="text-[11px] text-[#FFB91F] hover:text-[#FFD21F] font-bold bg-[#FFB91F]/10 hover:bg-[#FFB91F]/20 px-2.5 py-1 rounded-lg border border-[#FFB91F]/25 transition-all flex items-center gap-1"
+            className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+              isLight
+                ? 'text-white bg-[#F05A28] hover:bg-[#E76F3C] border-[#F05A28] shadow-sm'
+                : 'text-[#FFB91F] hover:text-[#FFD21F] bg-[#FFB91F]/10 hover:bg-[#FFB91F]/20 border-[#FFB91F]/25'
+            }`}
           >
             <Plus className="w-3 h-3" />
             <span>Add Task</span>
@@ -993,26 +1094,28 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
         {/* Tasks List with Self-Color Light Boxes */}
         {familyTasks && familyTasks.length > 0 ? (
-          <div className="divide-y divide-slate-800/60">
+          <div className={`divide-y ${isLight ? 'divide-[#EAD6C4]' : 'divide-slate-800/60'}`}>
             {familyTasks.map((task) => {
               const isCompleted = task.status === 'COMPLETED';
               const visual = getTaskCategoryVisual(task.title, task.category);
               const VisualIcon = visual.Icon;
               const priorityColor =
                 task.priority === 'HIGH'
-                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                  ? isLight ? 'bg-rose-100 text-rose-900 border-rose-300' : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
                   : task.priority === 'MEDIUM'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                  ? isLight ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                  : isLight ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
 
               return (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-all group"
+                  className={`flex items-center justify-between py-2.5 px-2 rounded-xl transition-all group ${
+                    isLight ? 'hover:bg-[#FFF8F1]/60' : 'hover:bg-white/[0.03]'
+                  }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Self Color Light Box with Category Picture/Icon */}
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${visual.boxClass}`}>
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 kinora-3d-icon-box ${visual.boxClass}`}>
                       <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
 
@@ -1020,12 +1123,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                       <div
                         onClick={() => toggleTaskStatus(task.id)}
                         className={`text-xs sm:text-sm font-semibold cursor-pointer truncate transition-colors ${
-                          isCompleted ? 'line-through text-slate-500' : 'text-white hover:text-amber-300'
+                          isCompleted
+                            ? isLight ? 'line-through text-[#A3A3A3]' : 'line-through text-slate-500'
+                            : isLight ? 'text-[#1F1F1F] hover:text-[#D3542F]' : 'text-white hover:text-amber-300'
                         }`}
                       >
                         {task.title}
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1.5">
+                      <div className={`text-[11px] mt-0.5 truncate flex items-center gap-1.5 ${
+                        isLight ? 'text-[#6B6B6B]' : 'text-slate-400'
+                      }`}>
                         {task.assigned_to_name && <span>{task.assigned_to_name}</span>}
                         {task.assigned_to_name && task.due_date && <span>•</span>}
                         {task.due_date && <span>Due: {task.due_date}</span>}
@@ -1045,7 +1152,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                       onClick={() => toggleTaskStatus(task.id)}
                       className={`p-1.5 rounded-lg border transition-all ${
                         isCompleted
-                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                          ? isLight
+                            ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                            : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                          : isLight
+                          ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#6B6B6B] hover:text-[#1F1F1F]'
                           : 'bg-white/5 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
                       }`}
                       title={isCompleted ? 'Mark pending' : 'Mark completed'}
@@ -1056,7 +1167,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                     <button
                       type="button"
                       onClick={() => deleteTaskItem(task.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all"
+                      className={`opacity-0 group-hover:opacity-100 p-1 transition-all ${
+                        isLight ? 'text-[#A3A3A3] hover:text-rose-600' : 'text-slate-500 hover:text-[#FF4D6D]'
+                      }`}
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1068,10 +1181,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
         ) : (
           <div className="py-4 text-center">
-            <p className="text-xs text-slate-400">No active tasks for the family.</p>
+            <p className={`text-xs ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>No active tasks for the family.</p>
             <button
               onClick={() => setShowTaskModal(true)}
-              className="mt-2 text-xs font-semibold text-[#FFB91F] hover:underline"
+              className={`mt-2 text-xs font-semibold hover:underline ${
+                isLight ? 'text-[#D3542F]' : 'text-[#FFB91F]'
+              }`}
             >
               + Add a chore or task
             </button>
@@ -1080,14 +1195,24 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       </div>
 
       {/* 2.6. Family Wishlist Section (Matching Reference Model Image) */}
-      <div className="bg-[#0D152D] border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5">
+      <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
+        isLight
+          ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+          : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
+      }`}>
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="text-[#00D2FF]">✦</span>
+            <h3 className={`text-sm sm:text-base font-bold tracking-tight flex items-center gap-2 ${
+              isLight ? 'text-[#1F1F1F]' : 'text-white'
+            }`}>
+              <span className={isLight ? 'text-[#42A5F5]' : 'text-[#00D2FF]'}>✦</span>
               <span>Family Wishlist</span>
               {wishlistItems.length > 0 && (
-                <span className="text-[11px] text-[#00D2FF] font-bold bg-[#00D2FF]/15 px-2 py-0.5 rounded-full border border-[#00D2FF]/30">
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                  isLight
+                    ? 'text-sky-900 bg-sky-100 border-sky-300'
+                    : 'text-[#00D2FF] bg-[#00D2FF]/15 border-[#00D2FF]/30'
+                }`}>
                   {wishlistItems.length}
                 </span>
               )}
@@ -1097,7 +1222,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           <button
             type="button"
             onClick={() => setShowWishListModal(true)}
-            className="text-[11px] text-[#00D2FF] hover:text-[#7EDCFF] font-bold bg-[#00D2FF]/10 hover:bg-[#00D2FF]/20 px-2.5 py-1 rounded-lg border border-[#00D2FF]/25 transition-all flex items-center gap-1"
+            className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+              isLight
+                ? 'text-white bg-[#F05A28] hover:bg-[#E76F3C] border-[#F05A28] shadow-sm'
+                : 'text-[#00D2FF] hover:text-[#7EDCFF] bg-[#00D2FF]/10 hover:bg-[#00D2FF]/20 border-[#00D2FF]/25'
+            }`}
           >
             <Plus className="w-3 h-3" />
             <span>Add Wish</span>
@@ -1106,7 +1235,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
         {/* Wishlist List with Self-Color Light Boxes */}
         {wishlistItems && wishlistItems.length > 0 ? (
-          <div className="divide-y divide-slate-800/60">
+          <div className={`divide-y ${isLight ? 'divide-[#EAD6C4]' : 'divide-slate-800/60'}`}>
             {wishlistItems.map((wish) => {
               const isFulfilled = wish.completed || wish.status === 'COMPLETED';
               const costDisplay = wish.estimated_cost
@@ -1121,11 +1250,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               return (
                 <div
                   key={wish.id}
-                  className="flex items-center justify-between py-2.5 px-2 rounded-xl hover:bg-white/[0.03] transition-all group"
+                  className={`flex items-center justify-between py-2.5 px-2 rounded-xl transition-all group ${
+                    isLight ? 'hover:bg-[#FFF8F1]/60' : 'hover:bg-white/[0.03]'
+                  }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Self Color Light Box with Category Picture/Icon */}
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${visual.boxClass}`}>
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 kinora-3d-icon-box ${visual.boxClass}`}>
                       <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
 
@@ -1133,12 +1264,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                       <div
                         onClick={() => toggleWishFulfilled(wish.id)}
                         className={`text-xs sm:text-sm font-semibold cursor-pointer truncate transition-colors ${
-                          isFulfilled ? 'line-through text-slate-500' : 'text-white hover:text-cyan-300'
+                          isFulfilled
+                            ? isLight ? 'line-through text-[#A3A3A3]' : 'line-through text-slate-500'
+                            : isLight ? 'text-[#1F1F1F] hover:text-[#42A5F5]' : 'text-white hover:text-cyan-300'
                         }`}
                       >
                         {wish.item_name || wish.title}
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5 truncate flex items-center gap-1.5">
+                      <div className={`text-[11px] mt-0.5 truncate flex items-center gap-1.5 ${
+                        isLight ? 'text-[#6B6B6B]' : 'text-slate-400'
+                      }`}>
                         <span>{wish.category || 'Wishlist'}</span>
                         {wish.notes && <span>•</span>}
                         {wish.notes && <span>{wish.notes}</span>}
@@ -1148,7 +1283,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
 
                   <div className="flex items-center gap-2 shrink-0 pl-2">
                     {costDisplay && (
-                      <span className={`text-xs sm:text-sm font-bold ${isFulfilled ? 'text-slate-500' : 'text-[#00E676]'}`}>
+                      <span className={`text-xs sm:text-sm font-bold ${
+                        isFulfilled
+                          ? isLight ? 'text-[#A3A3A3]' : 'text-slate-500'
+                          : isLight ? 'text-[#22C55E]' : 'text-[#00E676]'
+                      }`}>
                         {costDisplay}
                       </span>
                     )}
@@ -1158,7 +1297,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                       onClick={() => toggleWishFulfilled(wish.id)}
                       className={`p-1.5 rounded-lg border transition-all ${
                         isFulfilled
-                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                          ? isLight
+                            ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                            : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                          : isLight
+                          ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#6B6B6B] hover:text-[#1F1F1F]'
                           : 'bg-white/5 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
                       }`}
                       title={isFulfilled ? 'Mark unfulfilled' : 'Mark fulfilled'}
@@ -1169,7 +1312,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                     <button
                       type="button"
                       onClick={() => deleteWishItem(wish.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-[#FF4D6D] transition-all"
+                      className={`opacity-0 group-hover:opacity-100 p-1 transition-all ${
+                        isLight ? 'text-[#A3A3A3] hover:text-rose-600' : 'text-slate-500 hover:text-[#FF4D6D]'
+                      }`}
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1181,10 +1326,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
         ) : (
           <div className="py-4 text-center">
-            <p className="text-xs text-slate-400">No wishlist items yet.</p>
+            <p className={`text-xs ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>No wishlist items yet.</p>
             <button
               onClick={() => setShowWishListModal(true)}
-              className="mt-2 text-xs font-semibold text-[#00D2FF] hover:underline"
+              className={`mt-2 text-xs font-semibold hover:underline ${
+                isLight ? 'text-[#D3542F]' : 'text-[#00D2FF]'
+              }`}
             >
               + Add a dream for your family
             </button>
@@ -1192,16 +1339,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         )}
       </div>
 
-      {/* 4. Quick Overview (3 Dark Cards Matching Image 1) */}
+      {/* 4. Quick Overview (3 Cards) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white tracking-tight">Quick Overview</h3>
+          <h3 className={`text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Quick Overview</h3>
           <button
             onClick={() => onNavigateTab('money')}
-            className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
+            className={`text-[11px] font-bold flex items-center gap-0.5 transition-colors ${
+              isLight ? 'text-[#D3542F] hover:text-[#F05A28]' : 'text-[#16C7F2] hover:text-[#7EDCFF]'
+            }`}
           >
             <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5 text-[#16C7F2]" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -1209,50 +1358,80 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           {/* Card 1: Monthly Spending (Red/Pink Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-[22px] bg-[#0D152D] border border-[#FF4D6D]/30 hover:border-[#FF4D6D]/60 shadow-lg flex flex-col justify-between transition-all cursor-pointer group"
+            className={`p-3.5 rounded-[22px] flex flex-col justify-between transition-all cursor-pointer group border kinora-3d-tile ${
+              isLight
+                ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-[#D3542F]/50 shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
+                : 'bg-[#0D152D] border-[#FF4D6D]/30 hover:border-[#FF4D6D]/60 shadow-lg'
+            }`}
           >
             <div>
-              <div className="text-[10px] font-bold text-[#FF8A70] leading-tight">Monthly Spending</div>
-              <div className="text-sm sm:text-base font-black text-white mt-1.5">
+              <div className={`text-[10px] font-bold leading-tight ${
+                isLight ? 'text-[#D3542F]' : 'text-[#FF8A70]'
+              }`}>Monthly Spending</div>
+              <div className={`text-sm sm:text-base font-black mt-1.5 ${
+                isLight ? 'text-[#1F1F1F]' : 'text-white'
+              }`}>
                 {isPrivacyMode ? '••••' : formatCurrency(snapshot.monthlySpending || 0, false)}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-[#FF8A70] mt-2 flex items-center gap-0.5">
+            <div className={`text-[10px] font-bold mt-2 flex items-center gap-0.5 ${
+              isLight ? 'text-[#D3542F]' : 'text-[#FF8A70]'
+            }`}>
               <span>{(snapshot.monthlySpending || 0) > 0 ? '↓ 8%' : '₹0'}</span>
-              <span className="text-slate-400 text-[9px] font-normal">{(snapshot.monthlySpending || 0) > 0 ? 'vs last mo' : 'this month'}</span>
+              <span className={`text-[9px] font-normal ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>{(snapshot.monthlySpending || 0) > 0 ? 'vs last mo' : 'this month'}</span>
             </div>
           </div>
 
           {/* Card 2: Savings (Emerald Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-[22px] bg-[#0D152D] border border-[#16C7F2]/30 hover:border-[#16C7F2]/60 shadow-lg flex flex-col justify-between transition-all cursor-pointer group"
+            className={`p-3.5 rounded-[22px] flex flex-col justify-between transition-all cursor-pointer group border kinora-3d-tile ${
+              isLight
+                ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-emerald-600/50 shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
+                : 'bg-[#0D152D] border-[#16C7F2]/30 hover:border-[#16C7F2]/60 shadow-lg'
+            }`}
           >
             <div>
-              <div className="text-[10px] font-bold text-[#34D399] leading-tight">Savings</div>
-              <div className="text-sm sm:text-base font-black text-white mt-1.5">
+              <div className={`text-[10px] font-bold leading-tight ${
+                isLight ? 'text-[#22C55E]' : 'text-[#34D399]'
+              }`}>Savings</div>
+              <div className={`text-sm sm:text-base font-black mt-1.5 ${
+                isLight ? 'text-[#1F1F1F]' : 'text-white'
+              }`}>
                 {isPrivacyMode ? '••••' : formatCurrency(snapshot.totalSavings || 0, true)}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-[#34D399] mt-2 flex items-center gap-0.5">
+            <div className={`text-[10px] font-bold mt-2 flex items-center gap-0.5 ${
+              isLight ? 'text-[#22C55E]' : 'text-[#34D399]'
+            }`}>
               <span>{(snapshot.totalSavings || 0) > 0 ? '₹0' : '₹0'}</span>
-              <span className="text-slate-400 text-[9px] font-normal">saved</span>
-              <span className="text-slate-400 text-[9px] font-normal">year</span>
+              <span className={`text-[9px] font-normal ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>saved</span>
+              <span className={`text-[9px] font-normal ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>year</span>
             </div>
           </div>
 
           {/* Card 3: Goals (Purple Accent) */}
           <div
             onClick={() => onNavigateTab('money')}
-            className="p-3.5 rounded-[22px] bg-[#0D152D] border border-[#8B5CF6]/30 hover:border-[#8B5CF6]/60 shadow-lg flex flex-col justify-between transition-all cursor-pointer group"
+            className={`p-3.5 rounded-[22px] flex flex-col justify-between transition-all cursor-pointer group border kinora-3d-tile ${
+              isLight
+                ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-purple-600/50 shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
+                : 'bg-[#0D152D] border-[#8B5CF6]/30 hover:border-[#8B5CF6]/60 shadow-lg'
+            }`}
           >
             <div>
-              <div className="text-[10px] font-bold text-slate-300 leading-tight">Goals</div>
-              <div className="text-sm sm:text-base font-black text-white mt-1.5">
+              <div className={`text-[10px] font-bold leading-tight ${
+                isLight ? 'text-[#AB47BC]' : 'text-slate-300'
+              }`}>Goals</div>
+              <div className={`text-sm sm:text-base font-black mt-1.5 ${
+                isLight ? 'text-[#1F1F1F]' : 'text-white'
+              }`}>
                 {goals && goals.length > 0 ? `${goals.filter(g => g.current_amount >= g.target_amount).length}/${goals.length}` : '0/0'}
               </div>
             </div>
-            <div className="text-[10px] font-bold text-[#38BDF8] mt-2">
+            <div className={`text-[10px] font-bold mt-2 ${
+              isLight ? 'text-[#AB47BC]' : 'text-[#38BDF8]'
+            }`}>
               {goals && goals.length > 0 ? 'On Track' : '0 Active'}
             </div>
           </div>
@@ -1262,13 +1441,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       {/* 5. Upcoming Card */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white tracking-tight">Upcoming</h3>
+          <h3 className={`text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Upcoming</h3>
           <button
             onClick={() => onNavigateTab('family')}
-            className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
+            className={`text-[11px] font-bold flex items-center gap-0.5 transition-colors ${
+              isLight ? 'text-[#D3542F] hover:text-[#F05A28]' : 'text-[#16C7F2] hover:text-[#7EDCFF]'
+            }`}
           >
             <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5 text-[#16C7F2]" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -1279,23 +1460,37 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             return (
               <div
                 onClick={() => onNavigateTab('calendar')}
-                className="p-3.5 rounded-[22px] bg-[#0D152D] border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
+                className={`p-3.5 rounded-[22px] flex items-center justify-between transition-all cursor-pointer group border kinora-3d-tile ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-[#F05A28]/50 shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
+                    : 'bg-[#0D152D] border-slate-800/90 hover:border-slate-700 shadow-md'
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-[#168BFF]/15 border border-[#168BFF]/30 flex items-center justify-center text-[#16C7F2] shrink-0">
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border kinora-3d-icon-box ${
+                    isLight
+                      ? 'bg-sky-100 border-sky-300 text-sky-800'
+                      : 'bg-[#168BFF]/15 border-[#168BFF]/30 text-[#16C7F2]'
+                  }`}>
                     <Calendar className="w-6 h-6 stroke-[2]" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-white group-hover:text-[#7EDCFF] transition-colors">
+                    <div className={`text-xs font-bold transition-colors ${
+                      isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-[#7EDCFF]'
+                    }`}>
                       {ev.title} 📅
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className={`text-[10px] mt-0.5 ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
                       {ev.start_date ? formatDate(ev.start_date) : 'Upcoming Event'}
                     </div>
                   </div>
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 text-xs font-bold">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${
+                  isLight
+                    ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#1F1F1F]'
+                    : 'bg-slate-800 border-slate-700 text-slate-300'
+                }`}>
                   ➔
                 </div>
               </div>
@@ -1328,17 +1523,27 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           return (
             <div
               onClick={() => onNavigateTab('family')}
-              className="p-3.5 rounded-[22px] bg-[#0D152D] border border-slate-800/90 shadow-md flex items-center justify-between hover:border-slate-700 transition-all cursor-pointer group"
+              className={`p-3.5 rounded-[22px] flex items-center justify-between transition-all cursor-pointer group border kinora-3d-tile ${
+                isLight
+                  ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-amber-300 shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
+                  : 'bg-[#0D152D] border-slate-800/90 hover:border-slate-700 shadow-md'
+              }`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#FF8A24]/15 border border-[#FF8A24]/30 flex items-center justify-center text-[#FFD21F] shrink-0">
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border kinora-3d-icon-box ${
+                  isLight
+                    ? 'bg-amber-100 border-amber-300 text-amber-800'
+                    : 'bg-[#FF8A24]/15 border-[#FF8A24]/30 text-[#FFD21F]'
+                }`}>
                   <Cake className="w-6 h-6 stroke-[2]" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white group-hover:text-[#7EDCFF] transition-colors">
+                  <div className={`text-xs font-bold transition-colors ${
+                    isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-[#7EDCFF]'
+                  }`}>
                     {nearest ? `${nearest.member.name.split(' ')[0]}'s Birthday 🎂` : "Family Birthday 🎂"}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">
+                  <div className={`text-[10px] mt-0.5 ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
                     {nearest
                       ? nearest.diffDays === 0
                         ? 'Today! Celebrate together 🎉'
@@ -1351,7 +1556,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               <img
                 src={nearest?.member?.avatar_url || currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
                 alt={nearest?.member?.name || 'Member'}
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-[#16C7F2]/60 shadow-sm"
+                className={`w-9 h-9 rounded-full object-cover ring-2 shadow-sm ${
+                  isLight ? 'ring-[#C25425]/60' : 'ring-[#16C7F2]/60'
+                }`}
               />
             </div>
           );
@@ -1361,13 +1568,15 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       {/* 6. Family Moments (Horizontal Carousel) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-white tracking-tight">Family Moments</h3>
+          <h3 className={`text-sm font-black tracking-tight ${isLight ? 'text-[#2A1B14]' : 'text-white'}`}>Family Moments</h3>
           <button
             onClick={() => onNavigateTab('memories')}
-            className="text-[11px] text-[#16C7F2] hover:text-[#7EDCFF] font-bold flex items-center gap-0.5 transition-colors"
+            className={`text-[11px] font-bold flex items-center gap-0.5 transition-colors ${
+              isLight ? 'text-[#B84A1E] hover:text-[#D96632]' : 'text-[#16C7F2] hover:text-[#7EDCFF]'
+            }`}
           >
             <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5 text-[#16C7F2]" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -1379,7 +1588,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                 <div
                   key={mem.id}
                   onClick={() => onNavigateTab('memories')}
-                  className="min-w-[140px] max-w-[140px] rounded-[20px] bg-[#0D152D] border border-slate-800/90 overflow-hidden shadow-md shrink-0 cursor-pointer group hover:border-[#16C7F2]/50 transition-all"
+                  className={`min-w-[140px] max-w-[140px] rounded-[20px] overflow-hidden shadow-md shrink-0 cursor-pointer group transition-all border ${
+                    isLight
+                      ? 'bg-[#EBE0D2] border-[#DECFC0] hover:border-[#C25425]/50'
+                      : 'bg-[#0D152D] border-slate-800/90 hover:border-[#16C7F2]/50'
+                  }`}
                 >
                   <div className="h-24 overflow-hidden relative">
                     <img
@@ -1387,7 +1600,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                       alt={mem.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#080D1A]/95 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                     <span className="absolute bottom-1.5 left-2.5 text-[9px] font-bold text-white truncate max-w-[120px]">
                       {mem.location || mem.title}
                     </span>
@@ -1399,18 +1612,28 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         ) : (
           <div
             onClick={() => onNavigateTab('memories')}
-            className="flex items-center justify-between p-3.5 rounded-2xl bg-[#0D152D] border border-slate-800/80 hover:border-[#16C7F2]/40 transition-all cursor-pointer group"
+            className={`flex items-center justify-between p-3.5 rounded-2xl transition-all cursor-pointer group border ${
+              isLight
+                ? 'bg-[#EBE0D2] border-[#DECFC0] hover:border-[#C25425]/40'
+                : 'bg-[#0D152D] border-slate-800/80 hover:border-[#16C7F2]/40'
+            }`}
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#16C7F2]/15 border border-[#16C7F2]/30 flex items-center justify-center text-[#16C7F2] shrink-0">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                isLight
+                  ? 'bg-amber-100 border-amber-300 text-amber-800'
+                  : 'bg-[#16C7F2]/15 border-[#168BFF]/30 text-[#16C7F2]'
+              }`}>
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white">Capture Your First Family Moment</p>
-                <p className="text-[10px] text-slate-400">Save family photos, voice stories & precious memories</p>
+                <p className={`text-xs font-bold ${isLight ? 'text-[#2A1B14]' : 'text-white'}`}>Capture Your First Family Moment</p>
+                <p className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Save family photos, voice stories & precious memories</p>
               </div>
             </div>
-            <span className="text-[11px] font-bold text-[#16C7F2] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            <span className={`text-[11px] font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform ${
+              isLight ? 'text-[#C25425]' : 'text-[#16C7F2]'
+            }`}>
               <Plus className="w-3.5 h-3.5" /> Add
             </span>
           </div>

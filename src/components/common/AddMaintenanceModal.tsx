@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Calendar } from 'lucide-react';
 import { CustomDatePicker } from './CustomDatePicker.js';
+import { useTheme } from '../../context/ThemeContext.js';
 
 export interface AddMaintenanceModalProps {
   isOpen: boolean;
@@ -67,6 +68,9 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [itemName, setItemName] = useState('');
   const [cost, setCost] = useState('');
   const [provider, setProvider] = useState('');
@@ -111,9 +115,9 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
       id: `CAT_${Date.now()}`,
       name: customName.trim(),
       icon: Tag,
-      color: '#FB923C',
-      bgColor: 'rgba(251, 146, 60, 0.16)',
-      borderColor: 'rgba(251, 146, 60, 0.50)',
+      color: isLight ? '#B84A1E' : '#FB923C',
+      bgColor: isLight ? 'rgba(184, 74, 30, 0.16)' : 'rgba(251, 146, 60, 0.16)',
+      borderColor: isLight ? 'rgba(184, 74, 30, 0.50)' : 'rgba(251, 146, 60, 0.50)',
     };
     setCategoriesList((prev) => [...prev, newCat]);
     setSelectedCategory(newCat.id);
@@ -157,23 +161,35 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-[#0B1226] border-2 border-[#FB923C]/40 rounded-[28px] p-4 sm:p-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.98)] space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 ${isLight ? 'bg-black/50' : 'bg-black/80'} backdrop-blur-md animate-fade-in`}>
+      <div className={`w-full max-w-md rounded-[28px] p-4 sm:p-5 space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden ${
+        isLight
+          ? 'bg-[#EFE4D6] border-2 border-[#DECFC0] text-[#2A1B14] shadow-[0_20px_60px_rgba(140,95,60,0.22)]'
+          : 'bg-[#0B1226] border-2 border-[#FB923C]/40 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.98)]'
+      }`}>
         {/* Header */}
         <div className="flex items-center justify-between pb-1">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-[#FB923C]/20 text-[#FB923C] border border-[#FB923C]/40">
+            <div className={`p-2 rounded-xl border ${
+              isLight
+                ? 'bg-[#F7D4BC] text-[#B84A1E] border-[#E8BC9E]'
+                : 'bg-[#FB923C]/20 text-[#FB923C] border-[#FB923C]/40'
+            }`}>
               <Wrench className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Maintenance & Services</h3>
-              <p className="text-[10px] text-slate-400">Track appliance AMCs, vehicle services & warranties</p>
+              <h3 className={`text-lg font-bold tracking-tight ${isLight ? 'text-[#2A1B14]' : 'text-white'}`}>Maintenance & Services</h3>
+              <p className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Track appliance AMCs, vehicle services & warranties</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[#0E1730] text-slate-400 hover:text-white transition-colors"
+            className={`p-1.5 rounded-full transition-colors ${
+              isLight
+                ? 'hover:bg-[#EBE0D2] text-[#634B3F] hover:text-[#2A1B14]'
+                : 'hover:bg-[#0E1730] text-slate-400 hover:text-white'
+            }`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -190,7 +206,11 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
                 onClick={() => handleSelectPreset(preset)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
                   isSelected
-                    ? 'bg-[#FB923C] text-[#0B1226] border-white shadow-md shadow-[#FB923C]/40 scale-105 font-bold'
+                    ? isLight
+                      ? 'bg-gradient-to-r from-[#D96632] to-[#B84A1E] text-white border-[#B84A1E] shadow-md shadow-[#B84A1E]/30 scale-105 font-bold'
+                      : 'bg-[#FB923C] text-[#0B1226] border-white shadow-md shadow-[#FB923C]/40 scale-105 font-bold'
+                    : isLight
+                    ? 'bg-[#EBE0D2] hover:bg-[#DECFC0] text-[#634B3F] border-[#DECFC0]'
                     : 'bg-[#0D152D] hover:bg-[#131F3F] text-slate-300 border-slate-700/60'
                 }`}
               >
@@ -203,15 +223,23 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
         <form onSubmit={handleSubmitForm} className="space-y-4">
           {/* 2. Service Cost Input */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Service Cost / Fee (Optional)</label>
-            <div className="flex items-center bg-[#050811] border-2 border-slate-700/80 focus-within:border-[#FB923C] rounded-2xl px-4 py-3 shadow-inner transition-colors">
-              <span className="text-xl sm:text-2xl font-black text-[#55D98A] mr-2">₹</span>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Service Cost / Fee (Optional)</label>
+            <div className={`flex items-center rounded-2xl px-4 py-3 shadow-inner transition-colors border-2 ${
+              isLight
+                ? 'bg-[#EBE0D2] border-[#DECFC0] focus-within:border-[#C25425]'
+                : 'bg-[#050811] border-slate-700/80 focus-within:border-[#FB923C]'
+            }`}>
+              <span className={`text-xl sm:text-2xl font-black mr-2 ${isLight ? 'text-[#B84A1E]' : 'text-[#55D98A]'}`}>₹</span>
               <input
                 type="number"
                 placeholder="2500"
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
-                className="w-full bg-transparent text-xl sm:text-2xl font-black text-white placeholder-slate-500 outline-none"
+                className={`w-full bg-transparent text-xl sm:text-2xl font-black outline-none ${
+                  isLight
+                    ? 'text-[#2A1B14] placeholder-[#947D70]'
+                    : 'text-white placeholder-slate-500'
+                }`}
               />
             </div>
           </div>
@@ -219,13 +247,15 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
           {/* 3. Category Grid */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-slate-300">
-                Category: <span className="text-[#FB923C] font-bold">{selectedCatName}</span>
+              <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
+                Category: <span className={`font-bold ${isLight ? 'text-[#B84A1E]' : 'text-[#FB923C]'}`}>{selectedCatName}</span>
               </label>
               <button
                 type="button"
                 onClick={() => setShowCustomInput(!showCustomInput)}
-                className="text-[11px] text-[#55D98A] hover:underline font-bold flex items-center gap-0.5"
+                className={`text-[11px] hover:underline font-bold flex items-center gap-0.5 ${
+                  isLight ? 'text-[#B84A1E]' : 'text-[#55D98A]'
+                }`}
               >
                 <Plus className="w-3 h-3" />
                 <span>Custom</span>
@@ -233,18 +263,28 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
             </div>
 
             {showCustomInput && (
-              <div className="p-2.5 rounded-xl bg-[#0D152D] border border-slate-700/80 flex items-center gap-2 animate-fade-in">
+              <div className={`p-2.5 rounded-xl border flex items-center gap-2 animate-fade-in ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0]'
+                  : 'bg-[#0D152D] border-slate-700/80'
+              }`}>
                 <input
                   type="text"
                   placeholder="New maintenance type (e.g. Solar Panel)"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  className="flex-1 px-3 py-1.5 bg-[#050811] border border-slate-700/80 rounded-lg text-xs text-white outline-none focus:border-[#FB923C]"
+                  className={`flex-1 px-3 py-1.5 rounded-lg text-xs outline-none border ${
+                    isLight
+                      ? 'bg-[#F4EDE4] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                      : 'bg-[#050811] border-slate-700/80 text-white placeholder-slate-500 focus:border-[#FB923C]'
+                  }`}
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomCategory}
-                  className="px-3 py-1.5 bg-[#FB923C] text-[#0B1226] font-bold text-xs rounded-lg hover:opacity-95"
+                  className={`px-3 py-1.5 font-bold text-xs rounded-lg hover:opacity-95 ${
+                    isLight ? 'bg-[#B84A1E] text-white' : 'bg-[#FB923C] text-[#0B1226]'
+                  }`}
                 >
                   Add
                 </button>
@@ -262,23 +302,53 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
                     onClick={() => handleSelectCategory(cat)}
                     className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all relative ${
                       isSelected
-                        ? 'bg-[rgba(251,146,60,0.22)] border-[#FB923C] shadow-[0_0_14px_rgba(251,146,60,0.35)] scale-[1.03] ring-1 ring-[#FB923C]'
+                        ? isLight
+                          ? 'bg-[#F7D4BC] border-[#E8BC9E] shadow-[0_4px_14px_rgba(184,74,30,0.18)] scale-[1.03] ring-1 ring-[#D96632]'
+                          : 'bg-[rgba(251,146,60,0.22)] border-[#FB923C] shadow-[0_0_14px_rgba(251,146,60,0.35)] scale-[1.03] ring-1 ring-[#FB923C]'
+                        : isLight
+                        ? 'bg-[#EBE0D2] hover:bg-[#E4D7C7] border-[#DECFC0] opacity-90 hover:opacity-100'
                         : 'bg-[#0D152D] hover:bg-[#131F3F] border-slate-800 opacity-85 hover:opacity-100'
                     }`}
                   >
                     <div
                       className="w-8 h-8 rounded-xl flex items-center justify-center mb-1 transition-all"
                       style={{
-                        backgroundColor: isSelected ? 'rgba(251, 146, 60, 0.28)' : cat.bgColor,
-                        color: isSelected ? '#FB923C' : cat.color,
-                        border: `1px solid ${isSelected ? '#FB923C' : cat.borderColor}`,
+                        backgroundColor: isLight
+                          ? isSelected
+                            ? '#C25425'
+                            : '#E4D7C7'
+                          : isSelected
+                          ? 'rgba(251, 146, 60, 0.28)'
+                          : cat.bgColor,
+                        color: isLight
+                          ? isSelected
+                            ? '#FFFFFF'
+                            : '#634B3F'
+                          : isSelected
+                          ? '#FB923C'
+                          : cat.color,
+                        border: `1px solid ${
+                          isLight
+                            ? isSelected
+                              ? '#B84A1E'
+                              : '#DECFC0'
+                            : isSelected
+                            ? '#FB923C'
+                            : cat.borderColor
+                        }`,
                       }}
                     >
                       <IconComponent className="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <span
                       className={`text-[10.5px] font-bold text-center leading-tight truncate w-full ${
-                        isSelected ? 'text-white' : 'text-slate-300'
+                        isSelected
+                          ? isLight
+                            ? 'text-[#2A1B14] font-black'
+                            : 'text-white'
+                          : isLight
+                          ? 'text-[#634B3F]'
+                          : 'text-slate-300'
                       }`}
                     >
                       {cat.name}
@@ -290,12 +360,22 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowCustomInput(true)}
-                className="flex flex-col items-center justify-center p-2.5 rounded-2xl border border-dashed border-slate-700 bg-[#0D152D]/60 hover:bg-[#0D152D] text-[#FB923C] transition-all"
+                className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border border-dashed transition-all ${
+                  isLight
+                    ? 'border-[#DECFC0] bg-[#EBE0D2]/50 hover:bg-[#EBE0D2] text-[#B84A1E]'
+                    : 'border-slate-700 bg-[#0D152D]/60 hover:bg-[#0D152D] text-[#FB923C]'
+                }`}
               >
-                <div className="w-8 h-8 rounded-xl bg-[#FB923C]/15 border border-[#FB923C]/30 flex items-center justify-center mb-1 text-[#FB923C]">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-1 border ${
+                  isLight
+                    ? 'bg-[#F7D4BC]/60 border-[#E8BC9E] text-[#B84A1E]'
+                    : 'bg-[#FB923C]/15 border-[#FB923C]/30 text-[#FB923C]'
+                }`}>
                   <Plus className="w-4 h-4" />
                 </div>
-                <span className="text-[10.5px] font-bold text-center leading-tight text-slate-300">
+                <span className={`text-[10.5px] font-bold text-center leading-tight ${
+                  isLight ? 'text-[#634B3F]' : 'text-slate-300'
+                }`}>
                   Custom
                 </span>
               </button>
@@ -304,40 +384,54 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
 
           {/* 4. Appliance / Item Name */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Item / Appliance Name *</label>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Item / Appliance Name *</label>
             <input
               type="text"
               required
               placeholder="e.g. Honda City Car Periodic Service"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-[#050811] border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 outline-none focus:border-[#FB923C]"
+              className={`w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm outline-none border ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                  : 'bg-[#050811] border-slate-700/80 text-white placeholder-slate-500 focus:border-[#FB923C]'
+              }`}
             />
           </div>
 
           {/* 5. Service Provider & Contact Phone */}
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Service Center / Mechanic</label>
+              <label className={`text-xs font-semibold block mb-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Service Center / Mechanic</label>
               <input
                 type="text"
                 placeholder="e.g. Maruti Care Center"
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#050811] border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#FB923C]"
+                className={`w-full px-3.5 py-2.5 rounded-xl text-xs outline-none border ${
+                  isLight
+                    ? 'bg-[#EBE0D2] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                    : 'bg-[#050811] border-slate-700/80 text-white placeholder-slate-500 focus:border-[#FB923C]'
+                }`}
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Provider Phone (Optional)</label>
-              <div className="flex items-center bg-[#050811] border border-slate-700/80 rounded-xl px-3 py-2 text-white">
-                <Phone className="w-3.5 h-3.5 text-[#FB923C] mr-2 shrink-0" />
+              <label className={`text-xs font-semibold block mb-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Provider Phone (Optional)</label>
+              <div className={`flex items-center rounded-xl px-3 py-2 border ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0] text-[#2A1B14]'
+                  : 'bg-[#050811] border-slate-700/80 text-white'
+              }`}>
+                <Phone className={`w-3.5 h-3.5 mr-2 shrink-0 ${isLight ? 'text-[#B84A1E]' : 'text-[#FB923C]'}`} />
                 <input
                   type="tel"
                   placeholder="+91 98765 43210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-transparent text-xs text-white outline-none"
+                  className={`w-full bg-transparent text-xs outline-none ${
+                    isLight ? 'text-[#2A1B14] placeholder-[#947D70]' : 'text-white placeholder-slate-500'
+                  }`}
                 />
               </div>
             </div>
@@ -349,7 +443,6 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
               label="Next Due Date (Optional)"
               value={nextDue}
               onChange={(newDate) => setNextDue(newDate)}
-              className="!bg-[#050811] !border-slate-700/80 text-xs text-white"
             />
           </div>
 
@@ -357,7 +450,11 @@ export const AddMaintenanceModal: React.FC<AddMaintenanceModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting || !itemName.trim()}
-            className="w-full py-3.5 bg-gradient-to-r from-[#FF8A24] via-[#FB923C] to-[#FFD21F] hover:opacity-95 disabled:opacity-50 text-[#0B1226] font-black text-sm rounded-2xl shadow-[0_8px_25px_rgba(251,146,60,0.35)] flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer mt-2"
+            className={`w-full py-3.5 hover:opacity-95 disabled:opacity-50 font-black text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer mt-2 ${
+              isLight
+                ? 'bg-gradient-to-r from-[#D96632] via-[#C85928] to-[#B84A1E] text-white shadow-[0_8px_25px_rgba(184,74,30,0.35)]'
+                : 'bg-gradient-to-r from-[#FF8A24] via-[#FB923C] to-[#FFD21F] text-[#0B1226] shadow-[0_8px_25px_rgba(251,146,60,0.35)]'
+            }`}
           >
             <Check className="w-5 h-5 stroke-[3]" />
             <span>Log Maintenance Record</span>

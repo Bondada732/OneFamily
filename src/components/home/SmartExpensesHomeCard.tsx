@@ -1,6 +1,7 @@
 import React from 'react';
 import { Zap, ChevronRight, CheckCircle2, ShieldCheck, Settings } from 'lucide-react';
 import { DetectedTransaction, SmartCaptureSettings } from '../../services/smartExpense/types.js';
+import { useTheme } from '../../context/ThemeContext.js';
 
 interface SmartExpensesHomeCardProps {
   pendingTransactions: DetectedTransaction[];
@@ -19,16 +20,27 @@ export const SmartExpensesHomeCard: React.FC<SmartExpensesHomeCardProps> = ({
   onOpenSettings,
   isPrivacyMode = false,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const pendingCount = pendingTransactions.length;
   const pendingTotal = pendingTransactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
   const isEnabled = settings.enabled || settings.smsEnabled;
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl p-3.5 shadow-lg border transition-all duration-200 select-none"
+      className="relative overflow-hidden rounded-2xl p-3.5 shadow-lg border transition-all duration-200 select-none text-white kinora-3d-card"
       style={{
-        background: 'linear-gradient(135deg, rgba(7, 59, 158, 0.75) 0%, rgba(13, 21, 45, 0.95) 70%, rgba(22, 199, 242, 0.12) 100%)',
-        borderColor: pendingCount > 0 ? 'rgba(22, 199, 242, 0.45)' : 'rgba(22, 199, 242, 0.25)',
+        background: isLight
+          ? 'linear-gradient(135deg, #F05A28 0%, #E76F3C 65%, #D3542F 100%)'
+          : 'linear-gradient(135deg, rgba(7, 59, 158, 0.75) 0%, rgba(13, 21, 45, 0.95) 70%, rgba(22, 199, 242, 0.12) 100%)',
+        borderColor: isLight
+          ? 'rgba(255, 255, 255, 0.35)'
+          : pendingCount > 0 ? 'rgba(22, 199, 242, 0.45)' : 'rgba(22, 199, 242, 0.25)',
+        borderBottom: isLight ? '3px solid #B8431B' : undefined,
+        borderTop: isLight ? '1px solid rgba(255, 255, 255, 0.6)' : undefined,
+        boxShadow: isLight
+          ? '0 10px 24px -4px rgba(240, 90, 40, 0.35), 0 4px 8px -2px rgba(240, 90, 40, 0.2), inset 0 1.5px 0.5px rgba(255, 255, 255, 0.6)'
+          : '0 8px 24px rgba(0, 0, 0, 0.6)',
       }}
     >
       <div className="flex items-center justify-between">

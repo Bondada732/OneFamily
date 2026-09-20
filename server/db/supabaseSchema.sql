@@ -391,6 +391,66 @@ CREATE TABLE ai_conversations (
   created_at TEXT NOT NULL
 );
 
+-- 26. FAMILY CONTACTS
+CREATE TABLE family_contacts (
+  id TEXT PRIMARY KEY,
+  family_id TEXT NOT NULL REFERENCES families(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  photo_url TEXT,
+  mobile_number TEXT NOT NULL,
+  relationship TEXT NOT NULL,
+  notes TEXT,
+  visibility TEXT DEFAULT 'FAMILY',
+  visible_to_members TEXT,
+  created_by TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- 27. FAMILY CONTACT OCCASIONS
+CREATE TABLE family_contact_occasions (
+  id TEXT PRIMARY KEY,
+  contact_id TEXT NOT NULL REFERENCES family_contacts(id) ON DELETE CASCADE,
+  family_id TEXT NOT NULL REFERENCES families(id) ON DELETE CASCADE,
+  occasion_type TEXT NOT NULL,
+  custom_occasion_name TEXT,
+  occasion_date TEXT NOT NULL,
+  original_year INTEGER,
+  is_recurring BOOLEAN DEFAULT TRUE,
+  reminder_type TEXT DEFAULT 'OFFSET_DAYS',
+  reminder_days_before INTEGER DEFAULT 3,
+  custom_reminder_date TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+-- 28. REMINDER SETTINGS
+CREATE TABLE reminder_settings (
+  id TEXT PRIMARY KEY,
+  occasion_id TEXT NOT NULL REFERENCES family_contact_occasions(id) ON DELETE CASCADE,
+  dashboard_enabled BOOLEAN DEFAULT TRUE,
+  push_notification_enabled BOOLEAN DEFAULT TRUE,
+  notification_frequency TEXT DEFAULT 'DAILY',
+  notification_time TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+-- 29. CONTACT PERMISSIONS
+CREATE TABLE contact_permissions (
+  id TEXT PRIMARY KEY,
+  contact_id TEXT NOT NULL REFERENCES family_contacts(id) ON DELETE CASCADE,
+  family_member_id TEXT NOT NULL,
+  can_view BOOLEAN DEFAULT TRUE,
+  can_edit BOOLEAN DEFAULT FALSE,
+  can_view_phone BOOLEAN DEFAULT TRUE,
+  can_view_notes BOOLEAN DEFAULT TRUE,
+  can_view_photo BOOLEAN DEFAULT TRUE,
+  created_at TEXT NOT NULL
+);
+
 -- ==============================================================================
 -- DISABLE RLS TO ALLOW ACCESS VIA BOTH ANON AND SERVICE_ROLE KEYS
 -- ==============================================================================
@@ -419,5 +479,9 @@ ALTER TABLE grocery_items DISABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_items DISABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications DISABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_conversations DISABLE ROW LEVEL SECURITY;
+ALTER TABLE family_contacts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE family_contact_occasions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE reminder_settings DISABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_permissions DISABLE ROW LEVEL SECURITY;
 
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;

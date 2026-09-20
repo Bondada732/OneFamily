@@ -292,3 +292,93 @@ export interface HomeDashboardData {
     category: string;
   };
 }
+
+export type OccasionType =
+  | 'BIRTHDAY'
+  | 'MARRIAGE_ANNIVERSARY'
+  | 'ENGAGEMENT_ANNIVERSARY'
+  | 'GRADUATION_ANNIVERSARY'
+  | 'OTHER';
+
+export type ContactVisibility = 'FAMILY' | 'SELECTED' | 'PRIVATE';
+
+export interface FamilyContactOccasion {
+  id: string;
+  contact_id: string;
+  family_id: string;
+  occasion_type: OccasionType;
+  custom_occasion_name?: string;
+  occasion_date: string; // YYYY-MM-DD
+  original_year?: number;
+  is_recurring: boolean;
+  reminder_type: 'OFFSET_DAYS' | 'CUSTOM_DATE';
+  reminder_days_before: number; // e.g. 0, 1, 3, 5, 7, 14, 30
+  custom_reminder_date?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReminderSetting {
+  id: string;
+  occasion_id: string;
+  dashboard_enabled: boolean;
+  push_notification_enabled: boolean;
+  notification_frequency: 'ONCE_START' | 'DAILY' | '3_DAYS_BEFORE' | '1_DAY_BEFORE' | 'DAY_OF' | 'CUSTOM';
+  notification_time?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContactPermission {
+  id: string;
+  contact_id: string;
+  family_member_id: string;
+  can_view: boolean;
+  can_edit: boolean;
+  can_view_phone: boolean;
+  can_view_notes: boolean;
+  can_view_photo: boolean;
+  created_at: string;
+}
+
+export interface FamilyContact {
+  id: string;
+  family_id: string;
+  name: string;
+  photo_url?: string;
+  mobile_number: string;
+  relationship: string;
+  notes?: string;
+  visibility: ContactVisibility;
+  visible_to_members?: string[];
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  occasions?: FamilyContactOccasion[];
+}
+
+export interface ActiveOccasionReminder {
+  contactId: string;
+  occasionId: string;
+  name: string;
+  photo_url?: string;
+  mobile_number: string;
+  relationship: string;
+  occasion_type: OccasionType;
+  custom_occasion_name?: string;
+  displayTitle: string;
+  occasionDateStr: string; // Formatted date e.g. "25 September"
+  nextOccurrenceIso: string; // "2026-09-25"
+  daysRemaining: number; // 0 = today, 1 = tomorrow, 2..
+  countdownText: string; // "Today 🎉", "Tomorrow", "In 5 days"
+  isToday: boolean;
+  milestoneText?: string; // "Turns 41", "16th Anniversary"
+  notes?: string;
+  visibility: ContactVisibility;
+  canViewPhone: boolean;
+  canViewNotes: boolean;
+  canEdit: boolean;
+}
+

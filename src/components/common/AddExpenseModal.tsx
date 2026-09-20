@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { getLocalDateString } from '../../utils/formatters.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
+import { useTheme } from '../../context/ThemeContext.js';
 
 export interface AddExpenseModalProps {
   isOpen: boolean;
@@ -100,6 +101,9 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   onSubmit,
   initialCategory,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [amount, setAmount] = useState('');
   const [merchant, setMerchant] = useState('');
   const [selectedCatId, setSelectedCatId] = useState('cat_food');
@@ -149,9 +153,9 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
       id: `cat_custom_${Date.now()}`,
       name: customName.trim(),
       icon: Tag,
-      color: '#16C7F2',
-      bgColor: 'rgba(22, 199, 242, 0.16)',
-      borderColor: 'rgba(22, 199, 242, 0.50)',
+      color: isLight ? '#B84A1E' : '#16C7F2',
+      bgColor: isLight ? 'rgba(184, 74, 30, 0.16)' : 'rgba(22, 199, 242, 0.16)',
+      borderColor: isLight ? 'rgba(184, 74, 30, 0.50)' : 'rgba(22, 199, 242, 0.50)',
     };
     setCategoriesList((prev) => [...prev, newCat]);
     setSelectedCatId(newCat.id);
@@ -189,15 +193,23 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-md bg-[#0B1226] border-2 border-[#FF4D6D]/40 rounded-[28px] p-4 sm:p-5 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)] space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 ${isLight ? 'bg-black/50' : 'bg-black/80'} backdrop-blur-md animate-fade-in`}>
+      <div className={`w-full max-w-md ${
+        isLight
+          ? 'bg-[#EFE4D6] border-2 border-[#DECFC0] text-[#2A1B14] shadow-[0_20px_60px_rgba(140,95,60,0.22)]'
+          : 'bg-[#0B1226] border-2 border-[#FF4D6D]/40 text-[#F4F8FF] shadow-[0_20px_60px_rgba(0,0,0,0.95)]'
+      } rounded-[28px] p-4 sm:p-5 space-y-4 max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden`}>
         {/* Header */}
         <div className="flex items-center justify-between pb-1">
-          <h3 className="text-lg font-bold text-white tracking-tight">Add expense</h3>
+          <h3 className={`text-lg font-bold tracking-tight ${isLight ? 'text-[#2A1B14]' : 'text-white'}`}>Add expense</h3>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[#0D152D] text-slate-400 hover:text-white transition-colors"
+            className={`p-1.5 rounded-full transition-colors ${
+              isLight
+                ? 'hover:bg-[#EBE0D2] text-[#634B3F] hover:text-[#2A1B14]'
+                : 'hover:bg-[#0D152D] text-slate-400 hover:text-white'
+            }`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -214,7 +226,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                 onClick={() => handleSelectTag(tag)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
                   isSelected
-                    ? 'bg-[#168BFF] text-white border-[#16C7F2] shadow-md shadow-[#168BFF]/40 scale-105'
+                    ? isLight
+                      ? 'bg-gradient-to-r from-[#D96632] to-[#B84A1E] text-white border-[#B84A1E] shadow-md shadow-[#B84A1E]/30 scale-105'
+                      : 'bg-[#168BFF] text-white border-[#16C7F2] shadow-md shadow-[#168BFF]/40 scale-105'
+                    : isLight
+                    ? 'bg-[#EBE0D2] hover:bg-[#DECFC0] text-[#634B3F] border-[#DECFC0]'
                     : 'bg-[#073B9E]/40 hover:bg-[#073B9E]/80 text-[#B9D8FF] border-[#168BFF]/25'
                 }`}
               >
@@ -227,9 +243,13 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
         <form onSubmit={handleSubmitForm} className="space-y-4">
           {/* 2. Amount Input Box (Big & Bold) */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#B9D8FF]">Amount</label>
-            <div className="flex items-center bg-[#03194A] border-2 border-[#168BFF]/40 focus-within:border-[#FFD21F] rounded-2xl px-4 py-3 shadow-inner transition-colors">
-              <span className="text-xl sm:text-2xl font-black text-[#FFD21F] mr-2">₹</span>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>Amount</label>
+            <div className={`flex items-center rounded-2xl px-4 py-3 shadow-inner transition-colors border-2 ${
+              isLight
+                ? 'bg-[#EBE0D2] border-[#DECFC0] focus-within:border-[#C25425]'
+                : 'bg-[#03194A] border-[#168BFF]/40 focus-within:border-[#FFD21F]'
+            }`}>
+              <span className={`text-xl sm:text-2xl font-black mr-2 ${isLight ? 'text-[#B84A1E]' : 'text-[#FFD21F]'}`}>₹</span>
               <input
                 type="number"
                 step="any"
@@ -238,7 +258,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                 placeholder="100"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-transparent text-xl sm:text-2xl font-black text-white placeholder-slate-500 outline-none"
+                className={`w-full bg-transparent text-xl sm:text-2xl font-black outline-none ${
+                  isLight
+                    ? 'text-[#2A1B14] placeholder-[#947D70]'
+                    : 'text-white placeholder-slate-500'
+                }`}
               />
             </div>
           </div>
@@ -246,13 +270,15 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           {/* 3. Category Grid (Tappable Icon Cards) */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-[#B9D8FF]">
-                Category: <span className="text-[#16C7F2] font-bold">{selectedCatName}</span>
+              <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>
+                Category: <span className={`font-bold ${isLight ? 'text-[#B84A1E]' : 'text-[#16C7F2]'}`}>{selectedCatName}</span>
               </label>
               <button
                 type="button"
                 onClick={() => setShowCustomInput(!showCustomInput)}
-                className="text-[11px] text-[#55D98A] hover:underline font-bold flex items-center gap-0.5"
+                className={`text-[11px] hover:underline font-bold flex items-center gap-0.5 ${
+                  isLight ? 'text-[#B84A1E]' : 'text-[#55D98A]'
+                }`}
               >
                 <Plus className="w-3 h-3" />
                 <span>Custom</span>
@@ -261,18 +287,30 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
             {/* Custom Category Inline Add Form */}
             {showCustomInput && (
-              <div className="p-2.5 rounded-xl bg-[#073B9E]/60 border border-[#168BFF]/40 flex items-center gap-2 animate-fade-in">
+              <div className={`p-2.5 rounded-xl border flex items-center gap-2 animate-fade-in ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0]'
+                  : 'bg-[#073B9E]/60 border-[#168BFF]/40'
+              }`}>
                 <input
                   type="text"
                   placeholder="New category name (e.g. Badminton, Books)"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  className="flex-1 px-3 py-1.5 bg-[#03194A] border border-[#168BFF]/40 rounded-lg text-xs text-white outline-none focus:border-[#16C7F2]"
+                  className={`flex-1 px-3 py-1.5 rounded-lg text-xs outline-none border ${
+                    isLight
+                      ? 'bg-[#F4EDE4] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                      : 'bg-[#03194A] border-[#168BFF]/40 text-white placeholder-slate-500 focus:border-[#16C7F2]'
+                  }`}
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomCategory}
-                  className="px-3 py-1.5 bg-[#19C9A7] text-[#03194A] font-bold text-xs rounded-lg hover:opacity-95"
+                  className={`px-3 py-1.5 font-bold text-xs rounded-lg hover:opacity-95 ${
+                    isLight
+                      ? 'bg-[#B84A1E] text-white'
+                      : 'bg-[#19C9A7] text-[#03194A]'
+                  }`}
                 >
                   Add
                 </button>
@@ -290,23 +328,53 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                     onClick={() => handleSelectCategory(cat)}
                     className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all relative ${
                       isSelected
-                        ? 'bg-[rgba(25,201,167,0.22)] border-[#19C9A7] shadow-[0_0_14px_rgba(25,201,167,0.35)] scale-[1.03] ring-1 ring-[#55D98A]'
+                        ? isLight
+                          ? 'bg-[#F7D4BC] border-[#E8BC9E] shadow-[0_4px_14px_rgba(184,74,30,0.18)] scale-[1.03] ring-1 ring-[#D96632]'
+                          : 'bg-[rgba(25,201,167,0.22)] border-[#19C9A7] shadow-[0_0_14px_rgba(25,201,167,0.35)] scale-[1.03] ring-1 ring-[#55D98A]'
+                        : isLight
+                        ? 'bg-[#EBE0D2] hover:bg-[#E4D7C7] border-[#DECFC0] shadow-[0_2px_8px_rgba(140,95,60,0.06)] opacity-90 hover:opacity-100'
                         : 'bg-[#073B9E]/35 hover:bg-[#073B9E]/70 border-[#168BFF]/25 opacity-85 hover:opacity-100'
                     }`}
                   >
                     <div
                       className="w-8 h-8 rounded-xl flex items-center justify-center mb-1 transition-all"
                       style={{
-                        backgroundColor: isSelected ? 'rgba(25, 201, 167, 0.28)' : cat.bgColor,
-                        color: isSelected ? '#55D98A' : cat.color,
-                        border: `1px solid ${isSelected ? '#19C9A7' : cat.borderColor}`,
+                        backgroundColor: isLight
+                          ? isSelected
+                            ? '#C25425'
+                            : '#E4D7C7'
+                          : isSelected
+                          ? 'rgba(25, 201, 167, 0.28)'
+                          : cat.bgColor,
+                        color: isLight
+                          ? isSelected
+                            ? '#FFFFFF'
+                            : '#634B3F'
+                          : isSelected
+                          ? '#55D98A'
+                          : cat.color,
+                        border: `1px solid ${
+                          isLight
+                            ? isSelected
+                              ? '#B84A1E'
+                              : '#DECFC0'
+                            : isSelected
+                            ? '#19C9A7'
+                            : cat.borderColor
+                        }`,
                       }}
                     >
                       <IconComponent className="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <span
                       className={`text-[10.5px] font-bold text-center leading-tight truncate w-full ${
-                        isSelected ? 'text-white' : 'text-[#B9D8FF]'
+                        isSelected
+                          ? isLight
+                            ? 'text-[#2A1B14] font-black'
+                            : 'text-white'
+                          : isLight
+                          ? 'text-[#634B3F]'
+                          : 'text-[#B9D8FF]'
                       }`}
                     >
                       {cat.name}
@@ -319,12 +387,22 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowCustomInput(true)}
-                className="flex flex-col items-center justify-center p-2.5 rounded-2xl border border-dashed border-[#168BFF]/40 bg-[#073B9E]/20 hover:bg-[#073B9E]/50 text-[#16C7F2] transition-all"
+                className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border border-dashed transition-all ${
+                  isLight
+                    ? 'border-[#DECFC0] bg-[#EBE0D2]/50 hover:bg-[#EBE0D2] text-[#B84A1E]'
+                    : 'border-[#168BFF]/40 bg-[#073B9E]/20 hover:bg-[#073B9E]/50 text-[#16C7F2]'
+                }`}
               >
-                <div className="w-8 h-8 rounded-xl bg-[#16C7F2]/15 border border-[#16C7F2]/30 flex items-center justify-center mb-1 text-[#16C7F2]">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-1 border ${
+                  isLight
+                    ? 'bg-[#F7D4BC]/60 border-[#E8BC9E] text-[#B84A1E]'
+                    : 'bg-[#16C7F2]/15 border-[#16C7F2]/30 text-[#16C7F2]'
+                }`}>
                   <Plus className="w-4 h-4" />
                 </div>
-                <span className="text-[10.5px] font-bold text-center leading-tight text-[#B9D8FF]">
+                <span className={`text-[10.5px] font-bold text-center leading-tight ${
+                  isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'
+                }`}>
                   Custom
                 </span>
               </button>
@@ -333,19 +411,23 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
           {/* 4. "What" / Merchant Description Input */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#B9D8FF]">What / Merchant</label>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>What / Merchant</label>
             <input
               type="text"
               placeholder="e.g. Swiggy dinner, Ratnadeep Kirana, long bar"
               value={merchant}
               onChange={(e) => setMerchant(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-[#03194A] border border-[#168BFF]/35 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 outline-none focus:border-[#16C7F2]"
+              className={`w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm outline-none border ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                  : 'bg-[#03194A] border-[#168BFF]/35 text-white placeholder-slate-500 focus:border-[#16C7F2]'
+              }`}
             />
           </div>
 
           {/* 5. Payment Mode Quick Chips */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#B9D8FF]">Payment Mode</label>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>Payment Mode</label>
             <div className="flex flex-wrap gap-1.5">
               {PAYMENT_MODES.map((pm) => {
                 const isSelected = paymentMethod === pm.id;
@@ -356,7 +438,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                     onClick={() => setPaymentMethod(pm.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
                       isSelected
-                        ? 'bg-[#0869E8] text-white border-[#16C7F2] shadow-sm'
+                        ? isLight
+                          ? 'bg-gradient-to-r from-[#D96632] to-[#B84A1E] text-white border-[#B84A1E] shadow-sm font-bold'
+                          : 'bg-[#0869E8] text-white border-[#16C7F2] shadow-sm'
+                        : isLight
+                        ? 'bg-[#EBE0D2] text-[#634B3F] border-[#DECFC0] hover:bg-[#DECFC0]'
                         : 'bg-[#073B9E]/35 text-[#B9D8FF] border-[#168BFF]/20 hover:bg-[#073B9E]/70'
                     }`}
                   >
@@ -374,19 +460,27 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               value={date}
               onChange={(newDate) => setDate(newDate)}
               required
-              className="!bg-[#03194A] !border-[#168BFF]/35 text-xs text-white"
+              className={
+                isLight
+                  ? '!bg-[#EBE0D2] !border-[#DECFC0] text-xs !text-[#2A1B14]'
+                  : '!bg-[#03194A] !border-[#168BFF]/35 text-xs text-white'
+              }
             />
           </div>
 
           {/* 7. Notes (optional) */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-[#B9D8FF]">Notes (optional)</label>
+            <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-[#B9D8FF]'}`}>Notes (optional)</label>
             <textarea
               rows={2}
               placeholder="Anything to remember about this?"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2 bg-[#03194A] border border-[#168BFF]/35 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2] resize-none"
+              className={`w-full px-3.5 py-2 rounded-xl text-xs outline-none resize-none border ${
+                isLight
+                  ? 'bg-[#EBE0D2] border-[#DECFC0] text-[#2A1B14] placeholder-[#947D70] focus:border-[#C25425]'
+                  : 'bg-[#03194A] border-[#168BFF]/35 text-white placeholder-slate-500 focus:border-[#16C7F2]'
+              }`}
             />
           </div>
 
@@ -394,7 +488,11 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting || !amount}
-            className="w-full py-3.5 bg-gradient-to-r from-[#FFB91F] via-[#FF8A24] to-[#FF6F32] hover:opacity-95 disabled:opacity-50 text-[#03194A] font-black text-sm rounded-2xl shadow-[0_8px_25px_rgba(255,185,31,0.35)] flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2 cursor-pointer"
+            className={`w-full py-3.5 hover:opacity-95 disabled:opacity-50 font-black text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2 cursor-pointer ${
+              isLight
+                ? 'bg-gradient-to-r from-[#D96632] via-[#C85928] to-[#B84A1E] text-white shadow-[0_8px_25px_rgba(184,74,30,0.35)]'
+                : 'bg-gradient-to-r from-[#FFB91F] via-[#FF8A24] to-[#FF6F32] text-[#03194A] shadow-[0_8px_25px_rgba(255,185,31,0.35)]'
+            }`}
           >
             <Check className="w-5 h-5 stroke-[3]" />
             <span>Save expense</span>

@@ -7,23 +7,13 @@ import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { FamilyMember, TaskItem, GroceryItem, MaintenanceItem, EmergencyContact, EmergencyProfile } from '../../types/index.js';
 import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
-
-const AVATAR_PRESETS = [
-  { url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', label: 'Father / Head' },
-  { url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200', label: 'Mother / Co-Head' },
-  { url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200', label: 'Teen Boy' },
-  { url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200', label: 'Young Girl' },
-  { url: 'https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=200', label: 'Grandmother' },
-  { url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200', label: 'Grandfather' },
-  { url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200', label: 'Young Woman' },
-  { url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200', label: 'Young Man' },
-];
+import { FamilyFriendsView } from '../FamilyFriends/FamilyFriendsView.js';
 
 export const FamilyView: React.FC = () => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers, refreshUser, regenerateFamilyKey, approveMember, rejectMember, updateMemberPermissions } = useAuth();
   const t = translations[activeLanguage];
 
-  const [activeSubTab, setActiveSubTab] = useState<'MEMBERS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY'>('MEMBERS');
+  const [activeSubTab, setActiveSubTab] = useState<'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY'>('MEMBERS');
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);
   const [maintenanceItems, setMaintenanceItems] = useState<MaintenanceItem[]>([]);
@@ -717,7 +707,7 @@ export const FamilyView: React.FC = () => {
 
       {/* Sub Tabs */}
       <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-2xl border border-slate-700/80 overflow-x-auto scrollbar-none">
-        {(['MEMBERS', 'TREE', 'TASKS', 'WISHLIST', 'MAINTENANCE', 'EMERGENCY'] as const).map((tab) => (
+        {(['MEMBERS', 'FRIENDS', 'TREE', 'TASKS', 'WISHLIST', 'MAINTENANCE', 'EMERGENCY'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveSubTab(tab)}
@@ -727,7 +717,7 @@ export const FamilyView: React.FC = () => {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            {tab === 'WISHLIST' ? 'WISH LIST' : tab}
+            {tab === 'WISHLIST' ? 'WISH LIST' : tab === 'FRIENDS' ? 'FRIENDS & DATES 🎂' : tab}
           </button>
         ))}
       </div>
@@ -1036,7 +1026,14 @@ export const FamilyView: React.FC = () => {
         </div>
       )}
 
-      {/* 2. FAMILY TREE SUBTAB */}
+      {/* 2. FAMILY & FRIENDS DATES & REMINDERS SUBTAB */}
+      {activeSubTab === 'FRIENDS' && (
+        <div className="animate-fade-in -mx-4 -mt-2">
+          <FamilyFriendsView />
+        </div>
+      )}
+
+      {/* 3. FAMILY TREE SUBTAB */}
       {activeSubTab === 'TREE' && (
         <div className="space-y-4">
           <div className="text-xs font-bold text-slate-400 uppercase">Interactive Generational Tree</div>
@@ -2094,14 +2091,14 @@ export const FamilyView: React.FC = () => {
               ref={editCameraRef}
               onChange={(e) => handleAvatarFileSelected(e, 'edit')}
               accept="image/*"
-              capture="user"
+              capture="environment"
               className="hidden"
             />
 
             <form onSubmit={handleSaveMemberProfile} className="space-y-4">
               {/* Avatar Preview & Selection */}
-              <div className="space-y-2.5">
-                <label className="text-xs text-slate-300 font-semibold block">Choose Profile Picture / Avatar</label>
+              <div className="space-y-2">
+                <label className="text-xs text-slate-300 font-semibold block">Profile Photo</label>
                 
                 <div className="flex items-center gap-3 bg-slate-800/80 p-3 rounded-2xl border border-slate-700/80">
                   <img
@@ -2109,12 +2106,12 @@ export const FamilyView: React.FC = () => {
                     alt="Preview"
                     className="w-14 h-14 rounded-2xl object-cover ring-2 ring-amber-400 shadow-md"
                   />
-                  <div className="flex-1 space-y-1.5">
+                  <div className="flex-1 space-y-2">
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => editGalleryRef.current?.click()}
-                        className="px-2.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                       >
                         <Upload className="w-3.5 h-3.5 text-indigo-300" />
                         <span>Choose from Gallery</span>
@@ -2122,43 +2119,22 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => editCameraRef.current?.click()}
-                        className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                       >
                         <Camera className="w-3.5 h-3.5 text-amber-400" />
                         <span>Camera</span>
                       </button>
                     </div>
-                    <p className="text-[10px] text-slate-400">Or pick from preset avatars below</p>
+                    {memberProfileForm.avatar_url && (
+                      <button
+                        type="button"
+                        onClick={() => setMemberProfileForm({ ...memberProfileForm, avatar_url: '' })}
+                        className="text-[10px] text-rose-400 hover:text-rose-300 hover:underline block"
+                      >
+                        ✕ Remove Photo
+                      </button>
+                    )}
                   </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2 pt-1">
-                  {AVATAR_PRESETS.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setMemberProfileForm({ ...memberProfileForm, avatar_url: preset.url })}
-                      className={`relative group rounded-xl overflow-hidden border-2 transition-all p-0.5 ${
-                        memberProfileForm.avatar_url === preset.url
-                          ? 'border-amber-400 ring-2 ring-amber-400/50 scale-105'
-                          : 'border-slate-700 hover:border-slate-500 opacity-75 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={preset.url} alt={preset.label} className="w-full h-12 object-cover rounded-lg" />
-                      <span className="block text-[9px] text-center truncate text-slate-300 font-medium mt-0.5">{preset.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="pt-1">
-                  <label className="text-[11px] text-slate-400 font-medium">Or Custom Image URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/..."
-                    value={memberProfileForm.avatar_url}
-                    onChange={(e) => setMemberProfileForm({ ...memberProfileForm, avatar_url: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
-                  />
                 </div>
               </div>
 
@@ -2267,14 +2243,14 @@ export const FamilyView: React.FC = () => {
               ref={addCameraRef}
               onChange={(e) => handleAvatarFileSelected(e, 'add')}
               accept="image/*"
-              capture="user"
+              capture="environment"
               className="hidden"
             />
 
             <form onSubmit={handleAddMember} className="space-y-3.5">
               {/* Avatar selection */}
               <div className="space-y-2">
-                <label className="text-xs text-slate-300 font-semibold block">Select Avatar / Photo</label>
+                <label className="text-xs text-slate-300 font-semibold block">Profile Photo</label>
                 
                 <div className="flex items-center gap-3 bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700/80">
                   <img
@@ -2282,42 +2258,35 @@ export const FamilyView: React.FC = () => {
                     alt="Preview"
                     className="w-12 h-12 rounded-xl object-cover ring-2 ring-amber-400 shadow"
                   />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => addGalleryRef.current?.click()}
-                      className="px-2.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <Upload className="w-3.5 h-3.5 text-indigo-300" />
-                      <span>From Gallery</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => addCameraRef.current?.click()}
-                      className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <Camera className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Camera</span>
-                    </button>
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => addGalleryRef.current?.click()}
+                        className="px-2.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <Upload className="w-3.5 h-3.5 text-indigo-300" />
+                        <span>From Gallery</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addCameraRef.current?.click()}
+                        className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <Camera className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Camera</span>
+                      </button>
+                    </div>
+                    {newMemberData.avatar_url && (
+                      <button
+                        type="button"
+                        onClick={() => setNewMemberData({ ...newMemberData, avatar_url: '' })}
+                        className="text-[10px] text-rose-400 hover:text-rose-300 hover:underline block"
+                      >
+                        ✕ Remove Photo
+                      </button>
+                    )}
                   </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {AVATAR_PRESETS.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setNewMemberData({ ...newMemberData, avatar_url: preset.url })}
-                      className={`relative group rounded-xl overflow-hidden border-2 transition-all p-0.5 ${
-                        newMemberData.avatar_url === preset.url
-                          ? 'border-amber-400 ring-2 ring-amber-400/50 scale-105'
-                          : 'border-slate-700 hover:border-slate-500 opacity-75 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={preset.url} alt={preset.label} className="w-full h-11 object-cover rounded-lg" />
-                      <span className="block text-[9px] text-center truncate text-slate-300 font-medium mt-0.5">{preset.label}</span>
-                    </button>
-                  ))}
                 </div>
               </div>
 

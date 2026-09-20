@@ -38,6 +38,10 @@ export interface DBStore {
   merchant_aliases: any[];
   merchant_preferences: any[];
   smart_capture_settings: any[];
+  family_contacts: any[];
+  family_contact_occasions: any[];
+  reminder_settings: any[];
+  contact_permissions: any[];
 }
 
 const DATA_DIR = path.resolve(__dirname, '../data');
@@ -75,6 +79,10 @@ class DatabaseService {
     merchant_aliases: [],
     merchant_preferences: [],
     smart_capture_settings: [],
+    family_contacts: [],
+    family_contact_occasions: [],
+    reminder_settings: [],
+    contact_permissions: [],
   };
 
   private initialized = false;
@@ -148,6 +156,10 @@ class DatabaseService {
         'maintenance_items',
         'notifications',
         'ai_conversations',
+        'family_contacts',
+        'family_contact_occasions',
+        'reminder_settings',
+        'contact_permissions',
       ];
 
       // Check if users exist in Supabase

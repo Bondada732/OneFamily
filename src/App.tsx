@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.js';
+import { ThemeProvider } from './context/ThemeContext.js';
 import { SecurityProvider } from './context/SecurityContext.js';
 import { FamilyProvider } from './context/FamilyContext.js';
 import { MobileFrame } from './components/layout/MobileFrame.js';
@@ -20,6 +21,7 @@ import { AIView } from './views/AI/AIView.js';
 import { CalendarView } from './views/Calendar/CalendarView.js';
 import { MemoriesView } from './views/Memories/MemoriesView.js';
 import { SettingsView } from './views/Settings/SettingsView.js';
+import { FamilyFriendsView } from './views/FamilyFriends/FamilyFriendsView.js';
 
 const MainAppContent: React.FC = () => {
   const { currentUser, family, familyMembers, isLoading, refreshUser, logout } = useAuth();
@@ -159,6 +161,9 @@ const MainAppContent: React.FC = () => {
       case 'ADD_MEMORY':
         setActiveTab('memories');
         break;
+      case 'ADD_FRIEND':
+        setActiveTab('friends');
+        break;
       case 'ASK_AI':
         setActiveTab('ai');
         break;
@@ -185,6 +190,12 @@ const MainAppContent: React.FC = () => {
         return (
           <ErrorBoundary fallbackTitle="Family Hub Error">
             <FamilyView />
+          </ErrorBoundary>
+        );
+      case 'friends':
+        return (
+          <ErrorBoundary fallbackTitle="Family & Friends Reminders Error">
+            <FamilyFriendsView />
           </ErrorBoundary>
         );
       case 'vault':
@@ -266,13 +277,17 @@ const MainAppContent: React.FC = () => {
 
 export function App() {
   return (
-    <AuthProvider>
-      <SecurityProvider>
-        <FamilyProvider>
-          <MainAppContent />
-        </FamilyProvider>
-      </SecurityProvider>
-    </AuthProvider>
+    <ErrorBoundary fallbackTitle="KinoraOne Application Error">
+      <AuthProvider>
+        <ThemeProvider>
+          <SecurityProvider>
+            <FamilyProvider>
+              <MainAppContent />
+            </FamilyProvider>
+          </SecurityProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
