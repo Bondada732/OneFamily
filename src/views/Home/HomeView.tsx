@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
 import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
-import { apiRequest } from '../../utils/api.js';
+import { apiRequest, getCachedApiResponse } from '../../utils/api.js';
 import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
 import { AddWishModal } from '../../components/common/AddWishModal.js';
 import { AddGoalModal } from '../../components/common/AddGoalModal.js';
@@ -436,10 +436,28 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
 
-  // Shared Wishlist & Tasks items state
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
-  const [familyTasks, setFamilyTasks] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
+  // Shared Wishlist & Tasks items state with instant cache hydration
+  const [wishlistItems, setWishlistItems] = useState<any[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/tasks/${family.id}/tasks`);
+      return cached?.groceryItems || [];
+    }
+    return [];
+  });
+  const [familyTasks, setFamilyTasks] = useState<any[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/tasks/${family.id}/tasks`);
+      return cached?.tasks || [];
+    }
+    return [];
+  });
+  const [expenses, setExpenses] = useState<any[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/expenses/${family.id}/expenses`);
+      return cached?.expenses || [];
+    }
+    return [];
+  });
 
   // Last 5 recent expenses sorted by date/timestamp descending
   const recentExpenses = useMemo(() => {

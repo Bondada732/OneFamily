@@ -195,6 +195,12 @@ class DatabaseService {
   public initSupabaseRealtime() {
     // Initial sync from Supabase
     this.hydrateFromSupabase().catch(() => {});
+    // Periodic background sync every 60s to ensure multi-client updates reflect immediately
+    if (typeof setInterval !== 'undefined') {
+      setInterval(() => {
+        this.hydrateFromSupabase().catch(() => {});
+      }, 60000);
+    }
   }
 
   public getTable<K extends keyof DBStore>(tableName: K): DBStore[K] {

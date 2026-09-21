@@ -4,7 +4,7 @@ import { useFamily } from '../../context/FamilyContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
 import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
-import { apiRequest } from '../../utils/api.js';
+import { apiRequest, getCachedApiResponse } from '../../utils/api.js';
 import { Expense, BudgetReport, Investment, Liability, Goal } from '../../types/index.js';
 import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
@@ -37,14 +37,60 @@ export const MoneyView: React.FC = () => {
 
 
   const [activeSubTab, setActiveSubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS'>('OVERVIEW');
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [budgetReports, setBudgetReports] = useState<BudgetReport[]>([]);
-  const [investments, setInvestments] = useState<Investment[]>([]);
-  const [liabilities, setLiabilities] = useState<Liability[]>([]);
-  const [netWorthData, setNetWorthData] = useState<any>(null);
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/expenses/${family.id}/expenses`);
+      return cached?.expenses || [];
+    }
+    return [];
+  });
+  const [categories, setCategories] = useState<any[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/expenses/${family.id}/expenses`);
+      return cached?.categories || DEFAULT_EXPENSE_CATEGORIES;
+    }
+    return DEFAULT_EXPENSE_CATEGORIES;
+  });
+  const [budgetReports, setBudgetReports] = useState<BudgetReport[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/budget/${family.id}/budget`);
+      return cached?.categories || [];
+    }
+    return [];
+  });
+  const [investments, setInvestments] = useState<Investment[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/investments/${family.id}/investments`);
+      return cached?.investments || [];
+    }
+    return [];
+  });
+  const [liabilities, setLiabilities] = useState<Liability[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/investments/${family.id}/investments`);
+      return cached?.liabilities || [];
+    }
+    return [];
+  });
+  const [netWorthData, setNetWorthData] = useState<any>(() => {
+    if (family?.id) {
+      return getCachedApiResponse<any>(`/investments/${family.id}/investments`);
+    }
+    return null;
+  });
+  const [goals, setGoals] = useState<Goal[]>(() => {
+    if (family?.id) {
+      return getCachedApiResponse<any>(`/goals/${family.id}/goals`) || [];
+    }
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/expenses/${family.id}/expenses`);
+      return !cached;
+    }
+    return true;
+  });
 
   // Modals
   const [showAddExpense, setShowAddExpense] = useState(false);

@@ -81,11 +81,46 @@ export const getApiBase = (): string => {
   return '/api';
 };
 
+export const getCachedApiResponse = <T = any>(endpoint: string): T | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(`kinora_api_cache_${endpoint}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.data ?? null;
+  } catch {
+    return null;
+  }
+};
+
+export const setCachedApiResponse = (endpoint: string, data: any): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(
+      `kinora_api_cache_${endpoint}`,
+      JSON.stringify({
+        timestamp: Date.now(),
+        data,
+      })
+    );
+  } catch {}
+};
+
+// Fire and forget server warm-up ping on app start
+let warmupInitiated = false;
+export const warmupBackendServer = (): void => {
+  if (warmupInitiated || typeof window === 'undefined') return;
+  warmupInitiated = true;
+  const host = getApiHost();
+  fetch(`${host}/api/health`, { method: 'GET' }).catch(() => {});
+};
+
 export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {},
   activeUserId?: string
 ): Promise<T> {
+  const isGet = !options.method || options.method.toUpperCase() === 'GET';
   const token = localStorage.getItem('onefamily_token');
   const activeUser = activeUserId || localStorage.getItem('onefamily_active_user_id');
   const apiBase = getApiBase();
@@ -100,16 +135,30 @@ export async function apiRequest<T = any>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  // Set a 12s timeout controller
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+
   let response: Response;
   try {
     response = await fetch(`${apiBase}${endpoint}`, {
       ...options,
       headers,
+      signal: options.signal || controller.signal,
     });
+    clearTimeout(timeoutId);
   } catch (netErr: any) {
-    console.error('Network connection error to', `${apiBase}${endpoint}:`, netErr);
+    clearTimeout(timeoutId);
+    console.warn(`[API] Network issue on ${endpoint}:`, netErr.message || netErr);
+    // If GET request fails (e.g. server cold start, offline), return cached data if available
+    if (isGet) {
+      const cached = getCachedApiResponse<T>(endpoint);
+      if (cached !== null) {
+        return cached;
+      }
+    }
     const err: any = new Error(
-      `Cannot connect to server at ${apiBase}. Please verify your phone is connected to the same Wi-Fi network as your PC.`
+      `Cannot connect to server at ${apiBase}. Loading offline mode.`
     );
     err.isNetworkError = true;
     throw err;
@@ -122,12 +171,23 @@ export async function apiRequest<T = any>(
     } catch {
       errorData = { error: response.statusText };
     }
+    // Fallback to cache if available
+    if (isGet) {
+      const cached = getCachedApiResponse<T>(endpoint);
+      if (cached !== null) {
+        return cached;
+      }
+    }
     const err: any = new Error(errorData.message || errorData.error || 'Request failed');
     err.status = response.status;
     err.data = errorData;
     throw err;
   }
 
-  return response.json();
+  const result = await response.json();
+  if (isGet) {
+    setCachedApiResponse(endpoint, result);
+  }
+  return result;
 }
 
