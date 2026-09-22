@@ -210,7 +210,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
       <div className={`rounded-[28px] p-4 sm:p-5 transition-all kinora-3d-card ${
         isLight
           ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14),0_4px_10px_-2px_rgba(130,80,45,0.08)] space-y-3.5'
-          : 'bg-transparent space-y-3'
+          : 'bg-[#0D152D] border border-slate-800/90 border-t-white/15 border-b-[3px] border-b-[#03060E] shadow-[0_14px_30px_-4px_rgba(0,0,0,0.75)] space-y-3.5'
       }`}>
         {/* Header Section */}
         <div className="space-y-1">
@@ -233,7 +233,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
           <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
             isLight
               ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
-              : 'bg-[#0D152D]/95 border border-[#00D2FF]/25 hover:border-[#00D2FF]/50 shadow-md'
+              : 'bg-[#0D152D] border border-[#00D2FF]/30 border-t-white/15 border-b-[2.5px] border-b-[#03060E] hover:border-[#00D2FF]/60 shadow-lg'
           }`}>
             <div className="flex items-center justify-between">
               <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
@@ -250,7 +250,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
           <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
             isLight
               ? 'bg-[#F3E3D3] border border-[#FFB74D]/70 border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
-              : 'bg-[#0D152D]/95 border border-[#FFB800]/25 hover:border-[#FFB800]/50 shadow-md'
+              : 'bg-[#0D152D] border border-[#FFB800]/30 border-t-white/15 border-b-[2.5px] border-b-[#03060E] hover:border-[#FFB800]/60 shadow-lg'
           }`}>
             <div className="flex items-center justify-between">
               <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase ${isLight ? 'text-[#D3542F]' : 'text-slate-400'}`}>
@@ -267,7 +267,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
           <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
             isLight
               ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
-              : 'bg-[#0D152D]/95 border border-[#00E676]/25 hover:border-[#00E676]/50 shadow-md'
+              : 'bg-[#0D152D] border border-[#00E676]/30 border-t-white/15 border-b-[2.5px] border-b-[#03060E] hover:border-[#00E676]/60 shadow-lg'
           }`}>
             <div className="flex items-center justify-between">
               <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase truncate ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
@@ -287,7 +287,7 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
           <div className={`rounded-2xl p-2 sm:p-2.5 flex flex-col justify-between transition-all kinora-3d-tile ${
             isLight
               ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12),0_2px_4px_rgba(130,80,45,0.06)]'
-              : 'bg-[#0D152D]/95 border border-[#C084FC]/25 hover:border-[#C084FC]/50 shadow-md'
+              : 'bg-[#0D152D] border border-[#C084FC]/30 border-t-white/15 border-b-[2.5px] border-b-[#03060E] hover:border-[#C084FC]/60 shadow-lg'
           }`}>
             <div className="flex items-center justify-between">
               <span className={`text-[8.5px] sm:text-[9px] font-bold tracking-wider uppercase ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
@@ -308,7 +308,11 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
       {/* 3. Bottom Dual Cards: Interactive Last 14 days + Interactive Top categories */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {/* Left Card: Interactive Last 14 days chart */}
-        <div className={isLight ? "bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] rounded-[26px] p-4 flex flex-col justify-between shadow-[0_10px_24px_-4px_rgba(130,80,45,0.14),0_4px_8px_-2px_rgba(130,80,45,0.08)] relative overflow-hidden kinora-3d-card" : "bg-[#0D152D]/95 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col justify-between shadow-lg relative overflow-hidden"}>
+        <div className={`rounded-[26px] p-4 flex flex-col justify-between relative overflow-hidden kinora-3d-card ${
+          isLight
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_10px_24px_-4px_rgba(130,80,45,0.14),0_4px_8px_-2px_rgba(130,80,45,0.08)]'
+            : 'bg-[#0D152D] border border-slate-800/90 border-t-white/15 border-b-[3px] border-b-[#03060E] shadow-[0_14px_30px_-4px_rgba(0,0,0,0.75)]'
+        }`}>
           <div className="flex items-center justify-between mb-1.5">
             <h5 className={`text-xs sm:text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Last 14 days</h5>
             {hoveredDayIndex !== null && (
@@ -419,7 +423,11 @@ export const MoneyAnalyticsDashboard: React.FC<MoneyAnalyticsDashboardProps> = (
         </div>
 
         {/* Right Card: Interactive Top categories Donut Chart */}
-        <div className={isLight ? "bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] rounded-[26px] p-4 flex flex-col justify-between shadow-[0_10px_24px_-4px_rgba(130,80,45,0.14),0_4px_8px_-2px_rgba(130,80,45,0.08)] relative kinora-3d-card" : "bg-[#0D152D]/95 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col justify-between shadow-lg relative"}>
+        <div className={`rounded-[26px] p-4 flex flex-col justify-between relative kinora-3d-card ${
+          isLight
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_10px_24px_-4px_rgba(130,80,45,0.14),0_4px_8px_-2px_rgba(130,80,45,0.08)]'
+            : 'bg-[#0D152D] border border-slate-800/90 border-t-white/15 border-b-[3px] border-b-[#03060E] shadow-[0_14px_30px_-4px_rgba(0,0,0,0.75)]'
+        }`}>
           <div className="flex items-center justify-between mb-2">
             <h5 className={`text-xs sm:text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Top categories</h5>
             {activeCategory && (

@@ -36,11 +36,11 @@ export const SmartExpensesHomeCard: React.FC<SmartExpensesHomeCardProps> = ({
         borderColor: isLight
           ? 'rgba(255, 255, 255, 0.35)'
           : pendingCount > 0 ? 'rgba(22, 199, 242, 0.45)' : 'rgba(22, 199, 242, 0.25)',
-        borderBottom: isLight ? '3px solid #B8431B' : undefined,
-        borderTop: isLight ? '1px solid rgba(255, 255, 255, 0.6)' : undefined,
+        borderBottom: isLight ? '3px solid #B8431B' : '3px solid #040817',
+        borderTop: isLight ? '1px solid rgba(255, 255, 255, 0.6)' : '1px solid rgba(255, 255, 255, 0.2)',
         boxShadow: isLight
           ? '0 10px 24px -4px rgba(240, 90, 40, 0.35), 0 4px 8px -2px rgba(240, 90, 40, 0.2), inset 0 1.5px 0.5px rgba(255, 255, 255, 0.6)'
-          : '0 8px 24px rgba(0, 0, 0, 0.6)',
+          : '0 14px 28px -4px rgba(0, 0, 0, 0.75), inset 0 1.5px 0.5px rgba(255, 255, 255, 0.15), inset 0 -1.5px 0 rgba(0, 0, 0, 0.5)',
       }}
     >
       <div className="flex items-center justify-between">

@@ -864,21 +864,21 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       <div className={`relative rounded-[26px] overflow-hidden kinora-3d-card ${
         isLight
           ? 'bg-gradient-to-r from-[#F8EDE0] via-[#F3E3D3] to-[#EAD6C4]/60 border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
-          : 'bg-transparent'
+          : 'bg-gradient-to-r from-[#0D152D] via-[#0E1B3A] to-[#131F3F] border border-slate-800/90 border-t-white/15 border-b-[3px] border-b-[#03060E] shadow-[0_14px_30px_-4px_rgba(0,0,0,0.75)]'
       }`}>
-        <div className={`p-4 sm:p-5 flex items-center justify-between gap-3 ${isLight ? 'relative min-h-[148px]' : ''}`}>
+        <div className="p-4 sm:p-5 flex items-center justify-between gap-3 relative min-h-[148px]">
           {/* Left: Weather Tag & Greeting */}
-          <div className={`space-y-2 min-w-0 z-10 ${isLight ? 'max-w-[56%]' : ''}`}>
+          <div className="space-y-2 min-w-0 z-10 max-w-[56%]">
             {/* Weather Pill */}
             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full shadow-sm border ${
               isLight
                 ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#1F1F1F]'
-                : 'bg-[#0D152D] border-amber-500/30 text-white'
+                : 'bg-[#080D1A]/95 border-slate-700/60 border-t-white/10 border-b-[2px] border-b-black/60 text-white'
             }`}>
               <Sun className="w-3.5 h-3.5 text-[#FFC107] fill-[#FFC107]/20" />
               <span className={`text-[10.5px] font-semibold ${isLight ? 'text-[#6B6B6B]' : 'text-slate-300'}`}>{locationCity}</span>
               <span className="text-xs font-black">28°C</span>
-              <ChevronRight className="w-3 h-3 text-[#A3A3A3]" />
+              <ChevronRight className={`w-3 h-3 ${isLight ? 'text-[#A3A3A3]' : 'text-slate-500'}`} />
             </div>
 
             <div>
@@ -901,23 +901,31 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
             </div>
           </div>
 
-          {/* Right: 3D Pixar Indian Family Photo (2nd Reference Image) with "Better Together ♡" Script */}
-          {isLight && (
-            <div className="relative shrink-0 w-[44%] h-full flex flex-col items-end justify-center">
-              {/* Better Together cursive tag at top-right of family */}
-              <div className="absolute -top-2 right-1 z-10 flex items-center gap-0.5 bg-[#FFF8F1]/95 backdrop-blur-xs px-2 py-0.5 rounded-full border border-[#EAD6C4] shadow-xs">
-                <span className="font-serif italic font-bold text-[#D3542F] text-[10px] sm:text-[11px] tracking-tight">
-                  Better Together
-                </span>
-                <span className="text-[#D3542F] text-[10px] font-bold">♡</span>
-              </div>
-              <img
-                src="/family-hero.jpg"
-                alt="Family Together"
-                className="w-full max-w-[175px] h-[125px] sm:h-[140px] object-cover object-top rounded-2xl ring-2 ring-[#EAD6C4] shadow-md transition-transform duration-300 hover:scale-[1.02]"
-              />
+          {/* Right: 3D Pixar Indian Family Photo (Present in both Light and Dark mode) */}
+          <div className="relative shrink-0 w-[44%] h-full flex flex-col items-end justify-center">
+            {/* Better Together cursive tag at top-right of family */}
+            <div className={`absolute -top-2 right-1 z-10 flex items-center gap-0.5 px-2 py-0.5 rounded-full border shadow-xs ${
+              isLight
+                ? 'bg-[#FFF8F1]/95 backdrop-blur-xs border-[#EAD6C4] text-[#D3542F]'
+                : 'bg-[#080D1A]/95 backdrop-blur-xs border-[#168BFF]/40 border-t-white/20 border-b-[1.5px] border-b-black/80 text-[#16C7F2] shadow-md shadow-black/40'
+            }`}>
+              <span className={`font-serif italic font-bold text-[10px] sm:text-[11px] tracking-tight ${
+                isLight ? 'text-[#D3542F]' : 'text-[#16C7F2]'
+              }`}>
+                Better Together
+              </span>
+              <span className={`text-[10px] font-bold ${isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'}`}>♡</span>
             </div>
-          )}
+            <img
+              src="/family-hero.jpg"
+              alt="Family Together"
+              className={`w-full max-w-[175px] h-[125px] sm:h-[140px] object-cover object-top rounded-2xl ring-2 shadow-md transition-transform duration-300 hover:scale-[1.02] ${
+                isLight
+                  ? 'ring-[#EAD6C4]'
+                  : 'ring-[#168BFF]/40 ring-offset-2 ring-offset-[#080D1A] shadow-lg shadow-black/60'
+              }`}
+            />
+          </div>
         </div>
       </div>
 
