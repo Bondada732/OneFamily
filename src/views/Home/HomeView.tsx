@@ -1466,25 +1466,60 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       </div>
 
       {/* 5. Upcoming Card */}
-      <div className="space-y-2 pt-1">
-        <div className="flex items-center justify-between">
-          <h3 className={`text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Upcoming</h3>
-          <button
-            onClick={() => onNavigateTab('family')}
-            className={`text-[11px] font-bold flex items-center gap-0.5 transition-colors ${
-              isLight ? 'text-[#D3542F] hover:text-[#F05A28]' : 'text-[#16C7F2] hover:text-[#7EDCFF]'
-            }`}
-          >
-            <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      {(() => {
+        const calendarEvents = dashboard?.today?.events || [];
+        // Birthday calculation
+        const today = new Date();
+        const currentYear = today.getFullYear();
 
-        {(() => {
-          const calendarEvents = dashboard?.today?.events || [];
-          if (calendarEvents.length > 0) {
-            const ev = calendarEvents[0];
-            return (
+        const memberBirthdays = (familyMembers || [])
+          .filter((m) => {
+            if (!m?.birth_date) return false;
+            const d = new Date(m.birth_date);
+            return !isNaN(d.getTime());
+          })
+          .map((m) => {
+            try {
+              const bDate = new Date(m.birth_date!);
+              let nextBday = new Date(currentYear, bDate.getMonth(), bDate.getDate());
+              if (nextBday < today && nextBday.getDate() !== today.getDate()) {
+                nextBday = new Date(currentYear + 1, bDate.getMonth(), bDate.getDate());
+              }
+              const diffDays = Math.ceil((nextBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+              return {
+                member: m,
+                diffDays: diffDays < 0 ? 0 : diffDays,
+                bDateStr: formatDate(nextBday.toISOString().split('T')[0]),
+              };
+            } catch {
+              return null;
+            }
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null)
+          .sort((a, b) => a.diffDays - b.diffDays);
+
+        const hasUpcoming = calendarEvents.length > 0 || memberBirthdays.length > 0;
+        if (!hasUpcoming) return null;
+
+        const ev = calendarEvents.length > 0 ? calendarEvents[0] : null;
+        const nearest = memberBirthdays.length > 0 ? memberBirthdays[0] : null;
+
+        return (
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center justify-between">
+              <h3 className={`text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Upcoming</h3>
+              <button
+                onClick={() => onNavigateTab(ev ? 'calendar' : 'family')}
+                className={`text-[11px] font-bold flex items-center gap-0.5 transition-colors ${
+                  isLight ? 'text-[#D3542F] hover:text-[#F05A28]' : 'text-[#16C7F2] hover:text-[#7EDCFF]'
+                }`}
+              >
+                <span>View All</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {ev ? (
               <div
                 onClick={() => onNavigateTab('calendar')}
                 className={`p-3.5 rounded-[22px] flex items-center justify-between transition-all cursor-pointer group border kinora-3d-tile ${
@@ -1521,85 +1556,49 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
                   ➔
                 </div>
               </div>
-            );
-          }
-
-          // Birthday calculation
-          const today = new Date();
-          const currentYear = today.getFullYear();
-
-          const memberBirthdays = (familyMembers || [])
-            .filter((m) => {
-              if (!m?.birth_date) return false;
-              const d = new Date(m.birth_date);
-              return !isNaN(d.getTime());
-            })
-            .map((m) => {
-              try {
-                const bDate = new Date(m.birth_date!);
-                let nextBday = new Date(currentYear, bDate.getMonth(), bDate.getDate());
-                if (nextBday < today && nextBday.getDate() !== today.getDate()) {
-                  nextBday = new Date(currentYear + 1, bDate.getMonth(), bDate.getDate());
-                }
-                const diffDays = Math.ceil((nextBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                return {
-                  member: m,
-                  diffDays: diffDays < 0 ? 0 : diffDays,
-                  bDateStr: formatDate(nextBday.toISOString().split('T')[0]),
-                };
-              } catch {
-                return null;
-              }
-            })
-            .filter((item): item is NonNullable<typeof item> => item !== null)
-            .sort((a, b) => a.diffDays - b.diffDays);
-
-          const nearest = memberBirthdays.length > 0 ? memberBirthdays[0] : null;
-
-          return (
-            <div
-              onClick={() => onNavigateTab('family')}
-              className={`p-3.5 rounded-[22px] flex items-center justify-between transition-all cursor-pointer group border kinora-3d-tile ${
-                isLight
-                  ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-amber-300 shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
-                  : 'bg-[#0D152D] border-slate-800/90 hover:border-slate-700 shadow-md'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border kinora-3d-icon-box ${
+            ) : nearest ? (
+              <div
+                onClick={() => onNavigateTab('family')}
+                className={`p-3.5 rounded-[22px] flex items-center justify-between transition-all cursor-pointer group border kinora-3d-tile ${
                   isLight
-                    ? 'bg-amber-100 border-amber-300 text-amber-800'
-                    : 'bg-[#FF8A24]/15 border-[#FF8A24]/30 text-[#FFD21F]'
-                }`}>
-                  <Cake className="w-6 h-6 stroke-[2]" />
-                </div>
-                <div>
-                  <div className={`text-xs font-bold transition-colors ${
-                    isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-[#7EDCFF]'
-                  }`}>
-                    {nearest ? `${(nearest.member?.name || 'Family Member').split(' ')[0]}'s Birthday 🎂` : "Family Birthday 🎂"}
-                  </div>
-                  <div className={`text-[10px] mt-0.5 ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
-                    {nearest
-                      ? nearest.diffDays === 0
-                        ? 'Today! Celebrate together 🎉'
-                        : `In ${nearest.diffDays} day${nearest.diffDays > 1 ? 's' : ''} • ${nearest.bDateStr}`
-                      : 'Add birth dates in Family Hub'}
-                  </div>
-                </div>
-              </div>
-
-              <img
-                src={nearest?.member?.avatar_url || currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                alt={nearest?.member?.name || 'Member'}
-                className={`w-9 h-9 rounded-full object-cover ring-2 shadow-sm ${
-                  isLight ? 'ring-[#C25425]/60' : 'ring-[#16C7F2]/60'
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-amber-300 shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
+                    : 'bg-[#0D152D] border-slate-800/90 hover:border-slate-700 shadow-md'
                 }`}
-              />
-            </div>
-          );
-        })()}
-      </div>
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border kinora-3d-icon-box ${
+                    isLight
+                      ? 'bg-amber-100 border-amber-300 text-amber-800'
+                      : 'bg-[#FF8A24]/15 border-[#FF8A24]/30 text-[#FFD21F]'
+                  }`}>
+                    <Cake className="w-6 h-6 stroke-[2]" />
+                  </div>
+                  <div>
+                    <div className={`text-xs font-bold transition-colors ${
+                      isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-[#7EDCFF]'
+                    }`}>
+                      {`${(nearest.member?.name || 'Family Member').split(' ')[0]}'s Birthday 🎂`}
+                    </div>
+                    <div className={`text-[10px] mt-0.5 ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
+                      {nearest.diffDays === 0
+                        ? 'Today! Celebrate together 🎉'
+                        : `In ${nearest.diffDays} day${nearest.diffDays > 1 ? 's' : ''} • ${nearest.bDateStr}`}
+                    </div>
+                  </div>
+                </div>
+
+                <img
+                  src={nearest.member?.avatar_url || currentUser?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                  alt={nearest.member?.name || 'Member'}
+                  className={`w-9 h-9 rounded-full object-cover ring-2 shadow-sm ${
+                    isLight ? 'ring-[#C25425]/60' : 'ring-[#16C7F2]/60'
+                  }`}
+                />
+              </div>
+            ) : null}
+          </div>
+        );
+      })()}
 
       {/* 6. Family Moments (Horizontal Carousel) */}
       <div className="space-y-2 pt-1">
