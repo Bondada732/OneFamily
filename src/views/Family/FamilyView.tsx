@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
+import { useTheme } from '../../context/ThemeContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
@@ -11,6 +12,8 @@ import { FamilyFriendsView } from '../FamilyFriends/FamilyFriendsView.js';
 
 export const FamilyView: React.FC = () => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers, refreshUser, regenerateFamilyKey, approveMember, rejectMember, updateMemberPermissions } = useAuth();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
   const [activeSubTab, setActiveSubTab] = useState<'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY'>('MEMBERS');
@@ -653,17 +656,23 @@ export const FamilyView: React.FC = () => {
   ];
 
   return (
-    <div className="p-4 space-y-4 animate-fade-in text-slate-100 pb-12">
+    <div className={`p-4 space-y-4 animate-fade-in pb-24 ${
+      isLight ? 'text-[#2A1B14]' : 'text-slate-100'
+    }`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-extrabold text-white tracking-tight">Family</h2>
-          <p className="text-xs text-slate-400">Together Always • {family?.name || 'One Family'}</p>
+          <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Family</h2>
+          <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Together Always • {family?.name || 'One Family'}</p>
         </div>
         {canManageFamily && (
           <button
             onClick={() => setShowAddMember(true)}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-white active:scale-95 transition-all shadow-sm"
+            className={`w-8 h-8 rounded-full flex items-center justify-center active:scale-95 transition-all shadow-sm border ${
+              isLight
+                ? 'bg-[#F05A28] text-white border-[#F05A28] hover:bg-[#E76F3C]'
+                : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-white'
+            }`}
             title="Add Family Member"
           >
             <Plus className="w-4 h-4" />
@@ -671,7 +680,7 @@ export const FamilyView: React.FC = () => {
         )}
       </div>
 
-      {/* Horizontal Story-style Member Avatars (Mockup Screen 2) */}
+      {/* Horizontal Story-style Member Avatars */}
       <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none pt-1">
         {familyMembers.map((member) => (
           <div
@@ -685,20 +694,22 @@ export const FamilyView: React.FC = () => {
                 alt={member.name}
                 className={`w-12 h-12 rounded-full object-cover p-0.5 border-2 transition-all ${
                   member.role === 'FAMILY_HEAD'
-                    ? 'border-amber-400 ring-2 ring-amber-400/30'
-                    : 'border-indigo-500/80 group-hover:border-amber-400'
+                    ? isLight ? 'border-[#C25425] ring-2 ring-[#C25425]/30' : 'border-amber-400 ring-2 ring-amber-400/30'
+                    : isLight ? 'border-[#EAD6C4] group-hover:border-[#C25425]' : 'border-indigo-500/80 group-hover:border-amber-400'
                 }`}
               />
               {member.role === 'FAMILY_HEAD' && (
-                <span className="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 text-[8px] font-black px-1 rounded-full shadow-sm">
+                <span className={`absolute -bottom-1 -right-1 text-[8px] font-black px-1 rounded-full shadow-sm ${
+                  isLight ? 'bg-[#F05A28] text-white' : 'bg-amber-500 text-slate-950'
+                }`}>
                   👑
                 </span>
               )}
             </div>
-            <span className="text-xs font-bold text-white group-hover:text-amber-300 truncate max-w-[64px]">
+            <span className={`text-xs font-bold truncate max-w-[64px] ${isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-amber-300'}`}>
               {member.name.split(' ')[0]}
             </span>
-            <span className="text-[10px] text-slate-400 truncate max-w-[64px]">
+            <span className={`text-[10px] truncate max-w-[64px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
               {member.role === 'FAMILY_HEAD' ? 'Family Head' : member.relationship || 'Member'}
             </span>
           </div>
@@ -706,15 +717,23 @@ export const FamilyView: React.FC = () => {
       </div>
 
       {/* Sub Tabs */}
-      <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-2xl border border-slate-700/80 overflow-x-auto scrollbar-none">
+      <div className={`flex items-center gap-1 p-1 rounded-2xl overflow-x-auto scrollbar-none border ${
+        isLight
+          ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
+          : 'bg-slate-800/80 border border-slate-700/80'
+      }`}>
         {(['MEMBERS', 'FRIENDS', 'TREE', 'TASKS', 'WISHLIST', 'MAINTENANCE', 'EMERGENCY'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveSubTab(tab)}
             className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
               activeSubTab === tab
-                ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? isLight
+                  ? 'bg-[#F05A28] text-white shadow-md'
+                  : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+                : isLight
+                  ? 'text-[#634B3F] hover:text-[#1F1F1F]'
+                  : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             {tab === 'WISHLIST' ? 'WISH LIST' : tab === 'FRIENDS' ? 'FRIENDS & DATES 🎂' : tab}
@@ -727,24 +746,40 @@ export const FamilyView: React.FC = () => {
         <div className="space-y-3.5">
           {/* Family Secret Key & Invite Card (Visible ONLY to Family Head, collapsible by default) */}
           {currentUser?.role === 'FAMILY_HEAD' && (
-            <div className="rounded-3xl bg-gradient-to-br from-slate-800/95 via-indigo-950/40 to-slate-900 border-2 border-amber-500/40 shadow-xl overflow-hidden transition-all">
+            <div className={`rounded-3xl border-2 shadow-xl overflow-hidden transition-all kinora-3d-card ${
+              isLight
+                ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2]'
+                : 'bg-gradient-to-br from-slate-800/95 via-indigo-950/40 to-slate-900 border-amber-500/40'
+            }`}>
               <button
                 type="button"
                 onClick={() => setIsSecretKeyExpanded(!isSecretKeyExpanded)}
-                className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-800/50 transition-colors"
+                className={`w-full p-4 flex items-center justify-between text-left transition-colors ${
+                  isLight ? 'hover:bg-white/20' : 'hover:bg-slate-800/50'
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                  <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 kinora-3d-icon-box ${
+                    isLight
+                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                      : 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+                  }`}>
                     <KeyRound className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-xs font-bold text-white uppercase tracking-wider">Family Secret Key</h3>
-                      <span className="text-[9px] bg-amber-500/20 text-amber-300 font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30">
+                      <h3 className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                        Family Secret Key
+                      </h3>
+                      <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${
+                        isLight
+                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                          : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      }`}>
                         HEAD ONLY
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
+                    <p className={`text-[10px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                       {isSecretKeyExpanded
                         ? 'Share with family members to let them join'
                         : 'Tap to view secret key & invite family members'}
@@ -752,16 +787,28 @@ export const FamilyView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 rounded-xl shrink-0">
+                <div className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-xl shrink-0 border ${
+                  isLight
+                    ? 'bg-[#FFF8F1] text-[#8C5228] border-[#DEC8B2] kinora-3d-tile'
+                    : 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+                }`}>
                   <span>{isSecretKeyExpanded ? 'Hide Key' : 'Show Key'}</span>
                   {isSecretKeyExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </div>
               </button>
 
               {isSecretKeyExpanded && (
-                <div className="p-4 pt-0 space-y-3 border-t border-slate-800/80 mt-1 animate-fade-in">
-                  <div className="flex items-center justify-between bg-slate-900/90 border border-slate-700/80 p-2.5 rounded-2xl">
-                    <div className="font-mono text-sm sm:text-base font-black tracking-widest text-amber-400 pl-2 select-all">
+                <div className={`p-4 pt-0 space-y-3 border-t mt-1 animate-fade-in ${
+                  isLight ? 'border-[#DEC8B2]' : 'border-slate-800/80'
+                }`}>
+                  <div className={`flex items-center justify-between p-2.5 rounded-2xl border ${
+                    isLight
+                      ? 'bg-[#FFF8F1] border-[#EAD6C4]'
+                      : 'bg-slate-900/90 border-slate-700/80'
+                  }`}>
+                    <div className={`font-mono text-sm sm:text-base font-black tracking-widest pl-2 select-all ${
+                      isLight ? 'text-[#B84A1E]' : 'text-amber-400'
+                    }`}>
                       {family?.family_key || 'FAM-SHARMA-01'}
                     </div>
 
@@ -773,9 +820,13 @@ export const FamilyView: React.FC = () => {
                           setKeyCopied(true);
                           setTimeout(() => setKeyCopied(false), 2000);
                         }}
-                        className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1 transition-all active:scale-95"
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all active:scale-95 border ${
+                          isLight
+                            ? 'bg-[#F4EDE4] hover:bg-[#EAE0D5] text-[#1F1F1F] border-[#EAD6C4]'
+                            : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200'
+                        }`}
                       >
-                        {keyCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-300" />}
+                        {keyCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className={`w-3.5 h-3.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`} />}
                         <span>{keyCopied ? 'Copied' : 'Copy'}</span>
                       </button>
                       <button
@@ -793,7 +844,7 @@ export const FamilyView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                  <div className={`flex items-center justify-between text-[11px] px-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                     <span>New members who join with this key will require your approval before gaining access.</span>
                     {canManageFamily && (
                       <button
@@ -805,10 +856,14 @@ export const FamilyView: React.FC = () => {
                           setIsRotatingKey(false);
                         }}
                         disabled={isRotatingKey}
-                        className="p-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 transition-colors text-[10px] flex items-center gap-1 border border-slate-700 shrink-0 ml-2"
+                        className={`p-1 px-2 rounded-lg transition-colors text-[10px] flex items-center gap-1 border shrink-0 ml-2 ${
+                          isLight
+                            ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#B84A1E] border-[#DEC8B2]'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 border-slate-700'
+                        }`}
                         title="Regenerate Family Key"
                       >
-                        <RotateCw className={`w-3 h-3 ${isRotatingKey ? 'animate-spin text-amber-400' : ''}`} />
+                        <RotateCw className={`w-3 h-3 ${isRotatingKey ? 'animate-spin text-amber-500' : ''}`} />
                         <span>Reset Key</span>
                       </button>
                     )}
@@ -820,17 +875,25 @@ export const FamilyView: React.FC = () => {
 
           {/* Pending Members Approval Card (Visible only to Family Head when requests exist) */}
           {currentUser?.role === 'FAMILY_HEAD' && familyMembers.some((m) => m.is_approved === false || m.status === 'PENDING_APPROVAL') && (
-            <div className="p-4 rounded-3xl bg-amber-500/10 border-2 border-amber-500/40 shadow-xl space-y-3 animate-fade-in">
+            <div className={`p-4 rounded-3xl border-2 shadow-xl space-y-3 animate-fade-in kinora-3d-card ${
+              isLight
+                ? 'bg-[#FFF8EE] border-amber-400/60 text-[#1F1F1F]'
+                : 'bg-amber-500/10 border-amber-500/40'
+            }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold">
+                  <div className={`w-8 h-8 rounded-xl border flex items-center justify-center font-bold kinora-3d-icon-box ${
+                    isLight ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-500/20 border-amber-500/30 text-amber-400'
+                  }`}>
                     ⏳
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                    <h3 className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                       Pending Access Requests ({familyMembers.filter((m) => m.is_approved === false || m.status === 'PENDING_APPROVAL').length})
                     </h3>
-                    <p className="text-[10px] text-amber-300/80">Members joined with Secret Key awaiting your approval</p>
+                    <p className={`text-[10px] ${isLight ? 'text-[#8C5228]' : 'text-amber-300/80'}`}>
+                      Members joined with Secret Key awaiting your approval
+                    </p>
                   </div>
                 </div>
               </div>
@@ -841,23 +904,31 @@ export const FamilyView: React.FC = () => {
                   .map((member) => (
                     <div
                       key={member.id}
-                      className="p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 flex items-center justify-between gap-3 shadow-md"
+                      className={`p-3 rounded-2xl border flex items-center justify-between gap-3 shadow-md kinora-3d-tile ${
+                        isLight
+                          ? 'bg-[#FFF8F1] border-[#EAD6C4]'
+                          : 'bg-slate-900/90 border-amber-500/30'
+                      }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <img
                           src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
                           alt={member.name}
-                          className="w-10 h-10 rounded-2xl object-cover ring-2 ring-amber-500/40"
+                          className={`w-10 h-10 rounded-2xl object-cover ring-2 ${
+                            isLight ? 'ring-amber-400' : 'ring-amber-500/40'
+                          }`}
                         />
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-white">{member.name}</span>
-                            <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold border border-amber-500/30">
+                            <span className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{member.name}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                              isLight ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                            }`}>
                               PENDING
                             </span>
                           </div>
-                          <div className="text-[10px] text-slate-400">
-                            {member.relationship || 'Member'} • Role: <strong className="text-slate-300">{member.role || 'ADULT'}</strong>
+                          <div className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                            {member.relationship || 'Member'} • Role: <strong className={isLight ? 'text-[#1F1F1F]' : 'text-slate-300'}>{member.role || 'ADULT'}</strong>
                           </div>
                         </div>
                       </div>
@@ -890,7 +961,11 @@ export const FamilyView: React.FC = () => {
                               ]);
                             }
                           }}
-                          className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-slate-950 font-extrabold rounded-xl text-[11px] shadow-md transition-transform active:scale-95"
+                          className={`px-3 py-1.5 font-extrabold rounded-xl text-[11px] shadow-md transition-transform active:scale-95 ${
+                            isLight
+                              ? 'bg-[#F05A28] hover:bg-[#E76F3C] text-white'
+                              : 'bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-slate-950'
+                          }`}
                         >
                           Review & Approve
                         </button>
@@ -900,7 +975,11 @@ export const FamilyView: React.FC = () => {
                               await rejectMember(member.id);
                             }
                           }}
-                          className="p-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-xl border border-rose-500/30 text-xs transition-colors"
+                          className={`p-1.5 rounded-xl border text-xs transition-colors ${
+                            isLight
+                              ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
+                              : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border-rose-500/30'
+                          }`}
                           title="Reject Request"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -913,13 +992,17 @@ export const FamilyView: React.FC = () => {
           )}
 
           <div className="flex items-center justify-between text-xs pt-1">
-            <span className="font-bold text-slate-400 uppercase">
+            <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
               Approved Family Members ({familyMembers.filter((m) => m.is_approved !== false && m.status !== 'PENDING_APPROVAL').length})
             </span>
             {canManageFamily && (
               <button
                 onClick={() => setShowAddMember(true)}
-                className="flex items-center gap-1 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-2.5 py-1 rounded-lg border border-amber-500/30 font-bold transition-colors"
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border font-bold transition-all ${
+                  isLight
+                    ? 'bg-amber-100 text-amber-900 hover:bg-amber-200 border-amber-300 shadow-sm'
+                    : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border-amber-500/30'
+                }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Member</span>
@@ -933,8 +1016,12 @@ export const FamilyView: React.FC = () => {
               .map((member) => (
                 <div
                   key={member.id}
-                  className={`p-3.5 rounded-2xl border flex items-center justify-between shadow-sm ${
-                    member.id === currentUser?.id
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between shadow-sm kinora-3d-tile ${
+                    isLight
+                      ? member.id === currentUser?.id
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]'
+                        : 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
+                      : member.id === currentUser?.id
                       ? 'bg-indigo-950/40 border-indigo-500/40'
                       : 'bg-slate-800/90 border-slate-700/80'
                   }`}
@@ -952,36 +1039,52 @@ export const FamilyView: React.FC = () => {
                       <img
                         src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
                         alt={member.name}
-                        className="w-11 h-11 rounded-2xl object-cover ring-2 ring-slate-700 group-hover:ring-amber-400 transition-all"
+                        className={`w-11 h-11 rounded-2xl object-cover ring-2 transition-all ${
+                          isLight ? 'ring-[#EAD6C4] group-hover:ring-[#F05A28]' : 'ring-slate-700 group-hover:ring-amber-400'
+                        }`}
                       />
                       {(canManageFamily || member.id === currentUser?.id) && (
-                        <div className="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 p-1 rounded-full shadow-md">
+                        <div className={`absolute -bottom-1 -right-1 p-1 rounded-full shadow-md ${
+                          isLight ? 'bg-[#F05A28] text-white' : 'bg-amber-500 text-slate-950'
+                        }`}>
                           <Camera className="w-2.5 h-2.5" />
                         </div>
                       )}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white">{member.name}</span>
+                        <span className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{member.name}</span>
                         {member.id === currentUser?.id && (
-                          <span className="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-md font-bold border border-indigo-500/30">
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold border ${
+                            isLight
+                              ? 'bg-orange-100 text-[#F05A28] border-orange-300'
+                              : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                          }`}>
                             YOU
                           </span>
                         )}
-                        <span className="text-[10px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded-md font-semibold">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold border ${
+                          isLight
+                            ? 'bg-[#E2D0BE] text-[#4A382A] border-[#DEC8B2]'
+                            : 'bg-slate-700 text-slate-300'
+                        }`}>
                           {member.role}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                      <div className={`text-[11px] mt-0.5 flex items-center gap-1.5 flex-wrap ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                         <span>{member.relationship}</span>
                         {member.birth_date && (
-                          <span className="text-amber-300 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 text-[10px] inline-flex items-center gap-1">
+                          <span className={`font-medium px-1.5 py-0.5 rounded border text-[10px] inline-flex items-center gap-1 ${
+                            isLight
+                              ? 'bg-amber-100 text-amber-900 border-amber-300'
+                              : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                          }`}>
                             <span>🎂</span>
                             <span>{formatDate(member.birth_date)}</span>
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-indigo-400 mt-0.5 font-medium">
+                      <div className={`text-[10px] mt-0.5 font-medium ${isLight ? 'text-[#D3542F]' : 'text-indigo-400'}`}>
                         {member.role === 'FAMILY_HEAD'
                           ? '👑 Family Head (Master Access)'
                           : member.role === 'SPOUSE'
@@ -995,7 +1098,11 @@ export const FamilyView: React.FC = () => {
                     {(canManageFamily || member.id === currentUser?.id) && (
                       <button
                         onClick={() => openEditMember(member)}
-                        className="p-2 bg-slate-700/80 hover:bg-slate-600 text-slate-200 rounded-xl text-xs transition-colors"
+                        className={`p-2 rounded-xl text-xs transition-colors border ${
+                          isLight
+                            ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4] shadow-sm'
+                            : 'bg-slate-700/80 hover:bg-slate-600 text-slate-200'
+                        }`}
                         title="Edit Profile & Avatar"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -1004,7 +1111,11 @@ export const FamilyView: React.FC = () => {
                     {canManageFamily && member.role !== 'FAMILY_HEAD' && (
                       <button
                         onClick={() => openPermissions(member)}
-                        className="p-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded-xl text-xs border border-indigo-500/40 transition-colors"
+                        className={`p-2 rounded-xl text-xs border transition-colors ${
+                          isLight
+                            ? 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border-indigo-300 shadow-sm'
+                            : 'bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border-indigo-500/40'
+                        }`}
                         title="Manage Permissions"
                       >
                         <Lock className="w-3.5 h-3.5" />
@@ -1013,7 +1124,11 @@ export const FamilyView: React.FC = () => {
                     {currentUser?.role === 'FAMILY_HEAD' && member.id !== currentUser?.id && (
                       <button
                         onClick={() => setMemberToDelete(member)}
-                        className="p-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-xl text-xs border border-rose-500/30 transition-colors"
+                        className={`p-2 rounded-xl text-xs border transition-colors ${
+                          isLight
+                            ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300 shadow-sm'
+                            : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border-rose-500/30'
+                        }`}
                         title="Remove Member from Family"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1036,23 +1151,39 @@ export const FamilyView: React.FC = () => {
       {/* 3. FAMILY TREE SUBTAB */}
       {activeSubTab === 'TREE' && (
         <div className="space-y-4">
-          <div className="text-xs font-bold text-slate-400 uppercase">Interactive Generational Tree</div>
+          <div className={`text-xs font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+            Interactive Generational Tree
+          </div>
 
           <div className="space-y-4">
             {treeData.map((gen) => (
-              <div key={gen.id} className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+              <div
+                key={gen.id}
+                className={`p-4 rounded-2xl border space-y-3 ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-sm'
+                    : 'bg-slate-800/90 border-slate-700/80'
+                }`}
+              >
+                <div className={`flex items-center gap-2 text-xs font-bold ${isLight ? 'text-[#D3542F]' : 'text-amber-400'}`}>
                   <GitFork className="w-4 h-4" />
                   <span>{gen.title} (Generation {gen.generation})</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   {gen.members?.map((m: any) => (
-                    <div key={m.id} className="flex items-center gap-2.5 p-2.5 bg-slate-900/60 rounded-xl border border-slate-800">
+                    <div
+                      key={m.id}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-xl border ${
+                        isLight
+                          ? 'bg-[#FFF8F1] border-[#EAD6C4] border-t-white/90 border-b-[2px] border-b-[#DEC8B2]'
+                          : 'bg-slate-900/60 border-slate-800'
+                      }`}
+                    >
                       <img src={m.avatar_url} alt={m.name} className="w-8 h-8 rounded-full object-cover" />
                       <div>
-                        <div className="text-xs font-bold text-white">{m.name}</div>
-                        <div className="text-[10px] text-slate-400">{m.relationship}</div>
+                        <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{m.name}</div>
+                        <div className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>{m.relationship}</div>
                       </div>
                     </div>
                   ))}
@@ -1063,15 +1194,15 @@ export const FamilyView: React.FC = () => {
         </div>
       )}
 
-      {/* 3. TASKS SUBTAB */}
+      {/* 4. TASKS SUBTAB */}
       {activeSubTab === 'TASKS' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase">Family Tasks & Chores</span>
+            <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Family Tasks & Chores</span>
             {canEditTasks && (
               <button
                 onClick={() => setShowAddTask(true)}
-                className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
+                className={`flex items-center gap-1 font-bold ${isLight ? 'text-[#D3542F] hover:underline' : 'text-amber-400 hover:underline'}`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Task</span>
@@ -1086,24 +1217,36 @@ export const FamilyView: React.FC = () => {
                 onClick={() => canEditTasks && toggleTask(task.id)}
                 className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
                   task.status === 'COMPLETED'
-                    ? 'bg-slate-800/40 border-slate-800/60 opacity-60'
+                    ? isLight
+                      ? 'bg-[#F3E3D3]/50 border-[#EAD6C4]/60 opacity-60'
+                      : 'bg-slate-800/40 border-slate-800/60 opacity-60'
+                    : isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-sm'
                     : 'bg-slate-800/90 border-slate-700/80 shadow-sm'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-5 h-5 rounded-lg border flex items-center justify-center ${
-                      task.status === 'COMPLETED' ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-600'
+                      task.status === 'COMPLETED'
+                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                        : isLight
+                        ? 'border-[#DEC8B2] bg-[#FFF8F1]'
+                        : 'border-slate-600'
                     }`}
                   >
                     {task.status === 'COMPLETED' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                   </div>
                   <div>
-                    <div className={`text-xs font-bold ${task.status === 'COMPLETED' ? 'line-through text-slate-500' : 'text-white'}`}>
+                    <div className={`text-xs font-bold ${
+                      task.status === 'COMPLETED'
+                        ? isLight ? 'line-through text-[#8C7A6B]' : 'line-through text-slate-500'
+                        : isLight ? 'text-[#1F1F1F]' : 'text-white'
+                    }`}>
                       {task.title}
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      Assigned: <span className="text-slate-200">{task.assigned_to_name}</span> • Due: {task.due_date}
+                    <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                      Assigned: <span className={isLight ? 'text-[#1F1F1F] font-bold' : 'text-slate-200'}>{task.assigned_to_name}</span> • Due: {task.due_date}
                     </div>
                   </div>
                 </div>
@@ -1112,7 +1255,11 @@ export const FamilyView: React.FC = () => {
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       task.priority === 'HIGH'
-                        ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                        ? isLight
+                          ? 'bg-rose-100 text-rose-700 border border-rose-300'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                        : isLight
+                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
                         : 'bg-indigo-500/20 text-indigo-300'
                     }`}
                   >
@@ -1123,7 +1270,11 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setEditingTask(task)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                        className={`p-1.5 rounded-lg transition-colors border ${
+                          isLight
+                            ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                            : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 border-transparent'
+                        }`}
                         title="Edit Task"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -1131,7 +1282,11 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={(e) => handleDeleteTask(task.id, e)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                        className={`p-1.5 rounded-lg transition-colors border ${
+                          isLight
+                            ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
+                            : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-transparent'
+                        }`}
                         title="Delete Task"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1145,15 +1300,17 @@ export const FamilyView: React.FC = () => {
         </div>
       )}
 
-      {/* 4. WISH LIST SUBTAB */}
+      {/* 5. WISH LIST SUBTAB */}
       {activeSubTab === 'WISHLIST' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase">Shared Family Wish List ({groceryItems.length})</span>
+            <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              Shared Family Wish List ({groceryItems.length})
+            </span>
             {canEditTasks && (
               <button
                 onClick={() => setShowAddGrocery(true)}
-                className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
+                className={`flex items-center gap-1 font-bold ${isLight ? 'text-[#D3542F] hover:underline' : 'text-amber-400 hover:underline'}`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add to Wish List</span>
@@ -1165,16 +1322,26 @@ export const FamilyView: React.FC = () => {
             {groceryItems.length === 0 ? (
               <div
                 onClick={() => setShowAddGrocery(true)}
-                className="p-6 rounded-3xl bg-slate-800/60 border border-dashed border-slate-700 text-center cursor-pointer hover:border-amber-400 hover:bg-slate-800/90 transition-all space-y-2"
+                className={`p-6 rounded-3xl border border-dashed text-center cursor-pointer transition-all space-y-2 ${
+                  isLight
+                    ? 'bg-[#F3E3D3]/60 border-[#DEC8B2] hover:bg-[#F3E3D3]'
+                    : 'bg-slate-800/60 border-slate-700 hover:border-amber-400 hover:bg-slate-800/90'
+                }`}
               >
-                <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto ${
+                  isLight ? 'bg-amber-100 text-[#D3542F]' : 'bg-amber-500/20 text-amber-400'
+                }`}>
                   <Gift className="w-5 h-5" />
                 </div>
-                <div className="text-xs font-bold text-white">Family Wish List is Empty</div>
-                <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Family Wish List is Empty</div>
+                <p className={`text-[11px] max-w-xs mx-auto ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Add items, books, gadgets, groceries, or gifts any family member wishes to get.
                 </p>
-                <button className="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-bold inline-flex items-center gap-1">
+                <button className={`px-3 py-1.5 border rounded-xl text-xs font-bold inline-flex items-center gap-1 ${
+                  isLight
+                    ? 'bg-orange-100 text-[#F05A28] border-orange-300'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                }`}>
                   <Plus className="w-3.5 h-3.5" /> Add First Wish
                 </button>
               </div>
@@ -1184,7 +1351,11 @@ export const FamilyView: React.FC = () => {
                   key={item.id}
                   className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
                     item.is_purchased
-                      ? 'bg-slate-800/40 border-slate-800/60 opacity-60'
+                      ? isLight
+                        ? 'bg-[#F3E3D3]/50 border-[#EAD6C4]/60 opacity-60'
+                        : 'bg-slate-800/40 border-slate-800/60 opacity-60'
+                      : isLight
+                      ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-sm'
                       : 'bg-slate-800/90 border-slate-700/80 shadow-sm'
                   }`}
                 >
@@ -1194,34 +1365,52 @@ export const FamilyView: React.FC = () => {
                   >
                     <div
                       className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 ${
-                        item.is_purchased ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-600'
+                        item.is_purchased
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : isLight
+                          ? 'border-[#DEC8B2] bg-[#FFF8F1]'
+                          : 'border-slate-600'
                       }`}
                     >
                       {item.is_purchased && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                     </div>
                     <div className="overflow-hidden">
-                      <div className={`text-xs font-bold truncate ${item.is_purchased ? 'line-through text-slate-500' : 'text-white'}`}>
+                      <div className={`text-xs font-bold truncate ${
+                        item.is_purchased
+                          ? isLight ? 'line-through text-[#8C7A6B]' : 'line-through text-slate-500'
+                          : isLight ? 'text-[#1F1F1F]' : 'text-white'
+                      }`}>
                         {item.item_name}
                       </div>
-                      <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                        Added by <span className="text-amber-300 font-semibold">{item.added_by_name}</span>
+                      <div className={`text-[10px] truncate mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                        Added by <span className={isLight ? 'text-[#D3542F] font-bold' : 'text-amber-300 font-semibold'}>{item.added_by_name}</span>
                         {item.estimated_cost ? (
-                          <span className="text-emerald-400 font-bold ml-1.5">• ₹{Number(item.estimated_cost).toLocaleString('en-IN')}</span>
+                          <span className={`font-bold ml-1.5 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
+                            • ₹{Number(item.estimated_cost).toLocaleString('en-IN')}
+                          </span>
                         ) : item.quantity && item.quantity !== '1 unit' && item.quantity !== '1 pack' ? (
-                          <span className="text-slate-300 ml-1.5">• {item.quantity}</span>
+                          <span className={`ml-1.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>• {item.quantity}</span>
                         ) : null}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-semibold">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
+                      isLight
+                        ? 'bg-[#E2D0BE] text-[#4A382A] border-[#DEC8B2]'
+                        : 'bg-slate-700 text-slate-300 border-transparent'
+                    }`}>
                       {item.category?.startsWith('CAT_') ? 'Custom' : (item.category || 'WISH')}
                     </span>
                     {canEditTasks && (
                       <button
                         type="button"
                         onClick={() => setEditingGrocery(item)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 active:scale-90 transition-all z-10"
+                        className={`p-1.5 rounded-lg active:scale-90 transition-all z-10 border ${
+                          isLight
+                            ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                            : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 border-transparent'
+                        }`}
                         title="Edit item"
                       >
                         <Edit3 className="w-3.5 h-3.5 pointer-events-none" />
@@ -1231,7 +1420,11 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={(e) => handleDeleteGrocery(item.id, e)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 active:scale-90 transition-all z-10"
+                        className={`p-1.5 rounded-lg active:scale-90 transition-all z-10 border ${
+                          isLight
+                            ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
+                            : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-transparent'
+                        }`}
                         title="Delete item"
                       >
                         <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
@@ -1245,15 +1438,17 @@ export const FamilyView: React.FC = () => {
         </div>
       )}
 
-      {/* 5. MAINTENANCE SUBTAB */}
+      {/* 6. MAINTENANCE SUBTAB */}
       {activeSubTab === 'MAINTENANCE' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase">Household Equipment Maintenance ({maintenanceItems.length})</span>
+            <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              Household Equipment Maintenance ({maintenanceItems.length})
+            </span>
             {canEditTasks && (
               <button
                 onClick={() => setShowAddMaintenance(true)}
-                className="flex items-center gap-1 text-amber-400 hover:underline font-bold"
+                className={`flex items-center gap-1 font-bold ${isLight ? 'text-[#D3542F] hover:underline' : 'text-amber-400 hover:underline'}`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Equipment</span>
@@ -1265,33 +1460,50 @@ export const FamilyView: React.FC = () => {
             {maintenanceItems.length === 0 ? (
               <div
                 onClick={() => setShowAddMaintenance(true)}
-                className="p-6 rounded-3xl bg-slate-800/60 border border-dashed border-slate-700 text-center cursor-pointer hover:border-amber-400 hover:bg-slate-800/90 transition-all space-y-3"
+                className={`p-6 rounded-3xl border border-dashed text-center cursor-pointer transition-all space-y-3 ${
+                  isLight
+                    ? 'bg-[#F3E3D3]/60 border-[#DEC8B2] hover:bg-[#F3E3D3]'
+                    : 'bg-slate-800/60 border-slate-700 hover:border-amber-400 hover:bg-slate-800/90'
+                }`}
               >
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto ${
+                  isLight ? 'bg-amber-100 text-[#D3542F]' : 'bg-amber-500/20 text-amber-400'
+                }`}>
                   <Wrench className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white">No Household Equipment Tracked</div>
-                  <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
+                  <div className={`text-sm font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Household Equipment Tracked</div>
+                  <p className={`text-xs max-w-xs mx-auto mt-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                     Track service dates, filter replacements, and warranty for ACs, RO water purifiers, inverters, chimneys, and vehicles.
                   </p>
                 </div>
-                <button className="px-4 py-2 bg-gradient-to-r from-amber-500 to-indigo-600 text-white font-bold rounded-xl text-xs shadow-lg inline-flex items-center gap-1.5">
+                <button className="px-4 py-2 bg-[#F05A28] text-white font-bold rounded-xl text-xs shadow-md inline-flex items-center gap-1.5">
                   <Plus className="w-3.5 h-3.5" /> Add Equipment & Service
                 </button>
               </div>
             ) : (
               maintenanceItems.map((maint) => (
-                <div key={maint.id} className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700/80 space-y-2.5 shadow-sm">
+                <div
+                  key={maint.id}
+                  className={`p-3.5 rounded-2xl border space-y-2.5 shadow-sm ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
+                      : 'bg-slate-800/90 border-slate-700/80'
+                  }`}
+                >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white">{maint.item_name}</span>
-                        <span className="text-[9px] bg-slate-700 text-indigo-300 px-2 py-0.5 rounded font-semibold uppercase">
+                        <span className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{maint.item_name}</span>
+                        <span className={`text-[9px] px-2 py-0.5 rounded font-semibold uppercase border ${
+                          isLight
+                            ? 'bg-[#E2D0BE] text-[#4A382A] border-[#DEC8B2]'
+                            : 'bg-slate-700 text-indigo-300 border-transparent'
+                        }`}>
                           {maint.service_type || 'APPLIANCE'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+                      <div className={`text-[11px] mt-1 flex items-center gap-1.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                         <span>Last serviced: {maint.last_service_date ? formatDate(maint.last_service_date) : 'N/A'}</span>
                         <span>•</span>
                         <span>Every {maint.recurring_interval_months || 6}m</span>
@@ -1299,7 +1511,11 @@ export const FamilyView: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                        isLight
+                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                          : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                      }`}>
                         Due: {maint.next_service_due ? formatDate(maint.next_service_due) : 'Upcoming'}
                       </span>
                       {canEditTasks && (
@@ -1307,7 +1523,11 @@ export const FamilyView: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setEditingMaintenance(maint)}
-                            className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 active:scale-90 transition-all"
+                            className={`p-1.5 rounded-lg active:scale-90 transition-all border ${
+                              isLight
+                                ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                                : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 border-transparent'
+                            }`}
                             title="Edit Equipment"
                           >
                             <Edit3 className="w-3.5 h-3.5 pointer-events-none" />
@@ -1315,7 +1535,11 @@ export const FamilyView: React.FC = () => {
                           <button
                             type="button"
                             onClick={(e) => handleDeleteMaintenance(maint.id, e)}
-                            className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 active:scale-90 transition-all"
+                            className={`p-1.5 rounded-lg active:scale-90 transition-all border ${
+                              isLight
+                                ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
+                                : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-transparent'
+                            }`}
                             title="Delete Equipment"
                           >
                             <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
@@ -1326,14 +1550,22 @@ export const FamilyView: React.FC = () => {
                   </div>
 
                   {(maint.service_provider || maint.contact_phone) && (
-                    <div className="flex items-center justify-between text-[11px] bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                      <div className="text-slate-300 truncate">
-                        <span className="text-slate-500">Service:</span> {maint.service_provider || 'Authorized Technician'}
+                    <div className={`flex items-center justify-between text-[11px] p-2.5 rounded-xl border ${
+                      isLight
+                        ? 'bg-[#FFF8F1] border-[#EAD6C4]'
+                        : 'bg-slate-900/60 border-slate-800'
+                    }`}>
+                      <div className={`truncate ${isLight ? 'text-[#4A382A]' : 'text-slate-300'}`}>
+                        <span className={isLight ? 'text-[#8C7A6B]' : 'text-slate-500'}>Service:</span> {maint.service_provider || 'Authorized Technician'}
                       </div>
                       {maint.contact_phone && (
                         <a
                           href={`tel:${maint.contact_phone}`}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold flex items-center gap-1 shrink-0 ml-2"
+                          className={`px-2.5 py-1 rounded-lg border font-bold flex items-center gap-1 shrink-0 ml-2 ${
+                            isLight
+                              ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300'
+                              : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30'
+                          }`}
                         >
                           <Phone className="w-3 h-3" />
                           <span>{maint.contact_phone}</span>
@@ -1343,7 +1575,9 @@ export const FamilyView: React.FC = () => {
                   )}
 
                   {maint.notes && (
-                    <div className="text-[11px] text-slate-400 italic bg-slate-800/40 p-2 rounded-lg">
+                    <div className={`text-[11px] italic p-2 rounded-lg ${
+                      isLight ? 'text-[#634B3F] bg-[#FFF8F1] border border-[#EAD6C4]' : 'text-slate-400 bg-slate-800/40'
+                    }`}>
                       Note: {maint.notes}
                     </div>
                   )}
@@ -1354,15 +1588,19 @@ export const FamilyView: React.FC = () => {
         </div>
       )}
 
-      {/* 6. EMERGENCY VAULT SUBTAB */}
+      {/* 7. EMERGENCY VAULT SUBTAB */}
       {activeSubTab === 'EMERGENCY' && (
         <div className="space-y-4">
-          <div className="p-4 rounded-3xl bg-rose-950/40 border border-rose-500/30 space-y-3">
-            <div className="flex items-center gap-2 text-rose-400">
+          <div className={`p-4 rounded-3xl border space-y-3 ${
+            isLight
+              ? 'bg-rose-50 border-rose-200 text-rose-900 shadow-sm'
+              : 'bg-rose-950/40 border-rose-500/30 text-slate-300'
+          }`}>
+            <div className={`flex items-center gap-2 ${isLight ? 'text-rose-700' : 'text-rose-400'}`}>
               <ShieldAlert className="w-5 h-5 animate-pulse" />
-              <h3 className="text-sm font-bold text-white">Emergency Mode & Critical Cards</h3>
+              <h3 className={`text-sm font-bold ${isLight ? 'text-rose-950' : 'text-white'}`}>Emergency Mode & Critical Cards</h3>
             </div>
-            <p className="text-xs text-slate-300">
+            <p className={`text-xs ${isLight ? 'text-rose-800' : 'text-slate-300'}`}>
               Instant 1-tap dial for doctors, ambulance, hospital TPA, and critical allergies.
             </p>
           </div>
@@ -1371,8 +1609,8 @@ export const FamilyView: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <Phone className={`w-3.5 h-3.5 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`} />
+                <span className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Emergency Contacts ({emergencyContacts.length})
                 </span>
               </div>
@@ -1392,7 +1630,11 @@ export const FamilyView: React.FC = () => {
                   });
                   setShowAddContact(true);
                 }}
-                className="flex items-center gap-1 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 px-2.5 py-1 rounded-lg border border-emerald-500/30 text-xs font-bold transition-all active:scale-95"
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold transition-all active:scale-95 ${
+                  isLight
+                    ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-300 shadow-sm'
+                    : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border-emerald-500/30'
+                }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Contact</span>
@@ -1400,13 +1642,21 @@ export const FamilyView: React.FC = () => {
             </div>
 
             {emergencyContacts.length === 0 ? (
-              <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/80 text-center space-y-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
+              <div className={`p-5 rounded-2xl border text-center space-y-2.5 ${
+                isLight ? 'bg-[#F3E3D3]/60 border-[#DEC8B2]' : 'bg-slate-800/60 border-slate-700/80'
+              }`}>
+                <div className={`w-10 h-10 rounded-2xl mx-auto flex items-center justify-center border ${
+                  isLight
+                    ? 'bg-emerald-100 border-emerald-300 text-emerald-700'
+                    : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                }`}>
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white">No Emergency Contacts Added</div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">Add doctors, ambulance, hospital TPA, or family members.</div>
+                  <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Emergency Contacts Added</div>
+                  <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                    Add doctors, ambulance, hospital TPA, or family members.
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -1435,38 +1685,54 @@ export const FamilyView: React.FC = () => {
                 {emergencyContacts.map((contact) => (
                   <div
                     key={contact.id}
-                    className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700/80 flex items-center justify-between gap-3 shadow-sm hover:border-slate-600 transition-colors"
+                    className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-sm transition-colors ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
+                        : 'bg-slate-800/90 border-slate-700/80 hover:border-slate-600'
+                    }`}
                   >
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-white truncate">{contact.name}</span>
-                        <span className="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-semibold">
+                        <span className={`text-xs font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{contact.name}</span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold border ${
+                          isLight
+                            ? 'bg-[#E2D0BE] text-[#4A382A] border-[#DEC8B2]'
+                            : 'bg-slate-700 text-slate-300 border-transparent'
+                        }`}>
                           {contact.relationship}
                         </span>
                         {contact.type && contact.type !== 'PERSONAL' && (
-                          <span className="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold">
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                            isLight
+                              ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                              : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                          }`}>
                             {contact.type}
                           </span>
                         )}
                         {contact.is_primary && (
-                          <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                            isLight
+                              ? 'bg-amber-100 text-amber-900 border-amber-300'
+                              : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                          }`}>
                             ★ PRIMARY
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-amber-400 font-mono font-bold">{contact.phone}</div>
+                      <div className={`text-xs font-mono font-bold ${isLight ? 'text-[#D3542F]' : 'text-amber-400'}`}>{contact.phone}</div>
                       {contact.secondary_phone && (
-                        <div className="text-[10px] text-slate-400 font-mono">Alt: {contact.secondary_phone}</div>
+                        <div className={`text-[10px] font-mono ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Alt: {contact.secondary_phone}</div>
                       )}
                       {contact.address && (
-                        <div className="text-[10px] text-slate-400 truncate max-w-xs">📍 {contact.address}</div>
+                        <div className={`text-[10px] truncate max-w-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>📍 {contact.address}</div>
                       )}
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
                       <a
                         href={`tel:${contact.phone}`}
-                        className="p-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-600/30 flex items-center justify-center active:scale-95 transition-transform"
+                        className="p-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-md flex items-center justify-center active:scale-95 transition-transform"
                         title="Call Contact"
                       >
                         <Phone className="w-3.5 h-3.5" />
@@ -1474,7 +1740,11 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => openEditContact(contact)}
-                        className="p-2.5 bg-slate-700/80 hover:bg-slate-600 text-slate-200 rounded-xl transition-colors"
+                        className={`p-2.5 rounded-xl transition-colors border ${
+                          isLight
+                            ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                            : 'bg-slate-700/80 hover:bg-slate-600 text-slate-200 border-transparent'
+                        }`}
                         title="Edit Contact"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -1482,7 +1752,11 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleDeleteContact(contact.id, contact.name)}
-                        className="p-2.5 bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-xl transition-colors"
+                        className={`p-2.5 rounded-xl transition-colors border ${
+                          isLight
+                            ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
+                            : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-transparent'
+                        }`}
                         title="Delete Contact"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1498,8 +1772,8 @@ export const FamilyView: React.FC = () => {
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <ShieldCheck className={`w-3.5 h-3.5 ${isLight ? 'text-rose-600' : 'text-rose-400'}`} />
+                <span className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Medical Profiles & Allergies ({emergencyProfiles.length})
                 </span>
               </div>
@@ -1519,7 +1793,11 @@ export const FamilyView: React.FC = () => {
                   });
                   setShowAddProfile(true);
                 }}
-                className="flex items-center gap-1 bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 px-2.5 py-1 rounded-lg border border-rose-500/30 text-xs font-bold transition-all active:scale-95"
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold transition-all active:scale-95 ${
+                  isLight
+                    ? 'bg-rose-100 text-rose-800 hover:bg-rose-200 border-rose-300 shadow-sm'
+                    : 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border-rose-500/30'
+                }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Medical Profile</span>
@@ -1527,13 +1805,21 @@ export const FamilyView: React.FC = () => {
             </div>
 
             {emergencyProfiles.length === 0 ? (
-              <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/80 text-center space-y-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 mx-auto flex items-center justify-center">
+              <div className={`p-5 rounded-2xl border text-center space-y-2.5 ${
+                isLight ? 'bg-[#F3E3D3]/60 border-[#DEC8B2]' : 'bg-slate-800/60 border-slate-700/80'
+              }`}>
+                <div className={`w-10 h-10 rounded-2xl mx-auto flex items-center justify-center border ${
+                  isLight
+                    ? 'bg-rose-100 border-rose-300 text-rose-700'
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                }`}>
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white">No Medical Profiles Added</div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">Store blood groups, critical allergies, medications, and insurance.</div>
+                  <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Medical Profiles Added</div>
+                  <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                    Store blood groups, critical allergies, medications, and insurance.
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -1560,11 +1846,22 @@ export const FamilyView: React.FC = () => {
             ) : (
               <div className="space-y-2.5">
                 {emergencyProfiles.map((prof) => (
-                  <div key={prof.id} className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 space-y-2.5 shadow-sm">
+                  <div
+                    key={prof.id}
+                    className={`p-4 rounded-2xl border space-y-2.5 shadow-sm ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
+                        : 'bg-slate-800/90 border-slate-700/80'
+                    }`}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white">{prof.full_name}</span>
-                        <span className="text-[11px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-md">
+                        <span className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{prof.full_name}</span>
+                        <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md border ${
+                          isLight
+                            ? 'bg-rose-100 text-rose-800 border-rose-300'
+                            : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+                        }`}>
                           🩸 Blood: {prof.blood_group || 'Unknown'}
                         </span>
                       </div>
@@ -1572,7 +1869,11 @@ export const FamilyView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openEditProfile(prof)}
-                          className="p-1.5 bg-slate-700/80 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
+                          className={`p-1.5 rounded-lg transition-colors border ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                              : 'bg-slate-700/80 hover:bg-slate-600 text-slate-200 border-transparent'
+                          }`}
                           title="Edit Medical Profile"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -1580,7 +1881,11 @@ export const FamilyView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleDeleteProfile(prof.id, prof.full_name)}
-                          className="p-1.5 bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-lg transition-colors"
+                          className={`p-1.5 rounded-lg transition-colors border ${
+                            isLight
+                              ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
+                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-transparent'
+                          }`}
                           title="Delete Medical Profile"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1590,34 +1895,58 @@ export const FamilyView: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                       {prof.allergies && (
-                        <div className="p-2 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300">
-                          <strong className="text-rose-400">⚠️ Critical Allergies:</strong> {prof.allergies}
+                        <div className={`p-2 rounded-xl border ${
+                          isLight
+                            ? 'bg-rose-100 border-rose-300 text-rose-900'
+                            : 'bg-rose-950/40 border-rose-500/30 text-rose-300'
+                        }`}>
+                          <strong className={isLight ? 'text-rose-900' : 'text-rose-400'}>⚠️ Critical Allergies:</strong> {prof.allergies}
                         </div>
                       )}
                       {prof.chronic_conditions && (
-                        <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300">
-                          <strong className="text-slate-400">Conditions:</strong> {prof.chronic_conditions}
+                        <div className={`p-2 rounded-xl border ${
+                          isLight
+                            ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#4A382A]'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                        }`}>
+                          <strong className={isLight ? 'text-[#1F1F1F]' : 'text-slate-400'}>Conditions:</strong> {prof.chronic_conditions}
                         </div>
                       )}
                       {prof.medications && (
-                        <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300">
-                          <strong className="text-slate-400">Medications:</strong> {prof.medications}
+                        <div className={`p-2 rounded-xl border ${
+                          isLight
+                            ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#4A382A]'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                        }`}>
+                          <strong className={isLight ? 'text-[#1F1F1F]' : 'text-slate-400'}>Medications:</strong> {prof.medications}
                         </div>
                       )}
                       {prof.primary_doctor && (
-                        <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300">
-                          <strong className="text-slate-400">Doctor:</strong> {prof.primary_doctor}
+                        <div className={`p-2 rounded-xl border ${
+                          isLight
+                            ? 'bg-[#FFF8F1] border-[#EAD6C4] text-[#4A382A]'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                        }`}>
+                          <strong className={isLight ? 'text-[#1F1F1F]' : 'text-slate-400'}>Doctor:</strong> {prof.primary_doctor}
                         </div>
                       )}
                       {prof.insurance_summary && (
-                        <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-300 sm:col-span-2">
-                          <strong className="text-indigo-400">🛡️ Insurance Policy:</strong> {prof.insurance_summary}
+                        <div className={`p-2 rounded-xl border sm:col-span-2 ${
+                          isLight
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-900'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                        }`}>
+                          <strong className={isLight ? 'text-indigo-800' : 'text-indigo-400'}>🛡️ Insurance Policy:</strong> {prof.insurance_summary}
                         </div>
                       )}
                     </div>
 
                     {prof.special_instructions && (
-                      <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 font-medium">
+                      <div className={`p-2 rounded-xl border text-[10px] font-medium ${
+                        isLight
+                          ? 'bg-amber-50 border-amber-200 text-amber-900'
+                          : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                      }`}>
                         ⚠️ <strong>Instructions:</strong> {prof.special_instructions}
                       </div>
                     )}
@@ -1632,9 +1961,11 @@ export const FamilyView: React.FC = () => {
       {/* Permissions Management Modal (Family Head Only) */}
       {showPermissionsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+          <div className={`w-full max-w-lg border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+            <div className={`flex items-center justify-between pb-3 border-b shrink-0 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <div className="flex items-center gap-3">
                 <img
                   src={showPermissionsModal.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
@@ -1642,15 +1973,17 @@ export const FamilyView: React.FC = () => {
                   className="w-10 h-10 rounded-2xl object-cover ring-2 ring-indigo-500/50"
                 />
                 <div>
-                  <h3 className="text-base font-extrabold text-white">Manage Permissions</h3>
-                  <p className="text-xs text-slate-400">
-                    Access for <strong className="text-amber-400">{showPermissionsModal.name}</strong> ({showPermissionsModal.relationship || showPermissionsModal.role})
+                  <h3 className={`text-base font-extrabold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Manage Permissions</h3>
+                  <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                    Access for <strong className={isLight ? 'text-[#D3542F]' : 'text-amber-400'}>{showPermissionsModal.name}</strong> ({showPermissionsModal.relationship || showPermissionsModal.role})
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => !isSavingPermissions && setShowPermissionsModal(null)}
-                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                className={`p-1.5 rounded-xl transition-colors ${
+                  isLight ? 'bg-[#F3E3D3] hover:bg-[#E2D0BE] text-[#634B3F]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white'
+                }`}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1659,8 +1992,8 @@ export const FamilyView: React.FC = () => {
             {/* Quick Presets & Status */}
             <div className="space-y-2 shrink-0">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Quick Presets</span>
-                <span className="text-[11px] font-bold text-indigo-400">
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Quick Presets</span>
+                <span className={`text-[11px] font-bold ${isLight ? 'text-indigo-700' : 'text-indigo-400'}`}>
                   {selectedPermissions.length} of {allAvailablePermissions.length} granted
                 </span>
               </div>
@@ -1680,7 +2013,11 @@ export const FamilyView: React.FC = () => {
                       'EMERGENCY_VIEW',
                     ])
                   }
-                  className="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/30 text-[11px] font-semibold text-indigo-300 transition-colors"
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-colors ${
+                    isLight
+                      ? 'bg-indigo-100 hover:bg-indigo-200 border-indigo-300 text-indigo-800'
+                      : 'bg-indigo-600/20 hover:bg-indigo-600/40 border-indigo-500/30 text-indigo-300'
+                  }`}
                 >
                   🌟 Standard Adult
                 </button>
@@ -1689,7 +2026,11 @@ export const FamilyView: React.FC = () => {
                   onClick={() =>
                     setSelectedPermissions(['TASK_VIEW', 'TASK_EDIT', 'MEMORY_VIEW', 'AI_USE'])
                   }
-                  className="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-[11px] font-semibold text-emerald-300 transition-colors"
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-colors ${
+                    isLight
+                      ? 'bg-emerald-100 hover:bg-emerald-200 border-emerald-300 text-emerald-800'
+                      : 'bg-emerald-600/20 hover:bg-emerald-600/40 border-emerald-500/30 text-emerald-300'
+                  }`}
                 >
                   👶 Kids / Chores
                 </button>
@@ -1706,21 +2047,33 @@ export const FamilyView: React.FC = () => {
                       'MEMORY_VIEW',
                     ])
                   }
-                  className="px-2.5 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/30 text-[11px] font-semibold text-amber-300 transition-colors"
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-colors ${
+                    isLight
+                      ? 'bg-amber-100 hover:bg-amber-200 border-amber-300 text-amber-900'
+                      : 'bg-amber-600/20 hover:bg-amber-600/40 border-amber-500/30 text-amber-300'
+                  }`}
                 >
                   👁️ View Only
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedPermissions(allAvailablePermissions.map((p) => p.code))}
-                  className="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/30 text-[11px] font-semibold text-purple-300 transition-colors"
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-colors ${
+                    isLight
+                      ? 'bg-purple-100 hover:bg-purple-200 border-purple-300 text-purple-900'
+                      : 'bg-purple-600/20 hover:bg-purple-600/40 border-purple-500/30 text-purple-300'
+                  }`}
                 >
                   👑 Full Master
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedPermissions([])}
-                  className="px-2.5 py-1 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 border border-rose-500/30 text-[11px] font-semibold text-rose-300 transition-colors"
+                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-colors ${
+                    isLight
+                      ? 'bg-rose-100 hover:bg-rose-200 border-rose-300 text-rose-800'
+                      : 'bg-rose-600/20 hover:bg-rose-600/40 border-rose-500/30 text-rose-300'
+                  }`}
                 >
                   🚫 Revoke All
                 </button>
@@ -1743,22 +2096,34 @@ export const FamilyView: React.FC = () => {
                     }}
                     className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${
                       isChecked
-                        ? 'bg-indigo-600/15 border-indigo-500/50 text-white shadow-sm'
+                        ? isLight
+                          ? 'bg-indigo-50 border-indigo-300 text-indigo-950 shadow-sm'
+                          : 'bg-indigo-600/15 border-indigo-500/50 text-white shadow-sm'
+                        : isLight
+                        ? 'bg-[#F3E3D3] border-[#EAD6C4] text-[#634B3F] hover:border-[#DEC8B2]'
                         : 'bg-slate-800/80 border-slate-700/80 text-slate-400 hover:border-slate-600'
                     }`}
                   >
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-100">{perm.name}</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-slate-700/60 font-semibold text-slate-300">
+                        <span className={`text-xs font-bold ${isChecked ? (isLight ? 'text-indigo-950' : 'text-slate-100') : (isLight ? 'text-[#1F1F1F]' : 'text-slate-300')}`}>
+                          {perm.name}
+                        </span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-semibold ${
+                          isLight ? 'bg-[#E2D0BE] text-[#4A382A]' : 'bg-slate-700/60 text-slate-300'
+                        }`}>
                           {perm.category}
                         </span>
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono">{perm.code}</div>
+                      <div className={`text-[10px] font-mono ${isLight ? 'text-[#8C7A6B]' : 'text-slate-500'}`}>{perm.code}</div>
                     </div>
                     <div
                       className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors shrink-0 ${
-                        isChecked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 bg-slate-900/50'
+                        isChecked
+                          ? 'bg-indigo-600 border-indigo-600 text-white'
+                          : isLight
+                          ? 'border-[#DEC8B2] bg-[#FFF8F1]'
+                          : 'border-slate-600 bg-slate-900/50'
                       }`}
                     >
                       {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -1769,12 +2134,16 @@ export const FamilyView: React.FC = () => {
             </div>
 
             {/* Footer */}
-            <div className="flex gap-2 pt-3 border-t border-slate-800 shrink-0">
+            <div className={`flex gap-2 pt-3 border-t shrink-0 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <button
                 type="button"
                 disabled={isSavingPermissions}
                 onClick={() => setShowPermissionsModal(null)}
-                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 rounded-xl text-xs font-semibold text-slate-300 transition-colors"
+                className={`flex-1 py-2.5 disabled:opacity-50 rounded-xl text-xs font-semibold transition-colors ${
+                  isLight
+                    ? 'bg-[#E2D0BE] hover:bg-[#DEC8B2] text-[#4A382A]'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                }`}
               >
                 Cancel
               </button>
@@ -1782,7 +2151,7 @@ export const FamilyView: React.FC = () => {
                 type="button"
                 disabled={isSavingPermissions}
                 onClick={savePermissions}
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-bold rounded-xl text-xs shadow-lg shadow-indigo-900/40 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-bold rounded-xl text-xs shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               >
                 {isSavingPermissions ? (
                   <>
@@ -1804,8 +2173,10 @@ export const FamilyView: React.FC = () => {
       {/* Pending Member Review & Approve Modal (Family Head Only) */}
       {approvingMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] flex flex-col ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between pb-3 border-b ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <div className="flex items-center gap-3">
                 <img
                   src={approvingMember.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
@@ -1813,15 +2184,17 @@ export const FamilyView: React.FC = () => {
                   className="w-11 h-11 rounded-2xl object-cover ring-2 ring-amber-500/50"
                 />
                 <div>
-                  <h3 className="text-base font-extrabold text-white">Approve Access</h3>
-                  <p className="text-xs text-slate-400">
-                    Grant permissions for <strong className="text-amber-400">{approvingMember.name}</strong>
+                  <h3 className={`text-base font-extrabold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Approve Access</h3>
+                  <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                    Grant permissions for <strong className={isLight ? 'text-[#D3542F]' : 'text-amber-400'}>{approvingMember.name}</strong>
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setApprovingMember(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-xl bg-slate-800"
+                className={`p-1.5 rounded-xl ${
+                  isLight ? 'bg-[#F3E3D3] hover:bg-[#E2D0BE] text-[#634B3F]' : 'bg-slate-800 text-slate-400 hover:text-white'
+                }`}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1870,20 +2243,26 @@ export const FamilyView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-slate-300">Relationship</label>
+                  <label className={`text-[11px] font-bold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Relationship</label>
                   <input
                     type="text"
                     value={approvalRelationship}
                     onChange={(e) => setApprovalRelationship(e.target.value)}
                     placeholder="e.g. Son, Daughter, Mother"
-                    className="w-full mt-1 bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className={`w-full mt-1 border rounded-xl px-2.5 py-2 text-xs focus:outline-none ${
+                      isLight
+                        ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                    }`}
                   />
                 </div>
               </div>
 
               {/* Quick Presets */}
               <div>
-                <label className="text-[11px] font-bold text-slate-300 block mb-1.5">Quick Permission Presets</label>
+                <label className={`text-[11px] font-bold block mb-1.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
+                  Quick Permission Presets
+                </label>
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     type="button"
@@ -1902,7 +2281,11 @@ export const FamilyView: React.FC = () => {
                         'AI_USE',
                       ]);
                     }}
-                    className="px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
+                      isLight
+                        ? 'bg-indigo-100 text-indigo-800 border-indigo-300 hover:bg-indigo-200'
+                        : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/30'
+                    }`}
                   >
                     🌟 Standard Adult
                   </button>
@@ -1911,7 +2294,11 @@ export const FamilyView: React.FC = () => {
                     onClick={() => {
                       setApprovalPermissions(['TASK_VIEW', 'TASK_EDIT', 'MEMORY_VIEW', 'CALENDAR_VIEW', 'AI_USE']);
                     }}
-                    className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors"
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
+                      isLight
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200'
+                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
+                    }`}
                   >
                     👶 Kids / Chores Only
                   </button>
@@ -1920,7 +2307,11 @@ export const FamilyView: React.FC = () => {
                     onClick={() => {
                       setApprovalPermissions(['FINANCE_VIEW', 'DOCUMENT_VIEW', 'EMERGENCY_VIEW', 'MEMORY_VIEW', 'CALENDAR_VIEW', 'TASK_VIEW']);
                     }}
-                    className="px-2 py-1 rounded-lg bg-slate-700 text-slate-300 text-[10px] font-bold border border-slate-600 hover:bg-slate-600 transition-colors"
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
+                      isLight
+                        ? 'bg-slate-200 text-[#4A382A] border-slate-300 hover:bg-slate-300'
+                        : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+                    }`}
                   >
                     👁️ View Only
                   </button>
@@ -1929,7 +2320,11 @@ export const FamilyView: React.FC = () => {
                     onClick={() => {
                       setApprovalPermissions(allAvailablePermissions.map((p) => p.code));
                     }}
-                    className="px-2 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30 hover:bg-amber-500/30 transition-colors"
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
+                      isLight
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                        : 'bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30'
+                    }`}
                   >
                     👑 Full Master
                   </button>
@@ -1938,7 +2333,7 @@ export const FamilyView: React.FC = () => {
 
               {/* Permissions Checklist */}
               <div>
-                <label className="text-[11px] font-bold text-slate-300 block mb-1.5">
+                <label className={`text-[11px] font-bold block mb-1.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
                   Select Modules ({approvalPermissions.length} enabled)
                 </label>
                 <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
@@ -1956,17 +2351,25 @@ export const FamilyView: React.FC = () => {
                         }}
                         className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
                           isChecked
-                            ? 'bg-indigo-600/20 border-indigo-500/40 text-white'
+                            ? isLight
+                              ? 'bg-indigo-50 border-indigo-300 text-indigo-950'
+                              : 'bg-indigo-600/20 border-indigo-500/40 text-white'
+                            : isLight
+                            ? 'bg-[#F3E3D3] border-[#EAD6C4] text-[#634B3F]'
                             : 'bg-slate-800 border-slate-700 text-slate-400'
                         }`}
                       >
                         <div>
-                          <div className="text-xs font-bold">{perm.name}</div>
-                          <div className="text-[10px] text-slate-500 font-mono">{perm.code}</div>
+                          <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{perm.name}</div>
+                          <div className={`text-[10px] font-mono ${isLight ? 'text-[#8C7A6B]' : 'text-slate-500'}`}>{perm.code}</div>
                         </div>
                         <div
                           className={`w-5 h-5 rounded-lg border flex items-center justify-center ${
-                            isChecked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600'
+                            isChecked
+                              ? 'bg-indigo-600 border-indigo-600 text-white'
+                              : isLight
+                              ? 'border-[#DEC8B2] bg-[#FFF8F1]'
+                              : 'border-slate-600'
                           }`}
                         >
                           {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -1978,17 +2381,19 @@ export const FamilyView: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2 border-t border-slate-800">
+            <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <button
                 onClick={() => setApprovingMember(null)}
-                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                  isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                }`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleApproveMemberSubmit}
                 disabled={isApprovingSubmitting}
-                className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-slate-950 font-extrabold rounded-xl text-xs shadow-lg flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-extrabold rounded-xl text-xs shadow-lg flex items-center justify-center gap-1.5 active:scale-95 transition-all"
               >
                 {isApprovingSubmitting ? 'Approving...' : '✓ Approve & Grant Access'}
               </button>
@@ -2000,18 +2405,24 @@ export const FamilyView: React.FC = () => {
       {/* Add Task Modal */}
       {showAddTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-white">Add Family Task</h3>
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Add Family Task</h3>
             <form onSubmit={handleAddTask} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Task Title</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Task Title</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Service Honda City Car"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
@@ -2050,13 +2461,15 @@ export const FamilyView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddTask(false)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Create Task
                 </button>
@@ -2069,13 +2482,20 @@ export const FamilyView: React.FC = () => {
       {/* Edit Member Profile & Avatar Modal */}
       {editingMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <div>
-                <h3 className="text-base font-bold text-white">Edit Member Profile & Photo</h3>
-                <p className="text-[11px] text-slate-400">Update photo, name, and details for {editingMember.name}</p>
+                <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Edit Member Profile & Photo</h3>
+                <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Update photo, name, and details for {editingMember.name}</p>
               </div>
-              <button onClick={() => setEditingMember(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+              <button
+                onClick={() => setEditingMember(null)}
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
             </div>
 
             {/* Hidden native file inputs */}
@@ -2098,30 +2518,42 @@ export const FamilyView: React.FC = () => {
             <form onSubmit={handleSaveMemberProfile} className="space-y-4">
               {/* Avatar Preview & Selection */}
               <div className="space-y-2">
-                <label className="text-xs text-slate-300 font-semibold block">Profile Photo</label>
+                <label className={`text-xs font-semibold block ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Profile Photo</label>
                 
-                <div className="flex items-center gap-3 bg-slate-800/80 p-3 rounded-2xl border border-slate-700/80">
+                <div className={`flex items-center gap-3 p-3 rounded-2xl border ${
+                  isLight ? 'bg-[#F3E3D3] border-[#EAD6C4]' : 'bg-slate-800/80 border-slate-700/80'
+                }`}>
                   <img
                     src={memberProfileForm.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
                     alt="Preview"
-                    className="w-14 h-14 rounded-2xl object-cover ring-2 ring-amber-400 shadow-md"
+                    className={`w-14 h-14 rounded-2xl object-cover ring-2 shadow-md ${
+                      isLight ? 'ring-[#F05A28]' : 'ring-amber-400'
+                    }`}
                   />
                   <div className="flex-1 space-y-2">
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => editGalleryRef.current?.click()}
-                        className="px-3 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                        className={`px-3 py-2 border rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                          isLight
+                            ? 'bg-indigo-100 hover:bg-indigo-200 border-indigo-300 text-indigo-800'
+                            : 'bg-indigo-600/30 hover:bg-indigo-600/50 border-indigo-500/40 text-indigo-200'
+                        }`}
                       >
-                        <Upload className="w-3.5 h-3.5 text-indigo-300" />
-                        <span>Choose from Gallery</span>
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Gallery</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => editCameraRef.current?.click()}
-                        className="px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                        className={`px-3 py-2 border rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                          isLight
+                            ? 'bg-orange-100 hover:bg-orange-200 border-orange-300 text-[#F05A28]'
+                            : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
+                        }`}
                       >
-                        <Camera className="w-3.5 h-3.5 text-amber-400" />
+                        <Camera className="w-3.5 h-3.5" />
                         <span>Camera</span>
                       </button>
                     </div>
@@ -2129,7 +2561,7 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setMemberProfileForm({ ...memberProfileForm, avatar_url: '' })}
-                        className="text-[10px] text-rose-400 hover:text-rose-300 hover:underline block"
+                        className="text-[10px] text-rose-500 hover:underline block font-semibold"
                       >
                         ✕ Remove Photo
                       </button>
@@ -2139,24 +2571,32 @@ export const FamilyView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Full Name</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Full Name</label>
                 <input
                   type="text"
                   required
                   value={memberProfileForm.name}
                   onChange={(e) => setMemberProfileForm({ ...memberProfileForm, name: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Relationship</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Relationship</label>
                   <input
                     type="text"
                     value={memberProfileForm.relationship}
                     onChange={(e) => setMemberProfileForm({ ...memberProfileForm, relationship: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white'
+                    }`}
                   />
                 </div>
                 <div>
@@ -2165,40 +2605,46 @@ export const FamilyView: React.FC = () => {
                     value={memberProfileForm.birth_date}
                     onChange={(newDate) => setMemberProfileForm({ ...memberProfileForm, birth_date: newDate })}
                     required
-                    className="!bg-slate-800 !border-slate-700 mt-1"
+                    className={isLight ? '!bg-[#F3E3D3] !border-[#DEC8B2] mt-1' : '!bg-slate-800 !border-slate-700 mt-1'}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Phone Number</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Phone Number</label>
                 <input
                   type="tel"
                   placeholder="+91 98765 43210"
                   value={memberProfileForm.phone}
                   onChange={(e) => setMemberProfileForm({ ...memberProfileForm, phone: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white'
+                  }`}
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => setEditingMember(null)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Save Profile
                 </button>
               </div>
 
               {currentUser?.role === 'FAMILY_HEAD' && editingMember.id !== currentUser?.id && (
-                <div className="pt-2 border-t border-slate-800">
+                <div className={`pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                   <button
                     type="button"
                     onClick={() => {
@@ -2206,7 +2652,11 @@ export const FamilyView: React.FC = () => {
                       setEditingMember(null);
                       setMemberToDelete(toDelete);
                     }}
-                    className="w-full py-2.5 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+                    className={`w-full py-2.5 border font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors ${
+                      isLight
+                        ? 'bg-rose-100 hover:bg-rose-200 border-rose-300 text-rose-700'
+                        : 'bg-rose-500/15 hover:bg-rose-500/25 border-rose-500/30 text-rose-400'
+                    }`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Remove Member from Family</span>
@@ -2221,13 +2671,20 @@ export const FamilyView: React.FC = () => {
       {/* Add Member Modal */}
       {showAddMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <div>
-                <h3 className="text-base font-bold text-white">Add Family Member</h3>
-                <p className="text-[11px] text-slate-400">Add a parent, grandparent, teen, or child to your family</p>
+                <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Add Family Member</h3>
+                <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Add a parent, grandparent, teen, or child to your family</p>
               </div>
-              <button onClick={() => setShowAddMember(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
+              <button
+                onClick={() => setShowAddMember(false)}
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
             </div>
 
             {/* Hidden native file inputs for Add Member */}
@@ -2250,30 +2707,42 @@ export const FamilyView: React.FC = () => {
             <form onSubmit={handleAddMember} className="space-y-3.5">
               {/* Avatar selection */}
               <div className="space-y-2">
-                <label className="text-xs text-slate-300 font-semibold block">Profile Photo</label>
+                <label className={`text-xs font-semibold block ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Profile Photo</label>
                 
-                <div className="flex items-center gap-3 bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700/80">
+                <div className={`flex items-center gap-3 p-2.5 rounded-2xl border ${
+                  isLight ? 'bg-[#F3E3D3] border-[#EAD6C4]' : 'bg-slate-800/80 border-slate-700/80'
+                }`}>
                   <img
                     src={newMemberData.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200'}
                     alt="Preview"
-                    className="w-12 h-12 rounded-xl object-cover ring-2 ring-amber-400 shadow"
+                    className={`w-12 h-12 rounded-xl object-cover ring-2 shadow ${
+                      isLight ? 'ring-[#F05A28]' : 'ring-amber-400'
+                    }`}
                   />
                   <div className="flex-1 space-y-1.5">
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => addGalleryRef.current?.click()}
-                        className="px-2.5 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                        className={`px-2.5 py-1.5 border rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors ${
+                          isLight
+                            ? 'bg-indigo-100 hover:bg-indigo-200 border-indigo-300 text-indigo-800'
+                            : 'bg-indigo-600/30 hover:bg-indigo-600/50 border-indigo-500/40 text-indigo-200'
+                        }`}
                       >
-                        <Upload className="w-3.5 h-3.5 text-indigo-300" />
-                        <span>From Gallery</span>
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Gallery</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => addCameraRef.current?.click()}
-                        className="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                        className={`px-2.5 py-1.5 border rounded-xl text-[11px] font-semibold flex items-center gap-1 transition-colors ${
+                          isLight
+                            ? 'bg-orange-100 hover:bg-orange-200 border-orange-300 text-[#F05A28]'
+                            : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
+                        }`}
                       >
-                        <Camera className="w-3.5 h-3.5 text-amber-400" />
+                        <Camera className="w-3.5 h-3.5" />
                         <span>Camera</span>
                       </button>
                     </div>
@@ -2281,7 +2750,7 @@ export const FamilyView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setNewMemberData({ ...newMemberData, avatar_url: '' })}
-                        className="text-[10px] text-rose-400 hover:text-rose-300 hover:underline block"
+                        className="text-[10px] text-rose-500 hover:underline block font-semibold"
                       >
                         ✕ Remove Photo
                       </button>
@@ -2291,27 +2760,35 @@ export const FamilyView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Full Name *</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Full Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Priya Sharma"
                   value={newMemberData.name}
                   onChange={(e) => setNewMemberData({ ...newMemberData, name: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Relationship</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Relationship</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Mother, Son, Dadi"
                     value={newMemberData.relationship}
                     onChange={(e) => setNewMemberData({ ...newMemberData, relationship: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white'
+                    }`}
                   />
                 </div>
                 <div>
@@ -2330,27 +2807,33 @@ export const FamilyView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Email Address (Optional)</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Email Address (Optional)</label>
                 <input
                   type="email"
                   placeholder="member@example.com"
                   value={newMemberData.email}
                   onChange={(e) => setNewMemberData({ ...newMemberData, email: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white'
+                  }`}
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => setShowAddMember(false)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Add Member
                 </button>
@@ -2363,25 +2846,36 @@ export const FamilyView: React.FC = () => {
       {/* Add Wish List Modal */}
       {showAddGrocery && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <div className="flex items-center gap-2">
-                <Gift className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-bold text-white">Add to Family Wish List</h3>
+                <Gift className={`w-5 h-5 ${isLight ? 'text-[#D3542F]' : 'text-amber-400'}`} />
+                <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Add to Family Wish List</h3>
               </div>
-              <button onClick={() => setShowAddGrocery(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
+              <button
+                onClick={() => setShowAddGrocery(false)}
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
             </div>
 
             <form onSubmit={handleAddGrocery} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Wish Item / Product *</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Wish Item / Product *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Wireless Earbuds, Harry Potter Book, Bicycle, Milk"
                   value={newGroceryName}
                   onChange={(e) => setNewGroceryName(e.target.value)}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
@@ -2401,53 +2895,67 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Estimated Price (₹)</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Estimated Price (₹)</label>
                   <input
                     type="number"
                     placeholder="e.g. 3500"
                     value={newGroceryPrice}
                     onChange={(e) => setNewGroceryPrice(e.target.value)}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-emerald-400 font-bold outline-none focus:border-amber-400"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs font-bold outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-emerald-800 focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-emerald-400 focus:border-amber-400'
+                    }`}
                   />
                 </div>
               </div>
 
               {newGroceryCategory === '__CUSTOM__' && (
                 <div className="animate-fade-in">
-                  <label className="text-xs text-amber-300 font-semibold">Custom Category Name *</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#D3542F]' : 'text-amber-300'}`}>Custom Category Name *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Gaming, Gold Jewelry, Gym Equipment"
                     value={customGroceryCat}
                     onChange={(e) => setCustomGroceryCat(e.target.value)}
-                    className="w-full mt-1 px-3.5 py-2 bg-slate-800 border border-amber-400/60 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    className={`w-full mt-1 px-3.5 py-2 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-orange-400 text-[#1F1F1F]'
+                        : 'bg-slate-800 border-amber-400/60 text-white focus:border-amber-400'
+                    }`}
                   />
                 </div>
               )}
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Note / Detail (Optional)</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Note / Detail (Optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. 1 unit / Birthday wish"
                   value={newGroceryQty}
                   onChange={(e) => setNewGroceryQty(e.target.value)}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white'
+                  }`}
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => setShowAddGrocery(false)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Add to Wish List
                 </button>
@@ -2460,28 +2968,39 @@ export const FamilyView: React.FC = () => {
       {/* Add Maintenance / Equipment Modal */}
       {showAddMaintenance && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <div className="flex items-center gap-2">
-                <Wrench className="w-5 h-5 text-amber-400" />
+                <Wrench className={`w-5 h-5 ${isLight ? 'text-[#D3542F]' : 'text-amber-400'}`} />
                 <div>
-                  <h3 className="text-base font-bold text-white">Add Equipment & Service</h3>
-                  <p className="text-[11px] text-slate-400">Track service schedules, filter changes & warranties</p>
+                  <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Add Equipment & Service</h3>
+                  <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Track service schedules, filter changes & warranties</p>
                 </div>
               </div>
-              <button onClick={() => setShowAddMaintenance(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
+              <button
+                onClick={() => setShowAddMaintenance(false)}
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
             </div>
 
             <form onSubmit={handleAddMaintenance} className="space-y-3.5">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Equipment / Appliance Name *</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Equipment / Appliance Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Living Room Daikin AC / Kent RO Purifier / Honda City"
                   value={newMaintenance.item_name}
                   onChange={(e) => setNewMaintenance({ ...newMaintenance, item_name: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
@@ -2540,7 +3059,7 @@ export const FamilyView: React.FC = () => {
                         next_service_due: getLocalDateString(d),
                       });
                     }}
-                    className="!bg-slate-800 !border-slate-700 mt-1"
+                    className={isLight ? '!bg-[#F3E3D3] !border-[#DEC8B2] mt-1' : '!bg-slate-800 !border-slate-700 mt-1'}
                   />
                 </div>
                 <div>
@@ -2549,56 +3068,70 @@ export const FamilyView: React.FC = () => {
                     value={newMaintenance.next_service_due}
                     onChange={(newDate) => setNewMaintenance({ ...newMaintenance, next_service_due: newDate })}
                     required
-                    className="!bg-slate-800 !border-slate-700 mt-1"
+                    className={isLight ? '!bg-[#F3E3D3] !border-[#DEC8B2] mt-1' : '!bg-slate-800 !border-slate-700 mt-1'}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Service Provider / Tech</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Service Provider / Tech</label>
                   <input
                     type="text"
                     placeholder="e.g. Daikin Service / Urban Co"
                     value={newMaintenance.service_provider}
                     onChange={(e) => setNewMaintenance({ ...newMaintenance, service_provider: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Technician Phone</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Technician Phone</label>
                   <input
                     type="tel"
                     placeholder="e.g. 9876543210"
                     value={newMaintenance.contact_phone}
                     onChange={(e) => setNewMaintenance({ ...newMaintenance, contact_phone: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white'
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Notes / Warranty Details</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Notes / Warranty Details</label>
                 <input
                   type="text"
                   placeholder="e.g. Free warranty service till 2027, carbon filter model #491"
                   value={newMaintenance.notes}
                   onChange={(e) => setNewMaintenance({ ...newMaintenance, notes: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white'
+                  }`}
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => setShowAddMaintenance(false)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Save Equipment
                 </button>
@@ -2611,11 +3144,13 @@ export const FamilyView: React.FC = () => {
       {/* Add / Edit Emergency Contact Modal */}
       {showAddContact && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-emerald-400">
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] flex flex-col ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
+              <div className={`flex items-center gap-2 ${isLight ? 'text-emerald-700' : 'text-emerald-400'}`}>
                 <Phone className="w-5 h-5" />
-                <h3 className="text-base font-bold text-white">
+                <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                   {editingContact ? 'Edit Emergency Contact' : 'Add Emergency Contact'}
                 </h3>
               </div>
@@ -2625,7 +3160,7 @@ export const FamilyView: React.FC = () => {
                   setShowAddContact(false);
                   setEditingContact(null);
                 }}
-                className="p-1.5 text-slate-400 hover:text-white rounded-xl bg-slate-800"
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2633,27 +3168,35 @@ export const FamilyView: React.FC = () => {
 
             <form onSubmit={handleSaveContact} className="space-y-3 overflow-y-auto pr-1 flex-1">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Contact / Doctor / Facility Name *</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Contact / Doctor / Facility Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Dr. Rajesh Verma / Apollo Emergency"
                   value={contactForm.name}
                   onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-500"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-emerald-600'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Relationship / Role *</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Relationship / Role *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Pediatrician, Uncle, Hospital TPA"
                     value={contactForm.relationship}
                     onChange={(e) => setContactForm({ ...contactForm, relationship: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-emerald-600'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500'
+                    }`}
                   />
                 </div>
                 <div>
@@ -2676,47 +3219,63 @@ export const FamilyView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Primary Phone *</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Primary Phone *</label>
                   <input
                     type="tel"
                     required
                     placeholder="e.g. +91 98765 43210"
                     value={contactForm.phone}
                     onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-emerald-400 font-mono font-bold outline-none focus:border-emerald-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs font-mono font-bold outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-emerald-800 focus:border-emerald-600'
+                        : 'bg-slate-800 border-slate-700 text-emerald-400 focus:border-emerald-500'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Secondary Phone</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Secondary Phone</label>
                   <input
                     type="tel"
                     placeholder="Optional backup phone"
                     value={contactForm.secondary_phone}
                     onChange={(e) => setContactForm({ ...contactForm, secondary_phone: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-emerald-600'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500'
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Email Address</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Email Address</label>
                 <input
                   type="email"
                   placeholder="Optional email"
                   value={contactForm.email}
                   onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-500"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-emerald-600'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Address / Hospital Location</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Address / Hospital Location</label>
                 <input
                   type="text"
                   placeholder="e.g. Road No 36, Jubilee Hills, Hyderabad"
                   value={contactForm.address}
                   onChange={(e) => setContactForm({ ...contactForm, address: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-emerald-500"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-emerald-600'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500'
+                  }`}
                 />
               </div>
 
@@ -2726,27 +3285,29 @@ export const FamilyView: React.FC = () => {
                   id="contact_is_primary"
                   checked={contactForm.is_primary}
                   onChange={(e) => setContactForm({ ...contactForm, is_primary: e.target.checked })}
-                  className="w-4 h-4 rounded text-emerald-600 bg-slate-800 border-slate-700 focus:ring-0"
+                  className="w-4 h-4 rounded text-emerald-600 border-gray-300 focus:ring-0"
                 />
-                <label htmlFor="contact_is_primary" className="text-xs text-slate-300 cursor-pointer">
+                <label htmlFor="contact_is_primary" className={`text-xs cursor-pointer ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
                   Mark as Primary Emergency Contact (1-Tap Dial Priority)
                 </label>
               </div>
 
-              <div className="flex gap-2 pt-3 border-t border-slate-800">
+              <div className={`flex gap-2 pt-3 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddContact(false);
                     setEditingContact(null);
                   }}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-emerald-600/30 transition-all active:scale-95"
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg transition-all active:scale-95"
                 >
                   {editingContact ? 'Save Changes' : 'Add Contact'}
                 </button>
@@ -2759,11 +3320,13 @@ export const FamilyView: React.FC = () => {
       {/* Add / Edit Medical Profile Modal */}
       {showAddProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-rose-400">
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] flex flex-col ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between pb-2 border-b ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
+              <div className={`flex items-center gap-2 ${isLight ? 'text-rose-700' : 'text-rose-400'}`}>
                 <ShieldCheck className="w-5 h-5" />
-                <h3 className="text-base font-bold text-white">
+                <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                   {editingProfile ? 'Edit Medical Profile' : 'Add Medical Profile & Allergies'}
                 </h3>
               </div>
@@ -2773,7 +3336,7 @@ export const FamilyView: React.FC = () => {
                   setShowAddProfile(false);
                   setEditingProfile(null);
                 }}
-                className="p-1.5 text-slate-400 hover:text-white rounded-xl bg-slate-800"
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2782,14 +3345,18 @@ export const FamilyView: React.FC = () => {
             <form onSubmit={handleSaveProfile} className="space-y-3 overflow-y-auto pr-1 flex-1">
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Family Member Name *</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Family Member Name *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Ramesh / Priya"
                     value={profileForm.full_name}
                     onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-rose-600'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-rose-500'
+                    }`}
                   />
                 </div>
                 <div>
@@ -2813,87 +3380,113 @@ export const FamilyView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Critical Allergies ⚠️</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Critical Allergies ⚠️</label>
                 <input
                   type="text"
                   placeholder="e.g. Penicillin, Peanuts, Dust, Sulfa drugs"
                   value={profileForm.allergies}
                   onChange={(e) => setProfileForm({ ...profileForm, allergies: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-rose-300 outline-none focus:border-rose-500"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-rose-800 focus:border-rose-600'
+                      : 'bg-slate-800 border-slate-700 text-rose-300 focus:border-rose-500'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Chronic Conditions</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Chronic Conditions</label>
                   <input
                     type="text"
                     placeholder="e.g. Type 2 Diabetes, Asthma"
                     value={profileForm.chronic_conditions}
                     onChange={(e) => setProfileForm({ ...profileForm, chronic_conditions: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-rose-600'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-rose-500'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Ongoing Medications</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Ongoing Medications</label>
                   <input
                     type="text"
                     placeholder="e.g. Inhaler, Metformin 500mg"
                     value={profileForm.medications}
                     onChange={(e) => setProfileForm({ ...profileForm, medications: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-rose-600'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-rose-500'
+                    }`}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Primary Doctor / Phone</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Primary Doctor / Phone</label>
                   <input
                     type="text"
                     placeholder="e.g. Dr. Verma (9876543210)"
                     value={profileForm.primary_doctor}
                     onChange={(e) => setProfileForm({ ...profileForm, primary_doctor: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-rose-600'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-rose-500'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Insurance Policy Details</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Insurance Policy Details</label>
                   <input
                     type="text"
                     placeholder="e.g. Star Health #POL-8842"
                     value={profileForm.insurance_summary}
                     onChange={(e) => setProfileForm({ ...profileForm, insurance_summary: e.target.value })}
-                    className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-500"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-rose-600'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-rose-500'
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Special Instructions for EMTs</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Special Instructions for EMTs</label>
                 <input
                   type="text"
                   placeholder="e.g. Always carry epipen in left backpack pouch; pacemaker fitted"
                   value={profileForm.special_instructions}
                   onChange={(e) => setProfileForm({ ...profileForm, special_instructions: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-500"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-rose-600'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-rose-500'
+                  }`}
                 />
               </div>
 
-              <div className="flex gap-2 pt-3 border-t border-slate-800">
+              <div className={`flex gap-2 pt-3 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddProfile(false);
                     setEditingProfile(null);
                   }}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-rose-600/30 transition-all active:scale-95"
+                  className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow-lg transition-all active:scale-95"
                 >
                   {editingProfile ? 'Save Medical Card' : 'Add Medical Card'}
                 </button>
@@ -2906,20 +3499,31 @@ export const FamilyView: React.FC = () => {
       {/* Edit Task Modal */}
       {editingTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Edit Family Task</h3>
-              <button onClick={() => setEditingTask(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
+              <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Edit Family Task</h3>
+              <button
+                onClick={() => setEditingTask(null)}
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
             </div>
             <form onSubmit={handleUpdateTask} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Task Title</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Task Title</label>
                 <input
                   type="text"
                   required
                   value={editingTask.title}
                   onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
@@ -2959,21 +3563,23 @@ export const FamilyView: React.FC = () => {
                   label="Due Date"
                   value={editingTask.due_date || ''}
                   onChange={(newDate) => setEditingTask({ ...editingTask, due_date: newDate })}
-                  className="!bg-slate-800 !border-slate-700 mt-1"
+                  className={isLight ? '!bg-[#F3E3D3] !border-[#DEC8B2] mt-1' : '!bg-slate-800 !border-slate-700 mt-1'}
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => setEditingTask(null)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Save Changes
                 </button>
@@ -2986,31 +3592,46 @@ export const FamilyView: React.FC = () => {
       {/* Edit Wishlist Modal */}
       {editingGrocery && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Edit Wish List Item</h3>
-              <button onClick={() => setEditingGrocery(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
+              <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Edit Wish List Item</h3>
+              <button
+                onClick={() => setEditingGrocery(null)}
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
             </div>
             <form onSubmit={handleUpdateGrocery} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Item Name *</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Item Name *</label>
                 <input
                   type="text"
                   required
                   value={editingGrocery.item_name}
                   onChange={(e) => setEditingGrocery({ ...editingGrocery, item_name: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Estimated Cost (₹)</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Estimated Cost (₹)</label>
                   <input
                     type="number"
                     value={editingGrocery.estimated_cost || ''}
                     onChange={(e) => setEditingGrocery({ ...editingGrocery, estimated_cost: Number(e.target.value) })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    className={`w-full mt-1 px-3 py-2 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-emerald-800 focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                    }`}
                   />
                 </div>
                 <div>
@@ -3027,26 +3648,32 @@ export const FamilyView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Notes / Links</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Notes / Links</label>
                 <input
                   type="text"
                   value={editingGrocery.notes || ''}
                   onChange={(e) => setEditingGrocery({ ...editingGrocery, notes: e.target.value })}
-                  className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3 py-2 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => setEditingGrocery(null)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Save Changes
                 </button>
@@ -3059,20 +3686,31 @@ export const FamilyView: React.FC = () => {
       {/* Edit Maintenance Modal */}
       {editingMaintenance && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Edit Household Equipment</h3>
-              <button onClick={() => setEditingMaintenance(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+          <div className={`w-full max-w-md border rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto ${
+            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-900 border-slate-700 text-slate-100'
+          }`}>
+            <div className={`flex items-center justify-between border-b pb-3 ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
+              <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Edit Household Equipment</h3>
+              <button
+                onClick={() => setEditingMaintenance(null)}
+                className={`p-1.5 rounded-xl ${isLight ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#E2D0BE]' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
             </div>
             <form onSubmit={handleUpdateMaintenance} className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 font-semibold">Equipment / Appliance Name *</label>
+                <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Equipment / Appliance Name *</label>
                 <input
                   type="text"
                   required
                   value={editingMaintenance.item_name}
                   onChange={(e) => setEditingMaintenance({ ...editingMaintenance, item_name: e.target.value })}
-                  className="w-full mt-1 px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                  className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                    isLight
+                      ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                      : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                  }`}
                 />
               </div>
 
@@ -3092,12 +3730,16 @@ export const FamilyView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Interval (Months)</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Interval (Months)</label>
                   <input
                     type="number"
                     value={editingMaintenance.recurring_interval_months || 6}
                     onChange={(e) => setEditingMaintenance({ ...editingMaintenance, recurring_interval_months: Number(e.target.value) })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    className={`w-full mt-1 px-3 py-2 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                    }`}
                   />
                 </div>
               </div>
@@ -3108,7 +3750,7 @@ export const FamilyView: React.FC = () => {
                     label="Last Service Date"
                     value={editingMaintenance.last_service_date || ''}
                     onChange={(newDate) => setEditingMaintenance({ ...editingMaintenance, last_service_date: newDate })}
-                    className="!bg-slate-800 !border-slate-700 mt-1"
+                    className={isLight ? '!bg-[#F3E3D3] !border-[#DEC8B2] mt-1' : '!bg-slate-800 !border-slate-700 mt-1'}
                   />
                 </div>
                 <div>
@@ -3116,43 +3758,53 @@ export const FamilyView: React.FC = () => {
                     label="Next Service Due"
                     value={editingMaintenance.next_service_due || ''}
                     onChange={(newDate) => setEditingMaintenance({ ...editingMaintenance, next_service_due: newDate })}
-                    className="!bg-slate-800 !border-slate-700 mt-1"
+                    className={isLight ? '!bg-[#F3E3D3] !border-[#DEC8B2] mt-1' : '!bg-slate-800 !border-slate-700 mt-1'}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Service Provider / Agency</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Service Provider / Agency</label>
                   <input
                     type="text"
                     value={editingMaintenance.service_provider || ''}
                     onChange={(e) => setEditingMaintenance({ ...editingMaintenance, service_provider: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 font-semibold">Technician Phone</label>
+                  <label className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Technician Phone</label>
                   <input
                     type="text"
                     value={editingMaintenance.contact_phone || ''}
                     onChange={(e) => setEditingMaintenance({ ...editingMaintenance, contact_phone: e.target.value })}
-                    className="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-amber-400"
+                    className={`w-full mt-1 px-3.5 py-2.5 border rounded-xl text-xs outline-none ${
+                      isLight
+                        ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                        : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
+                    }`}
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-800">
+              <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
                 <button
                   type="button"
                   onClick={() => setEditingMaintenance(null)}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300"
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold ${
+                    isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg"
+                  className="flex-1 py-2.5 bg-[#F05A28] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-lg"
                 >
                   Save Changes
                 </button>
@@ -3165,27 +3817,33 @@ export const FamilyView: React.FC = () => {
       {/* Remove Member Confirmation Modal (Strictly Family Head) */}
       {memberToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm bg-slate-900 border border-rose-500/40 rounded-3xl p-5 text-slate-100 shadow-2xl space-y-4 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 mx-auto">
+          <div className={`w-full max-w-sm border rounded-3xl p-5 shadow-2xl space-y-4 text-center ${
+            isLight ? 'bg-[#FFF8F1] border-rose-300 text-[#1F1F1F]' : 'bg-slate-900 border-rose-500/40 text-slate-100'
+          }`}>
+            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center mx-auto ${
+              isLight ? 'bg-rose-100 border-rose-300 text-rose-700' : 'bg-rose-500/20 border-rose-500/40 text-rose-400'
+            }`}>
               <AlertTriangle className="w-6 h-6" />
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-white">Remove {memberToDelete.name}?</h3>
-              <p className="text-xs text-slate-300">
-                Are you sure you want to remove <strong className="text-white">{memberToDelete.name}</strong> ({memberToDelete.relationship || memberToDelete.role}) from the family?
+              <h3 className={`text-base font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Remove {memberToDelete.name}?</h3>
+              <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
+                Are you sure you want to remove <strong className={isLight ? 'text-[#1F1F1F]' : 'text-white'}>{memberToDelete.name}</strong> ({memberToDelete.relationship || memberToDelete.role}) from the family?
               </p>
-              <p className="text-[11px] text-rose-400/90 pt-1">
+              <p className={`text-[11px] pt-1 ${isLight ? 'text-rose-700 font-semibold' : 'text-rose-400/90'}`}>
                 This will revoke their access to family finances, digital vault, and timeline.
               </p>
             </div>
 
-            <div className="flex gap-2 pt-2 border-t border-slate-800">
+            <div className={`flex gap-2 pt-2 border-t ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
               <button
                 type="button"
                 onClick={() => setMemberToDelete(null)}
                 disabled={isDeletingMember}
-                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300 disabled:opacity-50"
+                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 ${
+                  isLight ? 'bg-[#E2D0BE] text-[#4A382A] hover:bg-[#DEC8B2]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                }`}
               >
                 Cancel
               </button>
