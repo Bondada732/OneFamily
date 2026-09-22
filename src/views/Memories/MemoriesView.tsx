@@ -22,56 +22,94 @@ const MEMORY_ALBUMS = [
 ];
 
 /**
- * Client-side image compressor: scales high-res photos to max 1280px to prevent 413 Payload Too Large
+ * Maximum size for direct video upload (12MB) to prevent Android WebView Out-Of-Memory SIGKILL crashes
  */
-const compressImageFile = (file: File): Promise<string> => {
+const MAX_VIDEO_BYTES = 12 * 1024 * 1024;
+
+/**
+ * Client-side media processor: scales photos to max 1280px and validates video size to prevent OOM crashes
+ */
+const processMediaFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
-    if (!file.type.startsWith('image/')) {
+    // 1. If Video file, enforce 12MB limit to protect mobile memory
+    if (file.type.startsWith('video/')) {
+      if (file.size > MAX_VIDEO_BYTES) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        reject(
+          new Error(
+            `Video "${file.name}" is ${sizeMb}MB. Maximum direct upload size is 12MB to keep app fast and prevent mobile crashes. For longer videos, you can paste a YouTube or Google Drive link.`
+          )
+        );
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => resolve(event.target?.result as string);
-      reader.onerror = reject;
+      reader.onerror = () => reject(new Error(`Failed to read video "${file.name}"`));
       reader.readAsDataURL(file);
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxWidth = 1280;
-        const maxHeight = 1280;
-        let width = img.width;
-        let height = img.height;
+    // 2. If Image file, compress with canvas to max 1280px (reduces size from 5-10MB down to ~150KB)
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxWidth = 1280;
+          const maxHeight = 1280;
+          let width = img.width;
+          let height = img.height;
 
-        if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
           }
-        } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
 
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.82));
-        } else {
-          resolve(event.target?.result as string);
-        }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
+          } else {
+            resolve(event.target?.result as string);
+          }
+        };
+        img.onerror = () => resolve(event.target?.result as string);
+        img.src = event.target?.result as string;
       };
-      img.onerror = () => resolve(event.target?.result as string);
-      img.src = event.target?.result as string;
-    };
+      reader.onerror = () => reject(new Error(`Failed to read photo "${file.name}"`));
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // 3. Fallback for any other media
+    const reader = new FileReader();
+    reader.onload = (event) => resolve(event.target?.result as string);
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+};
+
+const getEmbedVideoUrl = (url: string): string | null => {
+  if (!url) return null;
+  const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  if (ytMatch && ytMatch[1]) {
+    return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
+  }
+  const gdMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (gdMatch && gdMatch[1]) {
+    return `https://drive.google.com/file/d/${gdMatch[1]}/preview`;
+  }
+  return null;
 };
 
 export const MemoriesView: React.FC = () => {
@@ -91,6 +129,7 @@ export const MemoriesView: React.FC = () => {
   const [lightboxMedia, setLightboxMedia] = useState<{ url: string; type: 'image' | 'video'; title?: string; memoryId?: string; photoIndex?: number } | null>(null);
 
   const [selectedMedia, setSelectedMedia] = useState<string[]>([]);
+  const [videoLinkInput, setVideoLinkInput] = useState('');
   const [isProcessingMedia, setIsProcessingMedia] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -117,6 +156,7 @@ export const MemoriesView: React.FC = () => {
     description: '',
   });
   const [editSelectedMedia, setEditSelectedMedia] = useState<string[]>([]);
+  const [editVideoLinkInput, setEditVideoLinkInput] = useState('');
   const [isEditingProcessingMedia, setIsEditingProcessingMedia] = useState(false);
   const [isEditingSaving, setIsEditingSaving] = useState(false);
   const [editError, setEditError] = useState('');
@@ -157,12 +197,12 @@ export const MemoriesView: React.FC = () => {
     setIsProcessingMedia(true);
     setSaveError('');
     try {
-      const promises = Array.from(files).map((file) => compressImageFile(file));
+      const promises = Array.from(files).map((file) => processMediaFile(file));
       const results = await Promise.all(promises);
       setSelectedMedia((prev) => [...prev, ...results]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to process media files:', err);
-      setSaveError('Failed to process uploaded photos. Please try again.');
+      setSaveError(err?.message || 'Failed to process uploaded media. Please try again.');
     } finally {
       setIsProcessingMedia(false);
       e.target.value = '';
@@ -176,16 +216,30 @@ export const MemoriesView: React.FC = () => {
     setIsEditingProcessingMedia(true);
     setEditError('');
     try {
-      const promises = Array.from(files).map((file) => compressImageFile(file));
+      const promises = Array.from(files).map((file) => processMediaFile(file));
       const results = await Promise.all(promises);
       setEditSelectedMedia((prev) => [...prev, ...results]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to process edit media files:', err);
-      setEditError('Failed to process uploaded photos. Please try again.');
+      setEditError(err?.message || 'Failed to process uploaded media. Please try again.');
     } finally {
       setIsEditingProcessingMedia(false);
       e.target.value = '';
     }
+  };
+
+  const handleAddVideoLink = () => {
+    const trimmed = videoLinkInput.trim();
+    if (!trimmed) return;
+    setSelectedMedia((prev) => [...prev, trimmed]);
+    setVideoLinkInput('');
+  };
+
+  const handleAddEditVideoLink = () => {
+    const trimmed = editVideoLinkInput.trim();
+    if (!trimmed) return;
+    setEditSelectedMedia((prev) => [...prev, trimmed]);
+    setEditVideoLinkInput('');
   };
 
   const handleRemoveMedia = (index: number) => {
@@ -197,7 +251,17 @@ export const MemoriesView: React.FC = () => {
   };
 
   const isVideoMedia = (url: string) => {
-    return url.startsWith('data:video') || url.includes('.mp4') || url.includes('.webm') || url.includes('.mov') || url.includes('video');
+    if (!url) return false;
+    return (
+      url.startsWith('data:video') ||
+      url.includes('.mp4') ||
+      url.includes('.webm') ||
+      url.includes('.mov') ||
+      url.includes('youtube.com') ||
+      url.includes('youtu.be') ||
+      url.includes('drive.google.com') ||
+      url.includes('vimeo.com')
+    );
   };
 
   const handleOpenEdit = (mem: Memory) => {
@@ -780,7 +844,26 @@ export const MemoriesView: React.FC = () => {
                     className="p-2.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
                   >
                     <Video className="w-4 h-4 text-purple-300" />
-                    <span>Record Clip</span>
+                    <span>Record Clip (≤12MB)</span>
+                  </button>
+                </div>
+
+                {/* Video Link / Cloud Storage input */}
+                <div className="pt-1.5 flex gap-1.5">
+                  <input
+                    type="url"
+                    placeholder="Or paste YouTube / Google Drive / MP4 Link"
+                    value={videoLinkInput}
+                    onChange={(e) => setVideoLinkInput(e.target.value)}
+                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-[11px] text-white outline-none focus:border-purple-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddVideoLink}
+                    disabled={!videoLinkInput.trim()}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-xl text-[11px] font-bold shrink-0 transition-colors"
+                  >
+                    + Add Link
                   </button>
                 </div>
 
@@ -1001,7 +1084,26 @@ export const MemoriesView: React.FC = () => {
                     className="p-2.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-colors disabled:opacity-50"
                   >
                     <Video className="w-4 h-4 text-purple-300" />
-                    <span>Record Clip</span>
+                    <span>Record Clip (≤12MB)</span>
+                  </button>
+                </div>
+
+                {/* Video Link / Cloud Storage input in Edit Modal */}
+                <div className="pt-1.5 flex gap-1.5">
+                  <input
+                    type="url"
+                    placeholder="Or paste YouTube / Google Drive / MP4 Link"
+                    value={editVideoLinkInput}
+                    onChange={(e) => setEditVideoLinkInput(e.target.value)}
+                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-[11px] text-white outline-none focus:border-purple-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddEditVideoLink}
+                    disabled={!editVideoLinkInput.trim()}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-xl text-[11px] font-bold shrink-0 transition-colors"
+                  >
+                    + Add Link
                   </button>
                 </div>
 
@@ -1241,7 +1343,23 @@ export const MemoriesView: React.FC = () => {
             </div>
             <div className="flex-1 flex items-center justify-center p-2 bg-black min-h-[300px]">
               {lightboxMedia.type === 'video' ? (
-                <video src={lightboxMedia.url} controls autoPlay className="max-w-full max-h-[70vh] rounded-2xl shadow-lg" />
+                (() => {
+                  const embed = getEmbedVideoUrl(lightboxMedia.url);
+                  if (embed) {
+                    return (
+                      <iframe
+                        src={embed}
+                        title="Video Player"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-[65vh] rounded-2xl border-0 shadow-lg"
+                      />
+                    );
+                  }
+                  return (
+                    <video src={lightboxMedia.url} controls autoPlay className="max-w-full max-h-[70vh] rounded-2xl shadow-lg" />
+                  );
+                })()
               ) : (
                 <img src={lightboxMedia.url} alt="Memory" className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-lg" />
               )}

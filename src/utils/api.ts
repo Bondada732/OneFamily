@@ -96,14 +96,26 @@ export const getCachedApiResponse = <T = any>(endpoint: string): T | null => {
 export const setCachedApiResponse = (endpoint: string, data: any): void => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(
-      `kinora_api_cache_${endpoint}`,
-      JSON.stringify({
-        timestamp: Date.now(),
-        data,
-      })
-    );
-  } catch {}
+    const serialized = JSON.stringify({
+      timestamp: Date.now(),
+      data,
+    });
+    // Protect localStorage: skip caching if payload is larger than 1.5MB (e.g. large videos)
+    if (serialized.length > 1.5 * 1024 * 1024) return;
+    localStorage.setItem(`kinora_api_cache_${endpoint}`, serialized);
+  } catch (err: any) {
+    // If quota is exceeded, clear old cache entries safely
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('kinora_api_cache_')) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch {}
+  }
 };
 
 // Fire and forget server warm-up ping on app start
