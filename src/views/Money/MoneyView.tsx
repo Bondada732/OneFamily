@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useFamily } from '../../context/FamilyContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
+import { useTheme } from '../../context/ThemeContext.js';
 import { translations } from '../../i18n/index.js';
 import { formatCurrency, formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { apiRequest, getCachedApiResponse } from '../../utils/api.js';
@@ -33,6 +34,8 @@ export const MoneyView: React.FC = () => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
   const { refreshDashboard } = useFamily();
   const { isPrivacyMode } = useSecurity();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
 
@@ -603,12 +606,18 @@ export const MoneyView: React.FC = () => {
 
 
   return (
-    <div className="p-4 space-y-5 animate-fade-in text-slate-100 pb-12">
+    <div className={`p-4 space-y-4 animate-fade-in pb-24 ${
+      isLight ? 'text-[#2A1B14]' : 'text-slate-100'
+    }`}>
       {/* Title & Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-extrabold text-white tracking-tight">Family Wealth & Budget</h2>
-          <p className="text-xs text-slate-400">Total control over Indian family finances</p>
+          <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+            Family Wealth & Budget
+          </h2>
+          <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+            Total control over Indian family finances
+          </p>
         </div>
         {canEditFinance && (
           <div className="flex items-center gap-1.5">
@@ -616,14 +625,22 @@ export const MoneyView: React.FC = () => {
               <>
                 <button
                   onClick={() => setShowAddInvestment(true)}
-                  className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs flex items-center gap-1 font-bold shadow-md shadow-emerald-600/20"
+                  className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
+                    isLight
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow-sm'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20'
+                  }`}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Asset</span>
                 </button>
                 <button
                   onClick={() => setShowAddLiability(true)}
-                  className="p-2 bg-rose-600/80 hover:bg-rose-600 text-white rounded-xl text-xs flex items-center gap-1 font-bold shadow-md"
+                  className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
+                    isLight
+                      ? 'bg-[#C24419] hover:bg-[#A83813] text-white border-[#C24419] shadow-sm'
+                      : 'bg-rose-600/80 hover:bg-rose-600 text-white shadow-md'
+                  }`}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Loan</span>
@@ -632,7 +649,11 @@ export const MoneyView: React.FC = () => {
             ) : activeSubTab === 'GOALS' ? (
               <button
                 onClick={() => setShowAddGoal(true)}
-                className="p-2 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white rounded-xl text-xs flex items-center gap-1 font-bold shadow-md shadow-amber-500/20"
+                className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
+                  isLight
+                    ? 'bg-[#F05A28] hover:bg-[#E76F3C] text-white border-[#F05A28] shadow-sm'
+                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white shadow-md shadow-amber-500/20'
+                }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Goal</span>
@@ -641,7 +662,11 @@ export const MoneyView: React.FC = () => {
               <>
                 <button
                   onClick={() => setShowScanReceipt(true)}
-                  className="p-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded-xl border border-indigo-500/40 text-xs flex items-center gap-1 font-semibold"
+                  className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
+                    isLight
+                      ? 'bg-[#FFF8F1] hover:bg-[#F8EFE4] text-[#B84A1E] border-[#EAD6C4] shadow-sm kinora-3d-tile'
+                      : 'bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border-indigo-500/40'
+                  }`}
                   title="Scan Receipt OCR"
                 >
                   <Camera className="w-3.5 h-3.5" />
@@ -649,7 +674,11 @@ export const MoneyView: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setShowAddExpense(true)}
-                  className="p-2 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-xl text-xs flex items-center gap-1 font-bold shadow-md shadow-amber-500/20"
+                  className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
+                    isLight
+                      ? 'bg-[#F05A28] hover:bg-[#E76F3C] text-white border-[#F05A28] shadow-sm'
+                      : 'bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-md shadow-amber-500/20'
+                  }`}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Expense</span>
@@ -661,15 +690,23 @@ export const MoneyView: React.FC = () => {
       </div>
 
       {/* Sub Tab Navigation */}
-      <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-2xl border border-slate-700/80 overflow-x-auto scrollbar-none">
+      <div className={`flex items-center gap-1 p-1 rounded-2xl overflow-x-auto scrollbar-none border ${
+        isLight
+          ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
+          : 'bg-slate-800/80 border border-slate-700/80'
+      }`}>
         {(['OVERVIEW', 'BUDGET', 'EXPENSES', 'WEALTH', 'GOALS'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveSubTab(tab)}
             className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
               activeSubTab === tab
-                ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? isLight
+                  ? 'bg-[#F05A28] text-white shadow-md'
+                  : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+                : isLight
+                  ? 'text-[#634B3F] hover:text-[#1F1F1F]'
+                  : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             {tab}
@@ -681,27 +718,45 @@ export const MoneyView: React.FC = () => {
       {activeSubTab === 'OVERVIEW' && (
         <div className="space-y-4">
           {/* Net Worth Hero Card */}
-          <div className="p-4 rounded-3xl bg-gradient-to-tr from-slate-900 via-indigo-950/80 to-slate-900 border border-indigo-500/30 shadow-2xl">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-              <span>Family Net Worth (Formula: Assets - Liabilities)</span>
-              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+          <div className={`p-4 sm:p-5 rounded-3xl relative overflow-hidden kinora-3d-card ${
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+              : 'bg-gradient-to-tr from-slate-900 via-indigo-950/80 to-slate-900 border border-indigo-500/30 shadow-2xl'
+          }`}>
+            <div className={`flex items-center justify-between text-xs mb-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              <span className="font-semibold">Family Net Worth (Formula: Assets - Liabilities)</span>
+              <span className={`font-bold px-2 py-0.5 rounded-full border text-[11px] ${
+                isLight 
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                  : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+              }`}>
                 +4.2% YoY
               </span>
             </div>
-            <div className="text-2xl font-black text-white tracking-tight">
+            <div className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
               {isPrivacyMode ? '••••••' : formatCurrency(netWorthData?.netWorth)}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-800">
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Total Assets</span>
-                <div className="text-sm font-bold text-emerald-400 mt-0.5">
+            <div className={`grid grid-cols-2 gap-3 mt-4 pt-3 border-t ${
+              isLight ? 'border-[#DEC8B2]' : 'border-slate-800'
+            }`}>
+              <div className={`p-3 rounded-2xl border kinora-3d-tile ${
+                isLight 
+                  ? 'bg-[#FFF8F1] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]' 
+                  : 'bg-slate-900/60 border-slate-800'
+              }`}>
+                <span className={`text-[10px] uppercase font-bold ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Total Assets</span>
+                <div className={`text-sm sm:text-base font-black mt-0.5 ${isLight ? 'text-[#2E7D32]' : 'text-emerald-400'}`}>
                   {isPrivacyMode ? '••••' : formatCurrency(netWorthData?.totalAssetValue)}
                 </div>
               </div>
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Total Liabilities</span>
-                <div className="text-sm font-bold text-rose-400 mt-0.5">
+              <div className={`p-3 rounded-2xl border kinora-3d-tile ${
+                isLight 
+                  ? 'bg-[#FFF8F1] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)]' 
+                  : 'bg-slate-900/60 border-slate-800'
+              }`}>
+                <span className={`text-[10px] uppercase font-bold ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Total Liabilities</span>
+                <div className={`text-sm sm:text-base font-black mt-0.5 ${isLight ? 'text-[#C24419]' : 'text-rose-400'}`}>
                   {isPrivacyMode ? '••••' : formatCurrency(netWorthData?.totalLiabilities)}
                 </div>
               </div>
@@ -713,47 +768,65 @@ export const MoneyView: React.FC = () => {
                 <AreaChart data={netWorthHistory}>
                   <defs>
                     <linearGradient id="colorNet" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4F6BF5" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#4F6BF5" stopOpacity={0} />
+                      <stop offset="5%" stopColor={isLight ? '#F05A28' : '#4F6BF5'} stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={isLight ? '#F05A28' : '#4F6BF5'} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="month" stroke="#64748b" fontSize={10} tickLine={false} />
+                  <XAxis dataKey="month" stroke={isLight ? '#8C7A6B' : '#64748b'} fontSize={10} tickLine={false} />
                   <Tooltip
                     formatter={(val: any) => [`₹${val} Lakhs`, 'Net Worth']}
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', fontSize: '11px' }}
+                    contentStyle={{
+                      backgroundColor: isLight ? '#FFF8F1' : '#0f172a',
+                      borderColor: isLight ? '#EAD6C4' : '#334155',
+                      color: isLight ? '#1F1F1F' : '#ffffff',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                    }}
                   />
-                  <Area type="monotone" dataKey="netWorth" stroke="#4F6BF5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorNet)" />
+                  <Area type="monotone" dataKey="netWorth" stroke={isLight ? '#F05A28' : '#4F6BF5'} strokeWidth={2.5} fillOpacity={1} fill="url(#colorNet)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Quick Expense Breakdown */}
-          <div className="p-4 rounded-3xl bg-slate-800/90 border border-slate-700/80 space-y-3">
+          <div className={`p-4 rounded-3xl space-y-3 kinora-3d-card ${
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+              : 'bg-slate-800/90 border border-slate-700/80'
+          }`}>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-white">Recent Family Expenses</span>
-              <button onClick={() => setActiveSubTab('EXPENSES')} className="text-indigo-400 hover:underline">
+              <span className={`font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Recent Family Expenses</span>
+              <button onClick={() => setActiveSubTab('EXPENSES')} className={`font-bold ${isLight ? 'text-[#D3542F] hover:text-[#F05A28]' : 'text-indigo-400 hover:underline'}`}>
                 View All ({expenses.length}) →
               </button>
             </div>
 
             <div className="space-y-2">
               {expenses.slice(0, 10).map((exp) => (
-                <div key={exp.id} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div key={exp.id} className={`flex items-center justify-between p-2.5 rounded-xl border kinora-3d-tile ${
+                  isLight
+                    ? 'bg-[#FFF8F1] border-[#EAD6C4] border-t-white/95 border-b-[2px] border-b-[#DEC8B2]'
+                    : 'bg-slate-900/60 border-slate-800'
+                }`}>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs kinora-3d-icon-box ${
+                      isLight
+                        ? 'bg-amber-100 text-amber-800 border-amber-300'
+                        : 'bg-indigo-500/20 text-indigo-400'
+                    }`}>
                       {exp.payment_method === 'UPI' ? 'UPI' : '₹'}
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-white">{exp.merchant}</div>
-                      <div className="text-[10px] text-slate-400">{exp.category_name} • Paid by {exp.paid_by_name}</div>
+                      <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{exp.merchant}</div>
+                      <div className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>{exp.category_name} • Paid by {exp.paid_by_name}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold text-rose-400">
+                    <div className={`text-xs font-bold ${isLight ? 'text-[#C24419]' : 'text-rose-400'}`}>
                       {isPrivacyMode ? '••••' : `-₹${exp.amount.toLocaleString('en-IN')}`}
                     </div>
-                    <div className="text-[10px] text-slate-500">{formatDate(exp.date)}</div>
+                    <div className={`text-[10px] ${isLight ? 'text-[#8C7A6B]' : 'text-slate-500'}`}>{formatDate(exp.date)}</div>
                   </div>
                 </div>
               ))}
@@ -765,30 +838,42 @@ export const MoneyView: React.FC = () => {
       {/* 2. BUDGET SUBTAB */}
       {activeSubTab === 'BUDGET' && (
         <div className="space-y-3">
-          <div className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80">
-            <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className={`p-4 rounded-2xl border kinora-3d-card ${
+            isLight
+              ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-md'
+              : 'bg-slate-800/90 border-slate-700/80'
+          }`}>
+            <div className={`flex items-center justify-between text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
               <div className="flex items-center gap-2">
-                <span>Monthly Household Budget</span>
+                <span className="font-semibold">Monthly Household Budget</span>
                 {canEditFinance && (
                   <button
                     onClick={() => setShowManageCategories(true)}
-                    className="text-[10px] text-amber-300 font-bold bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 rounded-lg transition-all"
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all ${
+                      isLight
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                        : 'text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30'
+                    }`}
                   >
                     + Manage Categories
                   </button>
                 )}
               </div>
-              <span className="text-amber-400 font-bold">{budgetReports.length} Categories</span>
+              <span className={`font-bold ${isLight ? 'text-[#B84A1E]' : 'text-amber-400'}`}>{budgetReports.length} Categories</span>
             </div>
-            <div className="text-xl font-extrabold text-white mt-1">
+            <div className={`text-xl font-extrabold mt-1 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
               {formatCurrency(budgetReports.reduce((s, b) => s + (b.spent || 0), 0))} / {formatCurrency(budgetReports.reduce((s, b) => s + (b.limit || 0), 0))}
-              <span className="text-xs font-normal text-slate-400 ml-2">
+              <span className={`text-xs font-normal ml-2 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 ({budgetReports.reduce((s, b) => s + (b.limit || 0), 0) > 0 
                   ? ((budgetReports.reduce((s, b) => s + (b.spent || 0), 0) / budgetReports.reduce((s, b) => s + (b.limit || 0), 0)) * 100).toFixed(1) 
                   : 0}% spent)
               </span>
             </div>
-            <p className="text-[11px] text-amber-300/90 mt-2 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
+            <p className={`text-[11px] mt-2 p-2 rounded-xl border ${
+              isLight
+                ? 'bg-[#FFF8F1] text-[#8C5228] border-[#DEC8B2]'
+                : 'text-amber-300/90 bg-amber-500/10 border-amber-500/20'
+            }`}>
               💡 Tap any category below to set or adjust your monthly spending budget limit.
             </p>
           </div>
@@ -803,29 +888,39 @@ export const MoneyView: React.FC = () => {
                     setNewBudgetLimit(cat.limit ? String(cat.limit) : '');
                   }
                 }}
-                className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700/80 hover:border-slate-600 transition-all shadow-sm cursor-pointer group"
+                className={`p-3.5 rounded-2xl border transition-all shadow-sm cursor-pointer group kinora-3d-tile ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] hover:border-[#F05A28]/50'
+                    : 'bg-slate-800/90 border-slate-700/80 hover:border-slate-600'
+                }`}
               >
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-white group-hover:text-amber-300 transition-colors">{cat.categoryName}</span>
+                    <span className={`font-bold transition-colors ${
+                      isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-amber-300'
+                    }`}>
+                      {cat.categoryName}
+                    </span>
                     {cat.limit === 0 && (
-                      <span className="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-medium">
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                        isLight ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-indigo-500/20 text-indigo-300'
+                      }`}>
                         Set Limit ✎
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-slate-200">
+                    <span className={`font-extrabold ${isLight ? 'text-[#1F1F1F]' : 'text-slate-200'}`}>
                       {isPrivacyMode ? '••••' : `₹${(cat.spent ?? 0).toLocaleString('en-IN')}`} / {cat.limit > 0 ? `₹${cat.limit.toLocaleString('en-IN')}` : 'No limit'}
                     </span>
                     {cat.limit > 0 && (
                       <span
                         className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                           cat.alertStatus === 'EXCEEDED'
-                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                            ? isLight ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                             : cat.alertStatus === 'WARNING'
-                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                            : 'bg-emerald-500/20 text-emerald-400'
+                            ? isLight ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            : isLight ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-emerald-500/20 text-emerald-400'
                         }`}
                       >
                         {cat.utilizationPct ?? 0}%
@@ -834,14 +929,14 @@ export const MoneyView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div className={`w-full h-2 rounded-full overflow-hidden ${isLight ? 'bg-[#E0CCBB]' : 'bg-slate-700'}`}>
                   <div
                     className={`h-full rounded-full transition-all ${
                       cat.alertStatus === 'EXCEEDED'
                         ? 'bg-rose-500'
                         : cat.alertStatus === 'WARNING'
                         ? 'bg-amber-400'
-                        : 'bg-emerald-400'
+                        : 'bg-emerald-500'
                     }`}
                     style={{ width: `${Math.min(100, cat.utilizationPct ?? 0)}%` }}
                   />
@@ -857,17 +952,23 @@ export const MoneyView: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase">Logged Expenses ({expenses.length})</span>
+              <span className={`text-xs font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                Logged Expenses ({expenses.length})
+              </span>
               {canEditFinance && (
                 <button
                   onClick={() => setShowManageCategories(true)}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium px-2 py-0.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20"
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-lg border transition-all ${
+                    isLight
+                      ? 'text-[#B84A1E] bg-amber-100/60 hover:bg-amber-100 border-amber-300'
+                      : 'text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 border-indigo-500/20'
+                  }`}
                 >
                   ⚙ Categories
                 </button>
               )}
             </div>
-            <span className="text-xs text-amber-400 font-bold">
+            <span className={`text-xs font-bold ${isLight ? 'text-[#C24419]' : 'text-amber-400'}`}>
               Total: {formatCurrency(expenses.reduce((s, e) => s + (e.amount || 0), 0))}
             </span>
           </div>
@@ -875,51 +976,71 @@ export const MoneyView: React.FC = () => {
           {expenses.length === 0 ? (
             <div
               onClick={() => setShowAddExpense(true)}
-              className="p-6 rounded-3xl bg-slate-800/60 border border-dashed border-slate-700 text-center cursor-pointer hover:border-amber-400 hover:bg-slate-800/90 transition-all space-y-3"
+              className={`p-6 rounded-3xl border border-dashed text-center cursor-pointer transition-all space-y-3 kinora-3d-card ${
+                isLight
+                  ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-[#F05A28]'
+                  : 'bg-slate-800/60 border-slate-700 hover:border-amber-400 hover:bg-slate-800/90'
+              }`}
             >
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto kinora-3d-icon-box ${
+                isLight ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-500/20 text-amber-400'
+              }`}>
                 <Plus className="w-6 h-6" />
               </div>
               <div>
-                <div className="text-sm font-bold text-white">No Expenses Logged Yet</div>
-                <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
+                <div className={`text-sm font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Expenses Logged Yet</div>
+                <p className={`text-xs max-w-xs mx-auto mt-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Track grocery bills, fuel, rent, dining, shopping, and everyday family spends.
                 </p>
               </div>
-              <button className="px-4 py-2 bg-gradient-to-r from-amber-500 to-indigo-600 text-white font-bold rounded-xl text-xs shadow-lg">
+              <button className={`px-4 py-2 font-bold rounded-xl text-xs shadow-lg text-white ${
+                isLight ? 'bg-[#F05A28] hover:bg-[#E76F3C]' : 'bg-gradient-to-r from-amber-500 to-indigo-600'
+              }`}>
                 + Add Your First Expense
               </button>
             </div>
           ) : (
             <div className="space-y-2">
               {expenses.map((exp) => (
-                <div key={exp.id} className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700/80 flex items-center justify-between">
+                <div key={exp.id} className={`p-3.5 rounded-2xl border flex items-center justify-between kinora-3d-tile ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
+                    : 'bg-slate-800/90 border-slate-700/80'
+                }`}>
                   <div className="overflow-hidden mr-2">
-                    <div className="text-xs font-bold text-white truncate">{exp.merchant}</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5 truncate">
+                    <div className={`text-xs font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{exp.merchant}</div>
+                    <div className={`text-[11px] mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                       {exp.category_name} • Paid by {exp.paid_by_name} ({exp.payment_method})
                     </div>
-                    {exp.notes && <div className="text-[10px] text-slate-500 mt-0.5 italic truncate">{exp.notes}</div>}
+                    {exp.notes && <div className={`text-[10px] mt-0.5 italic truncate ${isLight ? 'text-[#8C7A6B]' : 'text-slate-500'}`}>{exp.notes}</div>}
                   </div>
                   <div className="flex items-center gap-2.5 shrink-0">
                     <div className="text-right">
-                      <div className="text-sm font-bold text-rose-400">
+                      <div className={`text-sm font-bold ${isLight ? 'text-[#C24419]' : 'text-rose-400'}`}>
                         {isPrivacyMode ? '••••' : `-₹${(exp.amount ?? 0).toLocaleString('en-IN')}`}
                       </div>
-                      <div className="text-[10px] text-slate-500">{formatDate(exp.date)}</div>
+                      <div className={`text-[10px] ${isLight ? 'text-[#8C7A6B]' : 'text-slate-500'}`}>{formatDate(exp.date)}</div>
                     </div>
                     {canEditFinance && (
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setEditingExpense(exp)}
-                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
+                          }`}
                           title="Edit Expense"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteExpense(exp.id)}
-                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
+                          }`}
                           title="Delete Expense"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -934,20 +1055,19 @@ export const MoneyView: React.FC = () => {
         </div>
       )}
 
-
       {/* 4. WEALTH SUBTAB (Investments, Assets & Liabilities) */}
       {activeSubTab === 'WEALTH' && (
         <div className="space-y-4">
           {/* Asset Categories */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-400 uppercase">
+              <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 Family Investments & Assets ({formatCurrency(investments.reduce((s, i) => s + (i.current_value || 0), 0), true)})
               </span>
               {canEditFinance && (
                 <button
                   onClick={() => setShowAddInvestment(true)}
-                  className="flex items-center gap-1 text-emerald-400 hover:underline font-bold text-xs"
+                  className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#2E7D32] hover:underline' : 'text-emerald-400 hover:underline'}`}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Asset</span>
@@ -958,40 +1078,56 @@ export const MoneyView: React.FC = () => {
             {investments.length === 0 ? (
               <div
                 onClick={() => setShowAddInvestment(true)}
-                className="p-5 rounded-2xl bg-slate-800/60 border border-dashed border-slate-700 text-center cursor-pointer hover:border-emerald-500/50 hover:bg-slate-800/90 transition-all space-y-2"
+                className={`p-5 rounded-2xl border border-dashed text-center cursor-pointer transition-all space-y-2 kinora-3d-card ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-emerald-500'
+                    : 'bg-slate-800/60 border-slate-700 hover:border-emerald-500/50 hover:bg-slate-800/90'
+                }`}
               >
-                <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto kinora-3d-icon-box ${
+                  isLight ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-400'
+                }`}>
                   <TrendingUp className="w-5 h-5" />
                 </div>
-                <div className="text-xs font-bold text-white">No Assets Added Yet</div>
-                <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Assets Added Yet</div>
+                <p className={`text-[11px] max-w-xs mx-auto ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Track Mutual Funds, Stocks, Gold, FDs, PPF, and Real Estate in one consolidated family portfolio.
                 </p>
-                <button className="px-3 py-1.5 bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold inline-flex items-center gap-1">
+                <button className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1 border ${
+                  isLight
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow-sm'
+                    : 'bg-emerald-600/30 text-emerald-300 border-emerald-500/40'
+                }`}>
                   <Plus className="w-3.5 h-3.5" /> Add Investment / Asset
                 </button>
               </div>
             ) : (
               investments.map((inv) => (
-                <div key={inv.id} className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700/80 flex items-center justify-between shadow-sm">
+                <div key={inv.id} className={`p-3.5 rounded-2xl border flex items-center justify-between shadow-sm kinora-3d-tile ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
+                    : 'bg-slate-800/90 border-slate-700/80'
+                }`}>
                   <div className="overflow-hidden mr-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-white truncate">{inv.title}</span>
-                      <span className="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-medium shrink-0">
+                      <span className={`text-xs font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{inv.title}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                        isLight ? 'bg-[#EAD8C7] text-[#634B3F] border border-[#DEC8B2]' : 'bg-slate-700 text-slate-300'
+                      }`}>
                         {inv.type}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5 truncate">
+                    <div className={`text-[11px] mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                       {inv.institution} • Owner: {inv.owner_name}
                     </div>
-                    {inv.notes && <div className="text-[10px] text-emerald-400 mt-0.5 truncate">{inv.notes}</div>}
+                    {inv.notes && <div className={`text-[10px] mt-0.5 truncate ${isLight ? 'text-[#2E7D32]' : 'text-emerald-400'}`}>{inv.notes}</div>}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="text-right">
-                      <div className="text-sm font-bold text-emerald-400">
+                      <div className={`text-sm font-bold ${isLight ? 'text-[#2E7D32]' : 'text-emerald-400'}`}>
                         {isPrivacyMode ? '••••' : formatCurrency(inv.current_value)}
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className={`text-[10px] ${isLight ? 'text-[#8C7A6B]' : 'text-slate-400'}`}>
                         Invested: ₹{(((inv.invested_amount || 0)) / 100000).toFixed(1)}L
                       </div>
                     </div>
@@ -999,14 +1135,22 @@ export const MoneyView: React.FC = () => {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setEditingInvestment(inv)}
-                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
+                          }`}
                           title="Edit Asset"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteInvestment(inv.id)}
-                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
+                          }`}
                           title="Delete Asset"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1022,13 +1166,13 @@ export const MoneyView: React.FC = () => {
           {/* Liabilities */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-400 uppercase">
+              <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 Liabilities & Loans ({formatCurrency(liabilities.reduce((s, l) => s + (l.outstanding_amount || 0), 0), true)})
               </span>
               {canEditFinance && (
                 <button
                   onClick={() => setShowAddLiability(true)}
-                  className="flex items-center gap-1 text-rose-400 hover:underline font-bold text-xs"
+                  className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#C24419] hover:underline' : 'text-rose-400 hover:underline'}`}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Loan</span>
@@ -1039,52 +1183,76 @@ export const MoneyView: React.FC = () => {
             {liabilities.length === 0 ? (
               <div
                 onClick={() => setShowAddLiability(true)}
-                className="p-5 rounded-2xl bg-slate-800/60 border border-dashed border-slate-700 text-center cursor-pointer hover:border-rose-500/50 hover:bg-slate-800/90 transition-all space-y-2"
+                className={`p-5 rounded-2xl border border-dashed text-center cursor-pointer transition-all space-y-2 kinora-3d-card ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-rose-500'
+                    : 'bg-slate-800/60 border-slate-700 hover:border-rose-500/50 hover:bg-slate-800/90'
+                }`}
               >
-                <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto kinora-3d-icon-box ${
+                  isLight ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-rose-500/20 text-rose-400'
+                }`}>
                   <CreditCard className="w-5 h-5" />
                 </div>
-                <div className="text-xs font-bold text-white">No Active Loans or Debts</div>
-                <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Active Loans or Debts</div>
+                <p className={`text-[11px] max-w-xs mx-auto ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Keep track of Home Loans, Car Loans, EMIs, and Credit Cards to manage family cash flow.
                 </p>
-                <button className="px-3 py-1.5 bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-xl text-xs font-bold inline-flex items-center gap-1">
+                <button className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1 border ${
+                  isLight
+                    ? 'bg-[#C24419] hover:bg-[#A83813] text-white border-[#C24419] shadow-sm'
+                    : 'bg-rose-600/30 text-rose-300 border-rose-500/40'
+                }`}>
                   <Plus className="w-3.5 h-3.5" /> Add Loan or EMI
                 </button>
               </div>
             ) : (
               liabilities.map((lia) => (
-                <div key={lia.id} className="p-3.5 rounded-2xl bg-slate-800/90 border border-slate-700/80 flex items-center justify-between shadow-sm">
+                <div key={lia.id} className={`p-3.5 rounded-2xl border flex items-center justify-between shadow-sm kinora-3d-tile ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
+                    : 'bg-slate-800/90 border-slate-700/80'
+                }`}>
                   <div className="overflow-hidden mr-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-white truncate">{lia.title}</span>
-                      <span className="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-medium shrink-0">
+                      <span className={`text-xs font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{lia.title}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                        isLight ? 'bg-[#EAD8C7] text-[#634B3F] border border-[#DEC8B2]' : 'bg-slate-700 text-slate-300'
+                      }`}>
                         {lia.type}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5 truncate">
+                    <div className={`text-[11px] mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                       {lia.lender} • Monthly EMI: ₹{(lia.monthly_emi ?? 0).toLocaleString('en-IN')}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="text-right">
-                      <div className="text-sm font-bold text-rose-400">
+                      <div className={`text-sm font-bold ${isLight ? 'text-[#C24419]' : 'text-rose-400'}`}>
                         {isPrivacyMode ? '••••' : formatCurrency(lia.outstanding_amount)}
                       </div>
-                      <div className="text-[10px] text-slate-400">Rate: {lia.interest_rate}%</div>
+                      <div className={`text-[10px] ${isLight ? 'text-[#8C7A6B]' : 'text-slate-400'}`}>Rate: {lia.interest_rate}%</div>
                     </div>
                     {canEditFinance && (
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setEditingLiability(lia)}
-                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
+                          }`}
                           title="Edit Loan"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteLiability(lia.id)}
-                          className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                          className={`p-1.5 rounded-lg border transition-colors ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
+                          }`}
                           title="Delete Loan"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1103,11 +1271,13 @@ export const MoneyView: React.FC = () => {
       {activeSubTab === 'GOALS' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-400 uppercase">Family Future Goals</span>
+            <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              Family Future Goals
+            </span>
             {canEditFinance && (
               <button
                 onClick={() => setShowAddGoal(true)}
-                className="flex items-center gap-1 text-amber-400 hover:underline font-bold text-xs"
+                className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#B84A1E] hover:underline' : 'text-amber-400 hover:underline'}`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Goal</span>
@@ -1118,18 +1288,26 @@ export const MoneyView: React.FC = () => {
           {goals.length === 0 ? (
             <div
               onClick={() => setShowAddGoal(true)}
-              className="p-6 rounded-3xl bg-slate-800/60 border border-dashed border-slate-700 text-center cursor-pointer hover:border-amber-400 hover:bg-slate-800/90 transition-all space-y-3"
+              className={`p-6 rounded-3xl border border-dashed text-center cursor-pointer transition-all space-y-3 kinora-3d-card ${
+                isLight
+                  ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-[#F05A28]'
+                  : 'bg-slate-800/60 border-slate-700 hover:border-amber-400 hover:bg-slate-800/90'
+              }`}
             >
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto kinora-3d-icon-box ${
+                isLight ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-500/20 text-amber-400'
+              }`}>
                 <Target className="w-6 h-6" />
               </div>
               <div>
-                <div className="text-sm font-bold text-white">No Family Financial Goals Set</div>
-                <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
+                <div className={`text-sm font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Family Financial Goals Set</div>
+                <p className={`text-xs max-w-xs mx-auto mt-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Plan for your child's college, a new dream house, annual family vacation, or emergency safety net.
                 </p>
               </div>
-              <button className="px-4 py-2 bg-gradient-to-r from-amber-500 to-indigo-600 text-white font-bold rounded-xl text-xs shadow-lg">
+              <button className={`px-4 py-2 font-bold rounded-xl text-xs shadow-lg text-white ${
+                isLight ? 'bg-[#F05A28] hover:bg-[#E76F3C]' : 'bg-gradient-to-r from-amber-500 to-indigo-600'
+              }`}>
                 + Set Your First Family Goal
               </button>
             </div>
@@ -1137,21 +1315,29 @@ export const MoneyView: React.FC = () => {
             goals.map((goal) => {
               const pct = goal.target_amount > 0 ? Math.min(100, Math.round(((goal.current_amount || 0) / goal.target_amount) * 100)) : 0;
               return (
-                <div key={goal.id} className="p-4 rounded-2xl bg-slate-800/90 border border-slate-700/80 space-y-3 shadow-sm">
+                <div key={goal.id} className={`p-4 rounded-2xl border space-y-3 shadow-sm kinora-3d-card ${
+                  isLight
+                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2]'
+                    : 'bg-slate-800/90 border-slate-700/80'
+                }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white">{goal.title}</span>
-                        <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold border border-amber-500/30">
+                        <span className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{goal.title}</span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                          isLight
+                            ? 'bg-amber-100 text-amber-900 border-amber-300'
+                            : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                        }`}>
                           {goal.category}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
+                      <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                         Target Date: {goal.target_date} • SIP: ₹{(goal.monthly_contribution ?? 0).toLocaleString('en-IN')}/mo
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-extrabold text-amber-400">{pct}%</span>
+                      <span className={`text-sm font-extrabold ${isLight ? 'text-[#B84A1E]' : 'text-amber-400'}`}>{pct}%</span>
                       {canEditFinance && (
                         <div className="flex items-center gap-1.5 ml-auto mt-1">
                           <button
@@ -1159,20 +1345,32 @@ export const MoneyView: React.FC = () => {
                               setContributingGoal(goal);
                               setContributionAmount(String(goal.monthly_contribution || '10000'));
                             }}
-                            className="px-2 py-0.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 rounded-lg text-[10px] font-semibold transition-colors"
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-colors border ${
+                              isLight
+                                ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300'
+                                : 'bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border-indigo-500/40'
+                            }`}
                           >
                             + Add Savings
                           </button>
                           <button
                             onClick={() => setEditingGoal(goal)}
-                            className="p-1 rounded-lg bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 transition-colors"
+                            className={`p-1 rounded-lg border transition-colors ${
+                              isLight
+                                ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                                : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
+                            }`}
                             title="Edit Goal"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteGoal(goal.id)}
-                            className="p-1 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                            className={`p-1 rounded-lg border transition-colors ${
+                              isLight
+                                ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
+                            }`}
                             title="Delete Goal"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1182,14 +1380,18 @@ export const MoneyView: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="w-full h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                  <div className={`w-full h-2.5 rounded-full overflow-hidden ${isLight ? 'bg-[#E0CCBB]' : 'bg-slate-700'}`}>
                     <div
-                      className="h-full bg-gradient-to-r from-amber-400 to-indigo-500 rounded-full transition-all"
+                      className={`h-full rounded-full transition-all ${
+                        isLight ? 'bg-gradient-to-r from-[#F05A28] to-amber-500' : 'bg-gradient-to-r from-amber-400 to-indigo-500'
+                      }`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/50">
+                  <div className={`flex items-center justify-between text-[11px] pt-1 border-t ${
+                    isLight ? 'text-[#634B3F] border-[#DEC8B2]' : 'text-slate-400 border-slate-700/50'
+                  }`}>
                     <span>Saved: {isPrivacyMode ? '••••' : formatCurrency(goal.current_amount)}</span>
                     <span>Target: {formatCurrency(goal.target_amount)}</span>
                   </div>
