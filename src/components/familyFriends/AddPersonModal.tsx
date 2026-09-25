@@ -17,6 +17,7 @@ import { apiRequest } from '../../utils/api.js';
 import { useAuth } from '../../context/AuthContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
 import { FamilyContact } from '../../types/index.js';
+import { uploadFileToCloud } from '../../utils/storage.js';
 
 interface AddPersonModalProps {
   isOpen: boolean;
@@ -201,13 +202,25 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
         }
       }
 
+      let finalPhotoUrl = photoUrl;
+      if (photoUrl && photoUrl.startsWith('data:')) {
+        const uploadRes = await uploadFileToCloud(
+          photoUrl,
+          'famora-memories',
+          `contact_${Date.now()}_${name.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`
+        );
+        if (uploadRes.success && uploadRes.url) {
+          finalPhotoUrl = uploadRes.url;
+        }
+      }
+
       if (isEditing && editContact) {
         // 1. Update Contact
         await apiRequest(`/family-reminders/${family.id}/contacts/${editContact.id}`, {
           method: 'PUT',
           body: JSON.stringify({
             name: name.trim(),
-            photo_url: photoUrl,
+            photo_url: finalPhotoUrl,
             mobile_number: fullPhone,
             relationship: finalRel,
             notes: notes.trim(),
@@ -227,7 +240,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
           method: 'POST',
           body: JSON.stringify({
             name: name.trim(),
-            photo_url: photoUrl,
+            photo_url: finalPhotoUrl,
             mobile_number: fullPhone,
             relationship: finalRel,
             notes: notes.trim(),

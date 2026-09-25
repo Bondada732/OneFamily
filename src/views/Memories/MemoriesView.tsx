@@ -5,6 +5,7 @@ import { apiRequest } from '../../utils/api.js';
 import { Memory, VoiceMemory } from '../../types/index.js';
 import { formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
+import { uploadFileToCloud } from '../../utils/storage.js';
 import { Heart, Mic, BookOpen, Camera, Play, Pause, Plus, Volume2, Globe2, Sparkles, MapPin, Calendar, Image as ImageIcon, Video, Upload, X, Film, Eye, AlertCircle, Loader2, CheckCircle2, Trash2, Edit3, AlertTriangle } from 'lucide-react';
 
 const MEMORY_ALBUMS = [
@@ -291,12 +292,26 @@ export const MemoriesView: React.FC = () => {
     setIsSaving(true);
     setSaveError('');
     try {
-      const mediaList = selectedMedia;
+      // Upload any local base64 media items to Supabase Cloud Storage (famora-memories)
+      const cloudMediaList = await Promise.all(
+        selectedMedia.map(async (media, idx) => {
+          if (media.startsWith('data:')) {
+            const uploadRes = await uploadFileToCloud(
+              media,
+              'famora-memories',
+              `memory_${Date.now()}_${idx}.jpg`
+            );
+            return uploadRes.success && uploadRes.url ? uploadRes.url : media;
+          }
+          return media;
+        })
+      );
+
       const created = await apiRequest(`/memories/${family.id}/memories`, {
         method: 'POST',
         body: JSON.stringify({
           ...newMemory,
-          photos: mediaList,
+          photos: cloudMediaList,
           tagged_members: [currentUser?.name || family?.name || 'Our Family'],
         }),
       });
@@ -304,7 +319,7 @@ export const MemoriesView: React.FC = () => {
       setMemories((prev) => [
         {
           ...created,
-          photosList: mediaList,
+          photosList: cloudMediaList,
           taggedMembersList: [currentUser?.name || family?.name || 'Our Family'],
         },
         ...prev,
@@ -337,6 +352,21 @@ export const MemoriesView: React.FC = () => {
     setIsEditingSaving(true);
     setEditError('');
     try {
+      // Upload any local base64 media items to Supabase Cloud Storage (famora-memories)
+      const cloudMediaList = await Promise.all(
+        editSelectedMedia.map(async (media, idx) => {
+          if (media.startsWith('data:')) {
+            const uploadRes = await uploadFileToCloud(
+              media,
+              'famora-memories',
+              `memory_edit_${Date.now()}_${idx}.jpg`
+            );
+            return uploadRes.success && uploadRes.url ? uploadRes.url : media;
+          }
+          return media;
+        })
+      );
+
       await apiRequest(`/memories/${family.id}/memories/${editingMemory.id}`, {
         method: 'PATCH',
         body: JSON.stringify({
@@ -345,7 +375,7 @@ export const MemoriesView: React.FC = () => {
           location: editFormData.location.trim(),
           album: editFormData.album,
           description: editFormData.description.trim(),
-          photos: editSelectedMedia,
+          photos: cloudMediaList,
         }),
       });
 
@@ -359,8 +389,8 @@ export const MemoriesView: React.FC = () => {
                 location: editFormData.location.trim(),
                 album: editFormData.album,
                 description: editFormData.description.trim(),
-                photosList: editSelectedMedia,
-                photos: JSON.stringify(editSelectedMedia),
+                photosList: cloudMediaList,
+                photos: JSON.stringify(cloudMediaList),
               }
             : m
         )

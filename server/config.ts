@@ -6,7 +6,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'one-family-super-secret-key-2026';
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 64) {
+  throw new Error('JWT_SECRET must be configured with at least 64 characters.');
+}
+
+export const JWT_SECRET = process.env.JWT_SECRET;
 export const PORT = parseInt(process.env.PORT || '4000', 10);
 export const APP_NAME = 'ONE FAMILY';
 export const TAGLINE = 'One Home. One Family. One Future.';

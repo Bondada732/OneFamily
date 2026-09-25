@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
+import { uploadFileToCloud } from '../../utils/storage.js';
 
 export const VaultView: React.FC = () => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
@@ -40,6 +41,7 @@ export const VaultView: React.FC = () => {
     type: 'PDF' | 'IMAGE';
     sizeKb: number;
   } | null>(null);
+  const [isUploadingToCloud, setIsUploadingToCloud] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -155,11 +157,26 @@ export const VaultView: React.FC = () => {
   const handleSaveDocument = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setIsUploadingToCloud(true);
+      let finalFileUrl = uploadedFile?.dataUrl || undefined;
+
+      // Stream to Supabase Cloud Storage if a local file was selected
+      if (uploadedFile?.dataUrl && uploadedFile.dataUrl.startsWith('data:')) {
+        const cloudUpload = await uploadFileToCloud(
+          uploadedFile.dataUrl,
+          'famora-vault',
+          uploadedFile.name
+        );
+        if (cloudUpload.success && cloudUpload.url) {
+          finalFileUrl = cloudUpload.url;
+        }
+      }
+
       const created = await apiRequest(`/documents/${family?.id}/documents`, {
         method: 'POST',
         body: JSON.stringify({
           ...newDoc,
-          file_url: uploadedFile?.dataUrl || undefined,
+          file_url: finalFileUrl,
           file_type: uploadedFile?.type || 'PDF',
           file_size_kb: uploadedFile?.sizeKb || undefined,
         }),
@@ -182,6 +199,8 @@ export const VaultView: React.FC = () => {
       });
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsUploadingToCloud(false);
     }
   };
 
@@ -1052,14 +1071,17 @@ export const VaultView: React.FC = () => {
               <div className="space-y-2 pt-2 mt-auto shrink-0">
                 <button
                   type="submit"
+                  disabled={isUploadingToCloud}
                   className={`w-full py-3 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    isUploadingToCloud ? 'opacity-80 cursor-wait' : ''
+                  } ${
                     isLight
                       ? 'bg-gradient-to-r from-[#FF8A3D] via-[#E05318] to-[#C2410C] hover:from-[#E05318] hover:to-[#B83808] border-t border-white/30 border-b-[3px] border-b-[#9A3412] shadow-lg shadow-orange-500/25 active:translate-y-0.5'
                       : 'bg-gradient-to-r from-[#168BFF] via-[#2F80ED] to-[#7B2CBF] hover:from-[#168BFF] hover:to-[#9D4EDD] active:scale-[0.99] shadow-lg shadow-[#168BFF]/30'
                   }`}
                 >
                   <Save className="w-4 h-4 text-white" />
-                  <span>Save to Vault</span>
+                  <span>{isUploadingToCloud ? 'Uploading to Supabase Cloud...' : 'Save to Vault'}</span>
                 </button>
                 <button
                   type="button"

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import { fileURLToPath } from 'url';
 import { syncRecordToSupabase, fetchAllFromSupabase, isSupabaseConfigured } from './supabaseClient.js';
 
@@ -100,8 +101,22 @@ class DatabaseService {
       try {
         const raw = fs.readFileSync(DATA_FILE, 'utf-8');
         this.data = JSON.parse(raw);
+        let credentialsMigrated = false;
+        this.data.users = this.data.users.map((user: any) => {
+          const migratedUser = { ...user };
+          if (migratedUser.pin_code && !migratedUser.pin_code.startsWith('$2')) {
+            migratedUser.pin_code = bcrypt.hashSync(migratedUser.pin_code, 10);
+            credentialsMigrated = true;
+          }
+          if (migratedUser.password_hash && !migratedUser.password_hash.startsWith('$2')) {
+            migratedUser.password_hash = bcrypt.hashSync(migratedUser.password_hash, 10);
+            credentialsMigrated = true;
+          }
+          return migratedUser;
+        });
         this.initialized = true;
         console.log('📦 Database loaded from persistence store.');
+        if (credentialsMigrated) this.save();
         return;
       } catch (err) {
         console.error('Failed to parse persistent data, reinitializing...', err);
@@ -181,6 +196,17 @@ class DatabaseService {
             }
             return copy;
           }) as any;
+          if (table === 'users') {
+            this.data.users = this.data.users.map((user: any) => ({
+              ...user,
+              ...(user.pin_code && !user.pin_code.startsWith('$2')
+                ? { pin_code: bcrypt.hashSync(user.pin_code, 10) }
+                : {}),
+              ...(user.password_hash && !user.password_hash.startsWith('$2')
+                ? { password_hash: bcrypt.hashSync(user.password_hash, 10) }
+                : {}),
+            }));
+          }
         }
       }
 
@@ -193,14 +219,8 @@ class DatabaseService {
   }
 
   public initSupabaseRealtime() {
-    // Initial sync from Supabase
+    // Initial sync from Supabase on startup
     this.hydrateFromSupabase().catch(() => {});
-    // Periodic background sync every 60s to ensure multi-client updates reflect immediately
-    if (typeof setInterval !== 'undefined') {
-      setInterval(() => {
-        this.hydrateFromSupabase().catch(() => {});
-      }, 60000);
-    }
   }
 
   public getTable<K extends keyof DBStore>(tableName: K): DBStore[K] {

@@ -1,4 +1,5 @@
 import express from 'express';
+import bcrypt from 'bcryptjs';
 import db from '../db/database.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
@@ -56,7 +57,7 @@ router.patch('/:id', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res)
 });
 
 // Add New Family Member
-router.post('/:id/members', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
+router.post('/:id/members', requirePermission('FAMILY_MANAGE'), async (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId;
   const { name, email, phone, role, relationship, birth_date, avatar_url } = req.body;
 
@@ -67,8 +68,8 @@ router.post('/:id/members', requirePermission('FAMILY_MANAGE'), (req: AuthReques
     name,
     email: email || '',
     phone: phone || '',
-    password_hash: 'hash',
-    pin_code: '1234',
+    password_hash: await bcrypt.hash('1234', 10),
+    pin_code: await bcrypt.hash('1234', 10),
     avatar_url: avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
     role: role || 'ADULT',
     relationship: relationship || 'Family Member',
@@ -125,7 +126,7 @@ router.put('/:id/members/:userId/permissions', requirePermission('FAMILY_MANAGE'
 });
 
 // Update Member Profile (Avatar photo, name, phone, birth_date, relationship)
-router.patch('/:id/members/:userId', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
+router.patch('/:id/members/:userId', requirePermission('FAMILY_MANAGE'), async (req: AuthRequest, res) => {
   const { userId } = req.params;
   const { name, avatar_url, phone, pin_code, birth_date, relationship, role } = req.body;
 
@@ -134,11 +135,12 @@ router.patch('/:id/members/:userId', requirePermission('FAMILY_MANAGE'), (req: A
     return res.status(404).json({ error: 'Member not found' });
   }
 
+  const hashedPin = pin_code ? await bcrypt.hash(pin_code, 10) : undefined;
   const updated = db.update('users', (u) => u.id === userId, {
     ...(name && { name }),
     ...(avatar_url && { avatar_url }),
     ...(phone && { phone }),
-    ...(pin_code && { pin_code }),
+    ...(hashedPin && { pin_code: hashedPin }),
     ...(birth_date && { birth_date }),
     ...(relationship && { relationship }),
     ...(role && { role }),

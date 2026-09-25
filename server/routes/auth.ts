@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import db from '../db/database.js';
 import { JWT_SECRET, DEFAULT_PERMISSIONS } from '../config.js';
 import { logActivity } from '../services/auditService.js';
@@ -152,31 +153,31 @@ router.post('/switch-member', (req, res) => {
 });
 
 // Login (by Email, Phone, or PIN)
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password, pin } = req.body;
   const identifier = (email || '').trim().toLowerCase();
   const pinInput = (pin || password || '').trim();
 
-  const user = db.findOne('users', (u) => {
-    // If identifier (email, name, or phone) is provided
+  const candidates = db.find('users', (u) => {
     if (identifier) {
       const matchEmail = u.email && u.email.toLowerCase() === identifier;
       const matchName = u.name && u.name.toLowerCase() === identifier;
       const matchPhone = u.phone && u.phone.includes(identifier);
-      if (matchEmail || matchName || matchPhone) {
-        if (pinInput && pinInput !== identifier) {
-          return u.pin_code === pinInput || u.password_hash === pinInput || pinInput === '1234';
-        }
-        return true;
-      }
-      return false;
+      return Boolean(matchEmail || matchName || matchPhone);
     }
-    // If only PIN is provided
-    if (pinInput) {
-      return u.pin_code === pinInput;
-    }
-    return false;
+    return Boolean(pinInput);
   });
+
+  let user: any;
+  for (const candidate of candidates) {
+    if (!pinInput) continue;
+    const pinMatches = candidate.pin_code && await bcrypt.compare(pinInput, candidate.pin_code);
+    const passwordMatches = candidate.password_hash && await bcrypt.compare(pinInput, candidate.password_hash);
+    if (pinMatches || passwordMatches) {
+      user = candidate;
+      break;
+    }
+  }
 
   if (!user) {
     return res.status(401).json({ error: 'Invalid email, name or PIN code. (Demo PIN: 1234)' });
@@ -263,7 +264,7 @@ router.post('/send-registration-otp', async (req, res) => {
 });
 
 // 2. Verify OTP & Complete Family Creation Registration
-router.post('/verify-registration-otp', (req, res) => {
+router.post('/verify-registration-otp', async (req, res) => {
   const { otp, familyName, location, currency, language, headName, headEmail, pinCode, relationship, phone } = req.body;
 
   if (!headEmail?.trim()) {
@@ -307,8 +308,8 @@ router.post('/verify-registration-otp', (req, res) => {
     email: headEmail.trim().toLowerCase(),
     phone: phone || '',
     name: headName.trim(),
-    password_hash: 'hash',
-    pin_code: pinCode || '1234',
+    password_hash: await bcrypt.hash(pinCode || '1234', 10),
+    pin_code: await bcrypt.hash(pinCode || '1234', 10),
     avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
     role: 'FAMILY_HEAD',
     relationship: relationship || 'Family Head / Father',
@@ -374,7 +375,7 @@ router.post('/verify-registration-otp', (req, res) => {
 });
 
 // Register Family & Family Head (Direct/Fallback with optional OTP)
-router.post(['/register-head', '/register-family'], (req, res) => {
+router.post(['/register-head', '/register-family'], async (req, res) => {
   const { familyName, location, currency, language, headName, headEmail, pinCode, relationship, phone } = req.body;
 
   if (!familyName?.trim() || !headName?.trim()) {
@@ -403,8 +404,8 @@ router.post(['/register-head', '/register-family'], (req, res) => {
     email: headEmail || `${headName.toLowerCase().replace(/\s+/g, '')}@family.com`,
     phone: phone || '',
     name: headName.trim(),
-    password_hash: 'hash',
-    pin_code: pinCode || '1234',
+    password_hash: await bcrypt.hash(pinCode || '1234', 10),
+    pin_code: await bcrypt.hash(pinCode || '1234', 10),
     avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
     role: 'FAMILY_HEAD',
     relationship: relationship || 'Family Head / Father',
@@ -467,7 +468,7 @@ router.post(['/register-head', '/register-family'], (req, res) => {
 });
 
 // Join Family by Secret Family Key (For Family Members)
-router.post('/join-family', (req, res) => {
+router.post('/join-family', async (req, res) => {
   const { familyKey, name, email, pinCode, relationship, role, phone, birth_date, avatar_url } = req.body;
 
   if (!familyKey?.trim() || !name?.trim()) {
@@ -499,8 +500,8 @@ router.post('/join-family', (req, res) => {
     email: email?.trim() || `${name.toLowerCase().replace(/\s+/g, '')}@family.com`,
     phone: phone || '',
     name: name.trim(),
-    password_hash: 'hash',
-    pin_code: pinCode || '1234',
+    password_hash: await bcrypt.hash(pinCode || '1234', 10),
+    pin_code: await bcrypt.hash(pinCode || '1234', 10),
     avatar_url: avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
     role: memberRole,
     relationship: memberRel,
@@ -574,7 +575,7 @@ router.post('/regenerate-family-key', (req, res) => {
 });
 
 // Update User Profile (Avatar photo, name, phone, PIN)
-router.patch('/profile', (req, res) => {
+router.patch('/profile', async (req, res) => {
   const activeUserId = req.headers['x-active-user-id'] as string;
   const authHeader = req.headers.authorization;
   let userId = activeUserId;
@@ -598,6 +599,7 @@ router.patch('/profile', (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
+  const hashedPin = pin_code ? await bcrypt.hash(pin_code, 10) : undefined;
   const updated = db.update(
     'users',
     (u) => u.id === userId,
@@ -605,7 +607,7 @@ router.patch('/profile', (req, res) => {
       ...(name && { name }),
       ...(avatar_url && { avatar_url }),
       ...(phone && { phone }),
-      ...(pin_code && { pin_code }),
+      ...(hashedPin && { pin_code: hashedPin }),
       ...(birth_date && { birth_date }),
       ...(relationship && { relationship }),
     }

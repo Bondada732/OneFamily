@@ -20,6 +20,7 @@ import aiRouter from './routes/ai.js';
 import searchRouter from './routes/search.js';
 import smartExpensesRouter from './routes/smartExpenses.js';
 import familyRemindersRouter from './routes/familyReminders.js';
+import uploadRouter from './routes/upload.js';
 
 const app = express();
 
@@ -87,6 +88,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/smart-expenses', smartExpensesRouter);
 app.use('/api/family-reminders', familyRemindersRouter);
+app.use('/api/upload', uploadRouter);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
