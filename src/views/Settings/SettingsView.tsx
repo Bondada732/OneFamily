@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
 import { translations } from '../../i18n/index.js';
 import { apiRequest } from '../../utils/api.js';
-import { ShieldCheck, Smartphone, Lock, Globe2, FileText, Download, UserX, KeyRound, Check, History, Camera, User, Edit3, Upload, Image as ImageIcon, Sun, Moon } from 'lucide-react';
+import { ShieldCheck, Smartphone, Lock, Globe2, FileText, Download, UserX, KeyRound, Check, History, Camera, User, Edit3, Upload, Image as ImageIcon, Sun, Moon, Key, Eye, EyeOff, AlertCircle, CheckCircle2, Shield } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.js';
 
 export const SettingsView: React.FC = () => {
@@ -24,6 +25,20 @@ export const SettingsView: React.FC = () => {
     phone: currentUser?.phone || '',
     pin_code: currentUser?.pin_code || '1234',
   });
+
+  // Change PIN Modal State
+  const [showChangePinModal, setShowChangePinModal] = useState(false);
+  const [pinForm, setPinForm] = useState({
+    currentPin: '',
+    newPin: '',
+    confirmPin: '',
+  });
+  const [showPinCurrent, setShowPinCurrent] = useState(false);
+  const [showPinNew, setShowPinNew] = useState(false);
+  const [showPinConfirm, setShowPinConfirm] = useState(false);
+  const [pinError, setPinError] = useState('');
+  const [pinSuccess, setPinSuccess] = useState('');
+  const [isUpdatingPin, setIsUpdatingPin] = useState(false);
 
   const settingsGalleryRef = useRef<HTMLInputElement>(null);
   const settingsCameraRef = useRef<HTMLInputElement>(null);
@@ -63,6 +78,49 @@ export const SettingsView: React.FC = () => {
       setShowEditProfile(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
+    }
+  };
+
+  const handleChangePin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinError('');
+    setPinSuccess('');
+
+    if (!pinForm.newPin || pinForm.newPin.trim().length < 4) {
+      setPinError('New PIN must be at least 4 digits.');
+      return;
+    }
+
+    if (pinForm.newPin.trim() !== pinForm.confirmPin.trim()) {
+      setPinError('New PIN and Confirm PIN do not match.');
+      return;
+    }
+
+    setIsUpdatingPin(true);
+    try {
+      const res = await apiRequest('/auth/change-pin', {
+        method: 'POST',
+        body: JSON.stringify({
+          currentPin: pinForm.currentPin.trim(),
+          newPin: pinForm.newPin.trim(),
+        }),
+      });
+
+      if (res.success) {
+        setPinSuccess('Your App PIN has been updated successfully!');
+        await refreshUser();
+        setTimeout(() => {
+          setShowChangePinModal(false);
+          setPinForm({ currentPin: '', newPin: '', confirmPin: '' });
+          setPinSuccess('');
+        }, 1500);
+      } else {
+        setPinError(res.error || 'Failed to update PIN.');
+      }
+    } catch (err: any) {
+      setPinError(err.message || 'Failed to update PIN. Please verify your current PIN.');
+    } finally {
+      setIsUpdatingPin(false);
     }
   };
 
@@ -177,24 +235,48 @@ export const SettingsView: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-bold text-white">App Lock & Biometrics</div>
-                <div className="text-[11px] text-slate-400">PIN {currentUser?.pin_code || '1234'} or Face/Touch ID</div>
+                <div className="text-[11px] text-slate-400">PIN security & instant screen lock</div>
               </div>
               <button
                 onClick={lockApp}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md"
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer"
               >
                 Lock Now
               </button>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-700/60">
+            <div className="flex items-center justify-between pt-2.5 border-t border-slate-700/60">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#168BFF]/20 border border-[#168BFF]/30 text-[#16C7F2] flex items-center justify-center shrink-0">
+                  <Key className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white">Change App Login PIN</div>
+                  <div className="text-[11px] text-slate-400">Update your 4-digit personal sign-in PIN</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPinForm({ currentPin: '', newPin: '', confirmPin: '' });
+                  setPinError('');
+                  setPinSuccess('');
+                  setShowChangePinModal(true);
+                }}
+                className="px-3 py-1.5 bg-gradient-to-r from-[#168BFF] to-[#16C7F2] hover:opacity-90 active:scale-95 text-slate-950 text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Change PIN
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between pt-2.5 border-t border-slate-700/60">
               <div>
                 <div className="text-xs font-bold text-white">Privacy Glance Mode</div>
                 <div className="text-[11px] text-slate-400">Mask all financial numbers in UI</div>
               </div>
               <button
                 onClick={togglePrivacyMode}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-colors ${
+                className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-colors cursor-pointer ${
                   isPrivacyMode ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-slate-300'
                 }`}
               >
@@ -491,6 +573,142 @@ export const SettingsView: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Change App PIN Modal */}
+      {showChangePinModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in select-none">
+          <div className="w-full max-w-md bg-[#07132B] border border-[#168BFF]/40 rounded-3xl p-5 sm:p-6 text-slate-100 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-[#168BFF]/20 border border-[#168BFF]/30 text-[#16C7F2] flex items-center justify-center shrink-0">
+                  <KeyRound className="w-5 h-5 text-[#16C7F2]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white tracking-tight">Change App Login PIN</h3>
+                  <p className="text-[11px] text-slate-400">Set a new 4-digit login & lock PIN</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowChangePinModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Error / Success Banners */}
+            {pinError && (
+              <div className="p-3 bg-rose-500/15 border border-rose-500/35 rounded-2xl text-xs text-rose-300 flex items-center gap-2 animate-shake">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span className="leading-snug">{pinError}</span>
+              </div>
+            )}
+            {pinSuccess && (
+              <div className="p-3 bg-emerald-500/15 border border-emerald-500/35 rounded-2xl text-xs text-emerald-300 flex items-center gap-2 animate-fadeIn">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                <span className="leading-snug">{pinSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePin} className="space-y-3.5">
+              {/* Current PIN */}
+              <div>
+                <label className="text-xs text-slate-300 font-semibold flex items-center gap-1 mb-1">
+                  <span>Current PIN</span>
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showPinCurrent ? 'text' : 'password'}
+                    maxLength={10}
+                    placeholder="Enter current PIN"
+                    value={pinForm.currentPin}
+                    onChange={(e) => setPinForm({ ...pinForm, currentPin: e.target.value })}
+                    className="w-full pl-3.5 pr-10 py-2.5 bg-[#020b18] border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPinCurrent(!showPinCurrent)}
+                    className="absolute right-3 text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    {showPinCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* New PIN */}
+              <div>
+                <label className="text-xs text-slate-300 font-semibold flex items-center gap-1 mb-1">
+                  <span>New 4-Digit PIN <span className="text-[#16C7F2]">*</span></span>
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showPinNew ? 'text' : 'password'}
+                    required
+                    maxLength={8}
+                    placeholder="e.g. 1978"
+                    value={pinForm.newPin}
+                    onChange={(e) => setPinForm({ ...pinForm, newPin: e.target.value })}
+                    className="w-full pl-3.5 pr-10 py-2.5 bg-[#020b18] border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPinNew(!showPinNew)}
+                    className="absolute right-3 text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    {showPinNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm New PIN */}
+              <div>
+                <label className="text-xs text-slate-300 font-semibold flex items-center gap-1 mb-1">
+                  <span>Confirm New PIN <span className="text-[#16C7F2]">*</span></span>
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showPinConfirm ? 'text' : 'password'}
+                    required
+                    maxLength={8}
+                    placeholder="Re-enter new PIN"
+                    value={pinForm.confirmPin}
+                    onChange={(e) => setPinForm({ ...pinForm, confirmPin: e.target.value })}
+                    className="w-full pl-3.5 pr-10 py-2.5 bg-[#020b18] border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-[#16C7F2]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPinConfirm(!showPinConfirm)}
+                    className="absolute right-3 text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    {showPinConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2.5 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowChangePinModal(false)}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingPin}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-[#168BFF] to-[#16C7F2] hover:opacity-90 active:scale-95 text-slate-950 font-bold rounded-xl text-xs shadow-lg shadow-[#168BFF]/25 flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isUpdatingPin ? 'Updating...' : 'Save New PIN'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -584,6 +584,77 @@ router.post('/regenerate-family-key', (req, res) => {
   });
 });
 
+// Change / Update App PIN
+router.post('/change-pin', async (req, res) => {
+  const activeUserId = req.headers['x-active-user-id'] as string;
+  const authHeader = req.headers.authorization;
+  let userId = activeUserId;
+  if (!userId && authHeader?.startsWith('Bearer ')) {
+    try {
+      const decoded: any = jwt.verify(authHeader.split(' ')[1], JWT_SECRET);
+      userId = decoded.id;
+    } catch {}
+  }
+  if (!userId) {
+    const defaultUser = db.getTable('users')[0];
+    userId = defaultUser?.id;
+  }
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized: User ID required' });
+  }
+
+  const { currentPin, newPin } = req.body;
+  if (!newPin || typeof newPin !== 'string' || newPin.trim().length < 4) {
+    return res.status(400).json({ error: 'New PIN must be at least 4 digits.' });
+  }
+
+  const user = db.findOne('users', (u) => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  // If currentPin is provided, verify it first
+  if (currentPin && currentPin.trim()) {
+    const cleanCurrent = currentPin.trim();
+    let matches = (user.pin_code && user.pin_code === cleanCurrent) || (user.password_hash && user.password_hash === cleanCurrent);
+    if (!matches && user.pin_code) {
+      try { matches = await bcrypt.compare(cleanCurrent, user.pin_code); } catch {}
+    }
+    if (!matches && user.password_hash) {
+      try { matches = await bcrypt.compare(cleanCurrent, user.password_hash); } catch {}
+    }
+    if (!matches) {
+      return res.status(400).json({ error: 'Current PIN is incorrect.' });
+    }
+  }
+
+  const cleanNewPin = newPin.trim();
+  const hashedPin = await bcrypt.hash(cleanNewPin, 10);
+
+  const updated = db.update(
+    'users',
+    (u) => u.id === userId,
+    {
+      pin_code: hashedPin,
+      password_hash: hashedPin,
+    }
+  );
+
+  logActivity(
+    user.family_id,
+    user.id,
+    user.name,
+    'SECURITY_PIN_CHANGE',
+    `${user.name} updated their app security PIN`
+  );
+
+  res.json({
+    success: true,
+    message: 'App PIN updated successfully',
+    user: updated,
+  });
+});
+
 // Update User Profile (Avatar photo, name, phone, PIN)
 router.patch('/profile', async (req, res) => {
   const activeUserId = req.headers['x-active-user-id'] as string;
@@ -609,7 +680,7 @@ router.patch('/profile', async (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  const hashedPin = pin_code ? await bcrypt.hash(pin_code, 10) : undefined;
+  const hashedPin = pin_code && pin_code.trim().length >= 4 ? await bcrypt.hash(pin_code.trim(), 10) : undefined;
   const updated = db.update(
     'users',
     (u) => u.id === userId,
@@ -617,7 +688,7 @@ router.patch('/profile', async (req, res) => {
       ...(name && { name }),
       ...(avatar_url && { avatar_url }),
       ...(phone && { phone }),
-      ...(hashedPin && { pin_code: hashedPin }),
+      ...(hashedPin && { pin_code: hashedPin, password_hash: hashedPin }),
       ...(birth_date && { birth_date }),
       ...(relationship && { relationship }),
     }
