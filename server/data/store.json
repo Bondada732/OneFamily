@@ -369,8 +369,8 @@
       "email": "rambabub789@gmail.com",
       "phone": "9849011856",
       "name": "Rambabu",
-      "password_hash": "$2a$10$YzJsUkIOghZtjKzj77u.W.VxvauUvjhOeWSFVHlGGwGbDQ0fXrjty",
-      "pin_code": "$2a$10$2Gq8rWYqFA2vic8buf7vAu2.j5qnLdv4pX/Aj1PoKlpMtUdvACFP.",
+      "password_hash": "$2a$10$g5qtl5OjaHmwxLHLy94./OvRxan3bc9AacBWkWpbuSKzk51VG6f5a",
+      "pin_code": "$2a$10$g5qtl5OjaHmwxLHLy94./OvRxan3bc9AacBWkWpbuSKzk51VG6f5a",
       "avatar_url": "https://imofsunuyhaqmjxxkshy.supabase.co/storage/v1/object/public/famora-memories/fam_1789381570680/avatar_usr_head_1789381570680_1790296264237_qk5xi.jpg",
       "role": "FAMILY_HEAD",
       "relationship": "Father / Family Head",
@@ -1773,6 +1773,17 @@
       "is_current": true,
       "is_trusted": true,
       "platform": "Android / Web"
+    },
+    {
+      "id": "dev_1790318801255",
+      "user_id": "usr_head_1789381570680",
+      "device_name": "Primary Mobile Device (Current)",
+      "device_type": "MOBILE",
+      "platform": "Android / Web",
+      "ip_address": "192.168.1.5",
+      "last_active": "2026-09-25T06:46:41.255Z",
+      "is_current": true,
+      "is_trusted": true
     }
   ],
   "audit_logs": [
@@ -10683,6 +10694,16 @@
       "category": "EMERGENCY",
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-25T06:24:50.237Z"
+    },
+    {
+      "id": "aud_1790318820599_jcne6",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "SECURITY_PIN_CHANGE",
+      "category": "Rambabu updated their app security PIN",
+      "details": "",
+      "created_at": "2026-09-25T06:47:00.599Z"
     }
   ],
   "expense_categories": [

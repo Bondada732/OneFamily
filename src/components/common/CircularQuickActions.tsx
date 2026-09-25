@@ -9,6 +9,7 @@ import {
   Wrench,
   ShieldAlert,
   Cake,
+  KeyRound,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.js';
 
@@ -34,6 +35,7 @@ interface CircularQuickActionsProps {
   onMaintenance: () => void;
   onEmergency: () => void;
   onFriends?: () => void;
+  onSecurity?: () => void;
 }
 
 export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
@@ -46,6 +48,7 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   onMaintenance,
   onEmergency,
   onFriends = () => {},
+  onSecurity = () => {},
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -55,6 +58,19 @@ export const CircularQuickActions: React.FC<CircularQuickActionsProps> = ({
   const baseBgEnd = isLight ? 'rgba(240, 90, 40, 0.95)' : 'rgba(13, 21, 45, 0.95)';
 
   const items: QuickActionItem[] = [
+    {
+      id: 'security',
+      name: 'Security & PIN',
+      sub: 'Change PIN',
+      icon: KeyRound,
+      neonColor: '#10B981',
+      pastelBg: '#D1FAE5',
+      glowShadow: isLight
+        ? '0 0 14px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(240, 90, 40, 0.35)'
+        : '0 0 16px rgba(16, 185, 129, 0.65), inset 0 0 14px rgba(16, 185, 129, 0.25)',
+      bgGradient: `linear-gradient(180deg, rgba(16, 185, 129, 0.28) 0%, ${baseBgEnd} 75%)`,
+      onClick: onSecurity,
+    },
     {
       id: 'birthdays',
       name: 'Birthdays',
