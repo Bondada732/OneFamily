@@ -69,16 +69,10 @@ export const getApiBase = (): string => {
       return '/api';
     }
 
-    // If running inside Capacitor Native APK on Android
-    if (
-      window.location.protocol === 'capacitor:' ||
-      (window.location.hostname === 'localhost' && window.location.port === '') ||
-      (window as any).Capacitor?.isNativePlatform?.()
-    ) {
-      return `${DEFAULT_SERVER_URL}/api`;
-    }
+    // In production APK / mobile builds, use DEFAULT_SERVER_URL
+    return `${DEFAULT_SERVER_URL}/api`;
   }
-  return '/api';
+  return `${DEFAULT_SERVER_URL}/api`;
 };
 
 export const getCachedApiResponse = <T = any>(endpoint: string): T | null => {
@@ -147,9 +141,9 @@ export async function apiRequest<T = any>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  // Set a 12s timeout controller
+  // Set a 30s timeout controller for mobile connections and cold start
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   let response: Response;
   try {
@@ -170,7 +164,9 @@ export async function apiRequest<T = any>(
       }
     }
     const err: any = new Error(
-      `Cannot connect to server at ${apiBase}. Loading offline mode.`
+      netErr.name === 'AbortError'
+        ? 'Connection timed out. The server may be starting up, please try again.'
+        : 'Cannot reach server. Please check your internet connection and try again.'
     );
     err.isNetworkError = true;
     throw err;

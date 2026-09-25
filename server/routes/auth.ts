@@ -171,8 +171,18 @@ router.post('/login', async (req, res) => {
   let user: any;
   for (const candidate of candidates) {
     if (!pinInput) continue;
-    const pinMatches = candidate.pin_code && await bcrypt.compare(pinInput, candidate.pin_code);
-    const passwordMatches = candidate.password_hash && await bcrypt.compare(pinInput, candidate.password_hash);
+    let pinMatches = candidate.pin_code && candidate.pin_code === pinInput;
+    if (!pinMatches && candidate.pin_code) {
+      try {
+        pinMatches = await bcrypt.compare(pinInput, candidate.pin_code);
+      } catch {}
+    }
+    let passwordMatches = candidate.password_hash && candidate.password_hash === pinInput;
+    if (!passwordMatches && candidate.password_hash) {
+      try {
+        passwordMatches = await bcrypt.compare(pinInput, candidate.password_hash);
+      } catch {}
+    }
     if (pinMatches || passwordMatches) {
       user = candidate;
       break;

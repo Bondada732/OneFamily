@@ -130,7 +130,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (emailOrPin: string, pin?: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      setIsLoading(true);
       const res = await apiRequest('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email: emailOrPin, pin: pin || emailOrPin }),
@@ -149,8 +148,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Login failed:', err);
       return { success: false, error: err.message || 'Invalid login credentials' };
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -219,7 +216,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phone?: string;
   }): Promise<{ success: boolean; familyKey?: string; error?: string }> => {
     try {
-      setIsLoading(true);
       const res = await apiRequest('/auth/register-head', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -238,8 +234,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Registration failed:', err);
       return { success: false, error: err.message || 'Failed to create family' };
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -253,7 +247,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     phone?: string;
   }): Promise<{ success: boolean; error?: string }> => {
     try {
-      setIsLoading(true);
       const res = await apiRequest('/auth/join-family', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -272,8 +265,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.error('Join family failed:', err);
       return { success: false, error: err.message || 'Failed to join family' };
-    } finally {
-      setIsLoading(false);
     }
   };
 
