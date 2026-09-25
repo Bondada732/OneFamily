@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useSecurity } from '../../context/SecurityContext.js';
 import { translations } from '../../i18n/index.js';
-import { Bell, Search, Eye, EyeOff, Lock, Users, ShieldAlert, ChevronDown, Globe, LogOut, Check, Sun, Moon } from 'lucide-react';
+import { Bell, Search, Eye, EyeOff, Lock, Users, ShieldAlert, ChevronDown, Globe, LogOut, Check, Sun, Moon, Key, Settings as SettingsIcon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.js';
 
 interface HeaderProps {
   onOpenSearch: () => void;
   onOpenNotifications: () => void;
   onOpenEmergency: () => void;
+  onOpenSettings?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotifications, onOpenEmergency }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotifications, onOpenEmergency, onOpenSettings }) => {
   const { currentUser, family, familyMembers, switchActiveMember, activeLanguage, setLanguage, logout } = useAuth();
   const { isPrivacyMode, togglePrivacyMode, lockApp } = useSecurity();
   const { theme, toggleTheme } = useTheme();
@@ -232,6 +233,33 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch, onOpenNotification
                   <span className="text-[11px] font-bold">SOS</span>
                 </button>
               </div>
+
+              {/* Security & Change PIN Settings Shortcut */}
+              {onOpenSettings && (
+                <div className="mb-2.5">
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      onOpenSettings();
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all border shadow-sm ${
+                      isLight
+                        ? 'bg-[#EBE0D2] hover:bg-[#DECFC0] text-[#2A1B14] border-[#DECFC0]'
+                        : 'bg-gradient-to-r from-[#168BFF]/20 to-[#16C7F2]/10 hover:from-[#168BFF]/30 hover:to-[#16C7F2]/20 text-[#F4F8FF] border-[#16C7F2]/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Key className={`w-4 h-4 ${isLight ? 'text-[#B84A1E]' : 'text-[#16C7F2]'}`} />
+                      <span>Security & Change PIN</span>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isLight ? 'bg-[#F7D4BC] text-[#B84A1E]' : 'bg-[#16C7F2]/20 text-[#16C7F2]'
+                    }`}>
+                      Open ➔
+                    </span>
+                  </button>
+                </div>
+              )}
 
               {/* Theme Selector Option */}
               <div className="mb-2.5">

@@ -244,6 +244,7 @@ const MainAppContent: React.FC = () => {
         onOpenSearch={() => setShowSearch(true)}
         onOpenNotifications={() => setShowNotifications(true)}
         onOpenEmergency={() => setActiveTab('family')}
+        onOpenSettings={() => setActiveTab('settings')}
       />
 
       {renderActiveView()}
