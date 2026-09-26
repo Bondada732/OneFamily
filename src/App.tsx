@@ -37,13 +37,20 @@ const MainAppContent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 pt-safe-mobile text-center space-y-4">
-        <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-indigo-600 p-1 flex items-center justify-center animate-bounce shadow-2xl">
-          <span className="text-white font-extrabold text-2xl">1F</span>
+      <div className="min-h-screen bg-[#020919] flex flex-col items-center justify-center p-6 pt-safe-mobile text-center space-y-4 animate-fade-in">
+        <div className="relative">
+          <img
+            src="/kinoraone-logo.png"
+            alt="KinoraOne Logo"
+            className="w-20 h-20 rounded-3xl object-cover ring-2 ring-[#16C7F2]/40 shadow-2xl shadow-cyan-500/30 animate-pulse"
+          />
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-white tracking-tight">ONE FAMILY</h2>
-          <p className="text-xs text-slate-400 mt-1">One Home. One Family. One Future.</p>
+        <div className="space-y-1">
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-2xl font-black tracking-tight text-white">Kinora</span>
+            <span className="text-2xl font-black tracking-tight text-[#16C7F2]">One</span>
+          </div>
+          <p className="text-xs text-slate-400 font-medium">One Home. One Family. One Future.</p>
         </div>
       </div>
     );

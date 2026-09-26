@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">ONE FAMILY</string>
-    <string name="title_activity_main">ONE FAMILY</string>
+    <string name="app_name">KinoraOne</string>
+    <string name="title_activity_main">KinoraOne</string>
     <string name="package_name">com.onefamily.app</string>
     <string name="custom_url_scheme">com.onefamily.app</string>
 </resources>

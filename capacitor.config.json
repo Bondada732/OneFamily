@@ -1,6 +1,6 @@
 {
   "appId": "com.onefamily.app",
-  "appName": "ONE FAMILY",
+  "appName": "KinoraOne",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
