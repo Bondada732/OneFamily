@@ -11,8 +11,8 @@ services:
       - key: PORT
         value: 4000
       - key: SUPABASE_URL
-        sync: false
+        value: https://imofsunuyhaqmjxxkshy.supabase.co
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltb2ZzdW51eWhhcW1qeHhrc2h5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTIzNzc5NywiZXhwIjoyMTA0ODEzNzk3fQ.RKxaMXjAC_qW2bOoQfnH3j4PF96gBUA_0krDM8WBA-I
       - key: JWT_SECRET
-        generateValue: true
+        value: 2c68537128e2d37c18898f4decca39c923210fc2576c9fca6de184b3f95263d9
