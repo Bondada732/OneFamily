@@ -11,6 +11,7 @@ export const SettingsView: React.FC = () => {
   const { currentUser, family, activeLanguage, setLanguage, familyMembers, logout, refreshUser } = useAuth();
   const { lockApp, isPrivacyMode, togglePrivacyMode } = useSecurity();
   const { theme, setTheme } = useTheme();
+  const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
   const [devices, setDevices] = useState<any[]>([]);
