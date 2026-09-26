@@ -1,0 +1,7 @@
+Date,Category,Merchant,Amount,PaymentMethod,PaidBy,Notes,Location
+2026-09-25,Groceries & Kirana,D-Mart Supermarket,2450,UPI,Rambabu,Monthly ration and snacks,Gachibowli
+2026-09-24,Food & Dining / Swiggy,Swiggy Biryani Order,680,UPI,Rambabu,Weekend dinner,Home
+2026-09-23,Utilities & Bills,Electricity Bill (TSSPDCL),1850,CREDIT_CARD,Rambabu,August power bill,Online
+2026-09-22,Transport & Fuel,Indian Oil Petrol Pump,1500,UPI,Rambabu,Full tank petrol,Madhapur
+2026-09-20,Healthcare & Pharmacy,Apollo Pharmacy,420,CASH,Rambabu,Regular vitamins and medicines,Kondapur
+2026-09-18,Shopping & Apparel,Trends Family Wear,3200,CREDIT_CARD,Rambabu,Festival dresses,Inorbit Mall

@@ -10,7 +10,8 @@ import { Expense, BudgetReport, Investment, Liability, Goal } from '../../types/
 import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
-import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3 } from 'lucide-react';
+import { CsvExpenseModal, exportExpensesToCsv, downloadSampleTemplate } from '../../components/common/CsvExpenseModal.js';
+import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3, FileSpreadsheet, Download, Upload } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 const DEFAULT_EXPENSE_CATEGORIES = [
@@ -97,6 +98,7 @@ export const MoneyView: React.FC = () => {
 
   // Modals
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [showCsvModal, setShowCsvModal] = useState(false);
   const [showManageCategories, setShowManageCategories] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showScanReceipt, setShowScanReceipt] = useState(false);
@@ -245,6 +247,19 @@ export const MoneyView: React.FC = () => {
     } catch (err) {
       console.error('Failed to create expense:', err);
     }
+  };
+
+  const handleImportCsvSuccess = async (newExpenses: Expense[]) => {
+    setExpenses((prev) => [...newExpenses, ...prev]);
+    if (family?.id) {
+      try {
+        const budData = await apiRequest(`/budget/${family.id}/budget`);
+        setBudgetReports(budData.categories || []);
+      } catch (err) {
+        console.error('Failed to reload budget after CSV import:', err);
+      }
+    }
+    refreshDashboard();
   };
 
   const handleDeleteExpense = async (expenseId: string) => {
@@ -950,36 +965,76 @@ export const MoneyView: React.FC = () => {
       {/* 3. EXPENSES SUBTAB */}
       {activeSubTab === 'EXPENSES' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          {/* Header & Actions Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className={`text-xs font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 Logged Expenses ({expenses.length})
               </span>
               {canEditFinance && (
-                <button
-                  onClick={() => setShowManageCategories(true)}
-                  className={`text-[11px] font-medium px-2 py-0.5 rounded-lg border transition-all ${
-                    isLight
-                      ? 'text-[#B84A1E] bg-amber-100/60 hover:bg-amber-100 border-amber-300'
-                      : 'text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 border-indigo-500/20'
-                  }`}
-                >
-                  ⚙ Categories
-                </button>
+                <>
+                  <button
+                    onClick={() => setShowAddExpense(true)}
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-xl shadow-sm flex items-center gap-1 transition-all ${
+                      isLight
+                        ? 'bg-[#F05A28] hover:bg-[#E76F3C] text-white shadow-[#F05A28]/20'
+                        : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white'
+                    }`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Expense</span>
+                  </button>
+                  <button
+                    onClick={() => setShowCsvModal(true)}
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-xl border flex items-center gap-1.5 transition-all ${
+                      isLight
+                        ? 'bg-[#FFF8F1] hover:bg-[#F3E3D3] border-[#DEC8B2] text-[#B84A1E]'
+                        : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-amber-400'
+                    }`}
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <span>CSV Import / Export</span>
+                  </button>
+                  <button
+                    onClick={() => setShowManageCategories(true)}
+                    className={`text-[11px] font-medium px-2 py-1 rounded-xl border transition-all ${
+                      isLight
+                        ? 'text-[#634B3F] bg-[#FFF8F1] hover:bg-[#F3E3D3] border-[#DEC8B2]'
+                        : 'text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 border-indigo-500/20'
+                    }`}
+                  >
+                    ⚙ Categories
+                  </button>
+                </>
               )}
             </div>
-            <span className={`text-xs font-bold ${isLight ? 'text-[#C24419]' : 'text-amber-400'}`}>
-              Total: {formatCurrency(expenses.reduce((s, e) => s + (e.amount || 0), 0))}
-            </span>
+            <div className="flex items-center gap-2 justify-between sm:justify-end">
+              {expenses.length > 0 && (
+                <button
+                  onClick={() => exportExpensesToCsv(expenses, family?.name || 'OneFamily')}
+                  className={`text-[11px] font-semibold px-2 py-1 rounded-xl border flex items-center gap-1 transition-all ${
+                    isLight
+                      ? 'bg-[#FFF8F1] hover:bg-[#F3E3D3] text-[#634B3F] border-[#DEC8B2]'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                  }`}
+                  title="Export to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>Download CSV</span>
+                </button>
+              )}
+              <span className={`text-xs font-bold ${isLight ? 'text-[#C24419]' : 'text-amber-400'}`}>
+                Total: {formatCurrency(expenses.reduce((s, e) => s + (e.amount || 0), 0))}
+              </span>
+            </div>
           </div>
 
           {expenses.length === 0 ? (
             <div
-              onClick={() => setShowAddExpense(true)}
-              className={`p-6 rounded-3xl border border-dashed text-center cursor-pointer transition-all space-y-3 kinora-3d-card ${
+              className={`p-6 rounded-3xl border border-dashed text-center transition-all space-y-4 kinora-3d-card ${
                 isLight
-                  ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-[#F05A28]'
-                  : 'bg-slate-800/60 border-slate-700 hover:border-amber-400 hover:bg-slate-800/90'
+                  ? 'bg-[#F3E3D3] border-[#DEC8B2]'
+                  : 'bg-slate-800/60 border-slate-700'
               }`}
             >
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto kinora-3d-icon-box ${
@@ -993,11 +1048,38 @@ export const MoneyView: React.FC = () => {
                   Track grocery bills, fuel, rent, dining, shopping, and everyday family spends.
                 </p>
               </div>
-              <button className={`px-4 py-2 font-bold rounded-xl text-xs shadow-lg text-white ${
-                isLight ? 'bg-[#F05A28] hover:bg-[#E76F3C]' : 'bg-gradient-to-r from-amber-500 to-indigo-600'
-              }`}>
-                + Add Your First Expense
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                <button
+                  onClick={() => setShowAddExpense(true)}
+                  className={`px-4 py-2 font-bold rounded-xl text-xs shadow-lg text-white transition-all ${
+                    isLight ? 'bg-[#F05A28] hover:bg-[#E76F3C]' : 'bg-gradient-to-r from-amber-500 to-indigo-600'
+                  }`}
+                >
+                  + Add Single Expense
+                </button>
+                <button
+                  onClick={() => setShowCsvModal(true)}
+                  className={`px-3.5 py-2 font-bold rounded-xl text-xs border transition-all flex items-center gap-1.5 ${
+                    isLight
+                      ? 'bg-[#FFF8F1] hover:bg-[#EBDCD0] border-[#DEC8B2] text-[#B84A1E]'
+                      : 'bg-slate-700 hover:bg-slate-600 border-slate-600 text-amber-300'
+                  }`}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload from CSV</span>
+                </button>
+                <button
+                  onClick={downloadSampleTemplate}
+                  className={`px-3 py-2 font-semibold rounded-xl text-xs border transition-all flex items-center gap-1.5 ${
+                    isLight
+                      ? 'bg-[#FFF8F1] hover:bg-[#EBDCD0] border-[#DEC8B2] text-[#634B3F]'
+                      : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
+                  }`}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Sample Template</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="space-y-2">
@@ -2527,6 +2609,19 @@ export const MoneyView: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+      {/* CSV Expenses Import / Export Modal */}
+      {showCsvModal && (
+        <CsvExpenseModal
+          isOpen={showCsvModal}
+          onClose={() => setShowCsvModal(false)}
+          isLight={isLight}
+          expenses={expenses}
+          familyId={family?.id || ''}
+          categories={categories}
+          onImportSuccess={handleImportCsvSuccess}
+          apiCall={apiRequest}
+        />
       )}
     </div>
   );

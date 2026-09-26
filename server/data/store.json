@@ -364,6 +364,22 @@
       "created_at": "2026-09-15T00:24:53.236Z"
     },
     {
+      "id": "usr_head_1789381570680",
+      "family_id": "fam_1789381570680",
+      "email": "rambabub789@gmail.com",
+      "phone": "9849011856",
+      "name": "Rambabu",
+      "password_hash": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
+      "pin_code": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
+      "avatar_url": "https://imofsunuyhaqmjxxkshy.supabase.co/storage/v1/object/public/famora-memories/fam_1789381570680/avatar_usr_head_1789381570680_1790296264237_qk5xi.jpg",
+      "role": "FAMILY_HEAD",
+      "relationship": "Father / Family Head",
+      "birth_date": "1978-01-11",
+      "is_approved": true,
+      "status": "ACTIVE",
+      "created_at": "2026-09-14T10:26:10.681Z"
+    },
+    {
       "id": "usr_head_1789230941429",
       "family_id": "fam_1789230941429",
       "email": "king_1789230940542@camelot.com",
@@ -458,22 +474,6 @@
       "is_approved": false,
       "status": null,
       "created_at": "2026-09-12T10:34:30.962Z"
-    },
-    {
-      "id": "usr_head_1789381570680",
-      "family_id": "fam_1789381570680",
-      "email": "rambabub789@gmail.com",
-      "phone": "9849011856",
-      "name": "Rambabu",
-      "password_hash": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
-      "pin_code": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
-      "avatar_url": "https://imofsunuyhaqmjxxkshy.supabase.co/storage/v1/object/public/famora-memories/fam_1789381570680/avatar_usr_head_1789381570680_1790296264237_qk5xi.jpg",
-      "role": "FAMILY_HEAD",
-      "relationship": "Father / Family Head",
-      "birth_date": "1978-01-11",
-      "is_approved": true,
-      "status": "ACTIVE",
-      "created_at": "2026-09-14T10:26:10.681Z"
     },
     {
       "id": "usr_head_1789231763977",
@@ -2547,6 +2547,17 @@
       "module": null,
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-14T15:28:57.679Z"
+    },
+    {
+      "id": "aud_1790399172194_r2hwj",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "SECURITY_PIN_CHANGE",
+      "category": "Rambabu updated their app security PIN",
+      "module": null,
+      "details": "",
+      "created_at": "2026-09-26T05:06:12.194Z"
     },
     {
       "id": "aud_1789399778763_bex1i",

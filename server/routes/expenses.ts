@@ -95,6 +95,82 @@ router.post('/:id/expenses', requirePermission('FINANCE_EDIT'), (req: AuthReques
   res.status(201).json(newExpense);
 });
 
+// Bulk Upload Expenses via CSV / Batch
+router.post('/:id/expenses/bulk-upload', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { items } = req.body;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'No expense items provided for bulk upload' });
+  }
+
+  const existingCategories = getOrCreateExpenseCategories(familyId);
+  const inserted: any[] = [];
+  let totalAmount = 0;
+
+  items.forEach((item: any, index: number) => {
+    const amount = Number(item.amount);
+    if (isNaN(amount) || amount <= 0) return;
+
+    // Resolve or match category
+    let matchedCat = existingCategories.find(c => 
+      c.id === item.category_id || 
+      c.name.toLowerCase() === (item.category_name || '').toLowerCase()
+    );
+    if (!matchedCat && item.category_name) {
+      matchedCat = existingCategories.find(c => 
+        c.name.toLowerCase().includes(item.category_name.toLowerCase()) ||
+        item.category_name.toLowerCase().includes(c.name.toLowerCase())
+      );
+    }
+
+    const expDate = item.date && !isNaN(new Date(item.date).getTime()) 
+      ? new Date(item.date).toISOString().split('T')[0] 
+      : new Date().toISOString().split('T')[0];
+
+    const newExpense = {
+      id: `exp_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 6)}`,
+      family_id: familyId,
+      user_id: req.user!.id,
+      paid_by_name: item.paid_by_name || req.user!.name.split(' ')[0],
+      category_id: matchedCat?.id || item.category_id || 'cat_misc',
+      category_name: matchedCat?.name || item.category_name || 'Miscellaneous',
+      amount: Math.round(amount * 100) / 100,
+      currency: 'INR',
+      date: expDate,
+      payment_method: item.payment_method || 'UPI',
+      merchant: (item.merchant || item.description || 'Imported Expense').trim(),
+      notes: (item.notes || '').trim(),
+      location: (item.location || '').trim(),
+      receipt_url: item.receipt_url || '',
+      split_type: item.split_type || 'EQUAL',
+      created_at: new Date().toISOString(),
+    };
+
+    db.insert('expenses', newExpense);
+    inserted.push(newExpense);
+    totalAmount += newExpense.amount;
+  });
+
+  if (inserted.length > 0) {
+    logActivity(
+      familyId, 
+      req.user!.id, 
+      req.user!.name, 
+      'Bulk Imported Expenses', 
+      'FINANCE', 
+      `Imported ${inserted.length} expense(s) totaling ₹${totalAmount.toLocaleString('en-IN')} via CSV`
+    );
+  }
+
+  res.status(201).json({
+    success: true,
+    count: inserted.length,
+    totalAmount,
+    expenses: inserted
+  });
+});
+
 // Scan Receipt (OCR Intelligence Simulation)
 router.post('/:id/expenses/scan-receipt', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
   const { fileName } = req.body;
