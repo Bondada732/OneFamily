@@ -10786,6 +10786,56 @@
       "module": null,
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-22T13:36:31.944Z"
+    },
+    {
+      "id": "aud_1790406573168_xc25f",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Bulk Uploaded Expenses",
+      "category": "FINANCE",
+      "details": "Uploaded 2 expense(s) totaling ₹152 via CSV",
+      "created_at": "2026-09-26T07:09:33.168Z"
+    },
+    {
+      "id": "aud_1790406624522_nh5u5",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Deleted Expense",
+      "category": "FINANCE",
+      "details": "Deleted expense record exp_1790406572989_0_b83i",
+      "created_at": "2026-09-26T07:10:24.522Z"
+    },
+    {
+      "id": "aud_1790406631246_mdvbq",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Deleted Expense",
+      "category": "FINANCE",
+      "details": "Deleted expense record exp_1790406573013_1_zlt1",
+      "created_at": "2026-09-26T07:10:31.246Z"
+    },
+    {
+      "id": "aud_1790406748686_2n20d",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-26T07:12:28.686Z"
+    },
+    {
+      "id": "aud_1790406748745_eyldg",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-26T07:12:28.745Z"
     }
   ],
   "expense_categories": [

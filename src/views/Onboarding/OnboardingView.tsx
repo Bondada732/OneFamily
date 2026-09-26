@@ -316,10 +316,10 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
         <Settings className="w-3.5 h-3.5" />
       </button>
 
-      <div className="relative z-10 w-full max-w-md mx-auto flex flex-col min-h-screen">
+      <div className="relative z-10 w-full max-w-md mx-auto flex flex-col min-h-screen justify-between">
         {/* NON-SIGN_IN HEADER (For Create Family / Join with Key) */}
         {mode !== 'SIGN_IN' && (
-          <header className="pt-safe-mobile px-5 pt-3 pb-2 flex items-center gap-2.5">
+          <header className="pt-safe-mobile px-5 pt-3 pb-2 flex items-center gap-2.5 shrink-0">
             <img
               src="/kinoraone-logo.png"
               alt="KinoraOne Logo"
@@ -339,71 +339,73 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
 
         {/* 1. HERO IMAGE SECTION (Full Edge-to-Edge with Integrated KinoraOne Logo & Family Art) */}
         {mode === 'SIGN_IN' && (
-          <div className="relative w-full shrink-0">
+          <div className="relative w-full shrink-0 overflow-hidden">
             <img
               src="/assets/images/login-family-hero.png"
               alt="KinoraOne - One Home. One Family. One Future."
-              className="w-full h-auto block object-contain"
+              className="w-full h-auto max-h-[38vh] block object-contain object-top"
             />
+            {/* Subtle bottom gradient fade to seamlessly merge with the card */}
+            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#020919] via-[#020919]/60 to-transparent pointer-events-none" />
           </div>
         )}
 
         {/* 2. MAIN INTERACTIVE CONTAINER */}
-        <main className={`w-full ${mode === 'SIGN_IN' ? '-mt-4 px-4 pb-8' : 'px-4 pb-8 mt-2'}`}>
+        <main className={`w-full flex-1 flex flex-col justify-center ${mode === 'SIGN_IN' ? '-mt-6 px-4 pb-4' : 'px-4 pb-8 mt-2'}`}>
           {/* ================= MODE: SIGN_IN ================= */}
           {mode === 'SIGN_IN' && (
-            <div className="relative bg-[#06152F] border border-[#168BFF]/25 rounded-[32px] p-5 sm:p-6 shadow-2xl shadow-cyan-950/50 space-y-4 animate-fade-in">
+            <div className="relative bg-[#06152F]/95 backdrop-blur-xl border border-[#168BFF]/30 rounded-[32px] sm:rounded-[36px] p-6 sm:p-7 shadow-2xl shadow-cyan-950/60 space-y-4 sm:space-y-5 animate-fade-in">
               {/* Heading */}
               <div className="text-left space-y-1">
-                <h1 className="text-2xl font-extrabold text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   Welcome{' '}
                   <span className="text-[#16C7F2]">
                     Back
                   </span>
                 </h1>
-                <p className="text-xs text-slate-300 font-normal">
+                <p className="text-xs sm:text-sm text-slate-300 font-normal">
                   Sign in to continue your family's financial journey.
                 </p>
               </div>
 
               {/* Error Message */}
               {signInError && (
-                <div className="p-3 bg-rose-500/15 border border-rose-500/35 rounded-2xl text-xs text-rose-300 flex items-center gap-2 animate-shake">
+                <div className="p-3.5 bg-rose-500/15 border border-rose-500/35 rounded-2xl text-xs text-rose-300 flex items-center gap-2.5 animate-shake">
                   <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-                  <span className="leading-snug">{signInError}</span>
+                  <span className="leading-snug font-medium">{signInError}</span>
                 </div>
               )}
 
               {/* Form */}
-              <form onSubmit={handleSignIn} className="space-y-3.5">
+              <form onSubmit={handleSignIn} className="space-y-3.5 sm:space-y-4">
                 {/* Email / Member Name Input */}
                 <div className="relative flex items-center">
-                  <Mail className="w-4 h-4 text-[#16C7F2] absolute left-3.5 pointer-events-none" />
+                  <Mail className="w-4 h-4 text-[#16C7F2] absolute left-4 pointer-events-none" />
                   <input
                     type="text"
                     required
                     placeholder="Email Address or Member Name"
                     value={signInEmail}
                     onChange={(e) => setSignInEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3.5 bg-[#020b18] border border-[#168BFF]/40 rounded-2xl text-xs text-white placeholder-slate-400 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner"
+                    className="w-full pl-11 pr-4 py-3.5 sm:py-4 bg-[#020b18] border border-[#168BFF]/40 rounded-2xl text-xs sm:text-sm text-white placeholder-slate-400 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner"
                   />
                 </div>
 
                 {/* Password / App PIN Input */}
                 <div className="relative flex items-center">
-                  <Lock className="w-4 h-4 text-[#16C7F2] absolute left-3.5 pointer-events-none" />
+                  <Lock className="w-4 h-4 text-[#16C7F2] absolute left-4 pointer-events-none" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="Password"
                     value={signInPin}
                     onChange={(e) => setSignInPin(e.target.value)}
-                    className="w-full pl-10 pr-10 py-3.5 bg-[#020b18] border border-[#168BFF]/40 rounded-2xl text-xs text-white placeholder-slate-400 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner"
+                    className="w-full pl-11 pr-11 py-3.5 sm:py-4 bg-[#020b18] border border-[#168BFF]/40 rounded-2xl text-xs sm:text-sm text-white placeholder-slate-400 focus:border-[#16C7F2] focus:ring-1 focus:ring-[#16C7F2]/40 outline-none transition-all shadow-inner"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 text-slate-400 hover:text-white transition-colors"
+                    className="absolute right-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
                     aria-label="Toggle password visibility"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-cyan-300/80" />}
@@ -414,7 +416,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full mt-1.5 py-3.5 bg-gradient-to-r from-[#00A3FF] via-[#00C2FF] to-[#00E5FF] hover:opacity-90 text-[#021327] font-black rounded-2xl shadow-xl shadow-cyan-500/25 text-sm transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full mt-2 py-3.5 sm:py-4 bg-gradient-to-r from-[#00A3FF] via-[#00C2FF] to-[#00E5FF] hover:opacity-90 text-[#021327] font-black rounded-2xl shadow-xl shadow-cyan-500/25 text-sm sm:text-base transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                   <span>{isSubmitting ? 'Signing In...' : 'Sign In'}</span>
@@ -433,7 +435,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                 <button
                   type="button"
                   onClick={() => { setMode('JOIN_FAMILY'); setJoinError(''); }}
-                  className="text-xs font-bold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95"
+                  className="text-xs sm:text-sm font-bold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer"
                 >
                   <KeyRound className="w-4 h-4 text-cyan-400" />
                   <span>Join with Key</span>
@@ -444,17 +446,17 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
                 <button
                   type="button"
                   onClick={() => { setMode('REGISTER_HEAD'); setHeadError(''); }}
-                  className="text-xs font-bold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95"
+                  className="text-xs sm:text-sm font-bold text-cyan-300 hover:text-cyan-200 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer"
                 >
                   <Users className="w-4 h-4 text-cyan-400" />
                   <span>Create Family</span>
                 </button>
               </div>
 
-              {/* Security Trust Message in Natural Flow (28-36px below buttons) */}
-              <div className="pt-4 border-t border-slate-800/80 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
-                <Shield className="w-3.5 h-3.5 text-cyan-400/80" />
-                <span>Your data is safe with us</span>
+              {/* Security Trust Message */}
+              <div className="pt-3.5 border-t border-slate-800/80 flex items-center justify-center gap-2 text-[11px] sm:text-xs text-slate-400">
+                <Shield className="w-3.5 h-3.5 text-[#16C7F2]" />
+                <span>Bank-Grade 256-Bit Encrypted Vault</span>
               </div>
             </div>
           )}
@@ -825,6 +827,13 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
             </div>
           )}
         </main>
+
+        {/* Sleek bottom footer that anchors the screen gracefully */}
+        <footer className="w-full pb-6 pt-2 text-center select-none shrink-0">
+          <p className="text-[11px] text-slate-400 font-medium tracking-wide">
+            KinoraOne • One Home. One Family. One Future.
+          </p>
+        </footer>
       </div>
 
       {/* Server Settings Modal */}
