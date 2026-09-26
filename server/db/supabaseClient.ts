@@ -10,8 +10,8 @@ const __dirname = path.dirname(__filename);
 // Ensure .env is loaded
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://imofsunuyhaqmjxxkshy.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imltb2ZzdW51eWhhcW1qeHhrc2h5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTIzNzc5NywiZXhwIjoyMTA0ODEzNzk3fQ.RKxaMXjAC_qW2bOoQfnH3j4PF96gBUA_0krDM8WBA-I';
 
 let supabase: SupabaseClient | null = null;
 

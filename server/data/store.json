@@ -364,22 +364,6 @@
       "created_at": "2026-09-15T00:24:53.236Z"
     },
     {
-      "id": "usr_head_1789381570680",
-      "family_id": "fam_1789381570680",
-      "email": "rambabub789@gmail.com",
-      "phone": "9849011856",
-      "name": "Rambabu",
-      "password_hash": "$2a$10$g5qtl5OjaHmwxLHLy94./OvRxan3bc9AacBWkWpbuSKzk51VG6f5a",
-      "pin_code": "$2a$10$g5qtl5OjaHmwxLHLy94./OvRxan3bc9AacBWkWpbuSKzk51VG6f5a",
-      "avatar_url": "https://imofsunuyhaqmjxxkshy.supabase.co/storage/v1/object/public/famora-memories/fam_1789381570680/avatar_usr_head_1789381570680_1790296264237_qk5xi.jpg",
-      "role": "FAMILY_HEAD",
-      "relationship": "Father / Family Head",
-      "birth_date": "1978-01-11",
-      "is_approved": true,
-      "status": "ACTIVE",
-      "created_at": "2026-09-14T10:26:10.681Z"
-    },
-    {
       "id": "usr_head_1789230941429",
       "family_id": "fam_1789230941429",
       "email": "king_1789230940542@camelot.com",
@@ -474,6 +458,22 @@
       "is_approved": false,
       "status": null,
       "created_at": "2026-09-12T10:34:30.962Z"
+    },
+    {
+      "id": "usr_head_1789381570680",
+      "family_id": "fam_1789381570680",
+      "email": "rambabub789@gmail.com",
+      "phone": "9849011856",
+      "name": "Rambabu",
+      "password_hash": "$2a$10$g5qtl5OjaHmwxLHLy94./OvRxan3bc9AacBWkWpbuSKzk51VG6f5a",
+      "pin_code": "$2a$10$g5qtl5OjaHmwxLHLy94./OvRxan3bc9AacBWkWpbuSKzk51VG6f5a",
+      "avatar_url": "https://imofsunuyhaqmjxxkshy.supabase.co/storage/v1/object/public/famora-memories/fam_1789381570680/avatar_usr_head_1789381570680_1790296264237_qk5xi.jpg",
+      "role": "FAMILY_HEAD",
+      "relationship": "Father / Family Head",
+      "birth_date": "1978-01-11",
+      "is_approved": true,
+      "status": "ACTIVE",
+      "created_at": "2026-09-14T10:26:10.681Z"
     },
     {
       "id": "usr_head_1789231763977",
@@ -1779,11 +1779,13 @@
       "user_id": "usr_head_1789381570680",
       "device_name": "Primary Mobile Device (Current)",
       "device_type": "MOBILE",
-      "platform": "Android / Web",
+      "browser": null,
+      "os": null,
       "ip_address": "192.168.1.5",
       "last_active": "2026-09-25T06:46:41.255Z",
       "is_current": true,
-      "is_trusted": true
+      "is_trusted": true,
+      "platform": "Android / Web"
     }
   ],
   "audit_logs": [
@@ -1808,6 +1810,28 @@
       "module": null,
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-12T07:31:07.340Z"
+    },
+    {
+      "id": "aud_1790317490237_23uwc",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "module": null,
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-25T06:24:50.237Z"
+    },
+    {
+      "id": "aud_1790317490139_whdou",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "module": null,
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-25T06:24:50.139Z"
     },
     {
       "id": "aud_1789200823489_voa09",
@@ -2074,6 +2098,17 @@
       "created_at": "2026-09-12T06:16:42.934Z"
     },
     {
+      "id": "aud_1790318820599_jcne6",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "SECURITY_PIN_CHANGE",
+      "category": "Rambabu updated their app security PIN",
+      "module": null,
+      "details": "",
+      "created_at": "2026-09-25T06:47:00.599Z"
+    },
+    {
       "id": "aud_1789193849998_eo2hl",
       "family_id": "fam_1789193802598",
       "user_id": "usr_head_1789193802598",
@@ -2083,6 +2118,28 @@
       "module": null,
       "details": "Switched active session to Rambabu (FAMILY_HEAD)",
       "created_at": "2026-09-12T06:17:29.998Z"
+    },
+    {
+      "id": "aud_1790348051939_701tm",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Recorded Expense",
+      "category": "FINANCE",
+      "module": null,
+      "details": "Added ₹5000 for Travel (Travel)",
+      "created_at": "2026-09-25T14:54:11.939Z"
+    },
+    {
+      "id": "aud_1790348142892_5m576",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "module": null,
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-25T14:55:42.892Z"
     },
     {
       "id": "aud_1790265202323_hs1z9",
@@ -2127,6 +2184,17 @@
       "module": null,
       "details": "Switched active session to Rambabu (FAMILY_HEAD)",
       "created_at": "2026-09-12T16:17:14.290Z"
+    },
+    {
+      "id": "aud_1790355067121_chzkc",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "module": null,
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-25T16:51:07.121Z"
     },
     {
       "id": "aud_1788973206190_jl4t0",
@@ -2294,6 +2362,17 @@
       "created_at": "2026-09-15T18:20:12.878Z"
     },
     {
+      "id": "aud_1790355092837_g5iwz",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "module": null,
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-25T16:51:32.837Z"
+    },
+    {
       "id": "aud_1789664053552_mdini",
       "family_id": "fam_1789381570680",
       "user_id": "usr_head_1789381570680",
@@ -2382,6 +2461,17 @@
       "created_at": "2026-09-20T06:01:42.033Z"
     },
     {
+      "id": "aud_1790355128765_vqny0",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "module": null,
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-09-25T16:52:08.765Z"
+    },
+    {
       "id": "aud_1788973332897_ojjjr",
       "family_id": "fam_sharma_01",
       "user_id": "usr_raj",
@@ -2391,6 +2481,17 @@
       "module": null,
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-09T17:02:12.897Z"
+    },
+    {
+      "id": "aud_1790393587470_im8yc",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Recorded Expense",
+      "category": "FINANCE",
+      "module": null,
+      "details": "Added ₹132 for Milk (Milk)",
+      "created_at": "2026-09-26T03:33:07.470Z"
     },
     {
       "id": "aud_1789326981230_mj5f4",
@@ -10674,36 +10775,6 @@
       "module": null,
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-09-22T13:36:31.944Z"
-    },
-    {
-      "id": "aud_1790317490139_whdou",
-      "family_id": "fam_1789381570680",
-      "user_id": "usr_head_1789381570680",
-      "user_name": "Rambabu",
-      "action": "Accessed Emergency Vault",
-      "category": "EMERGENCY",
-      "details": "Viewed family emergency profiles and contacts",
-      "created_at": "2026-09-25T06:24:50.139Z"
-    },
-    {
-      "id": "aud_1790317490237_23uwc",
-      "family_id": "fam_1789381570680",
-      "user_id": "usr_head_1789381570680",
-      "user_name": "Rambabu",
-      "action": "Accessed Emergency Vault",
-      "category": "EMERGENCY",
-      "details": "Viewed family emergency profiles and contacts",
-      "created_at": "2026-09-25T06:24:50.237Z"
-    },
-    {
-      "id": "aud_1790318820599_jcne6",
-      "family_id": "fam_1789381570680",
-      "user_id": "usr_head_1789381570680",
-      "user_name": "Rambabu",
-      "action": "SECURITY_PIN_CHANGE",
-      "category": "Rambabu updated their app security PIN",
-      "details": "",
-      "created_at": "2026-09-25T06:47:00.599Z"
     }
   ],
   "expense_categories": [
@@ -11734,6 +11805,24 @@
   ],
   "expenses": [
     {
+      "id": "exp_1790348051932",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "paid_by_name": "Rambabu",
+      "category_id": "cat_travel",
+      "category_name": "Travel",
+      "amount": 5000,
+      "currency": "INR",
+      "date": "2026-09-25",
+      "payment_method": "UPI",
+      "merchant": "Travel",
+      "notes": "Father tickets",
+      "location": "",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-25T14:54:11.932Z"
+    },
+    {
       "id": "exp_1789320060793",
       "family_id": "fam_1789193802598",
       "user_id": "usr_head_1789193802598",
@@ -11894,6 +11983,24 @@
       "receipt_url": "",
       "split_type": "EQUAL",
       "created_at": "2026-09-11T00:41:05.413Z"
+    },
+    {
+      "id": "exp_1790393587466",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "paid_by_name": "Rambabu",
+      "category_id": "cat_milk",
+      "category_name": "Milk",
+      "amount": 132,
+      "currency": "INR",
+      "date": "2026-09-26",
+      "payment_method": "UPI",
+      "merchant": "Milk",
+      "notes": "",
+      "location": "",
+      "receipt_url": "",
+      "split_type": "EQUAL",
+      "created_at": "2026-09-26T03:33:07.466Z"
     },
     {
       "id": "exp_1789198145397",

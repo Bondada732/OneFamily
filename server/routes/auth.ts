@@ -5,6 +5,7 @@ import db from '../db/database.js';
 import { JWT_SECRET, DEFAULT_PERMISSIONS } from '../config.js';
 import { logActivity } from '../services/auditService.js';
 import { sendEmailOtp, verifyEmailOtp } from '../services/emailService.js';
+import { getSupabaseClient, syncRecordToSupabase } from '../db/supabaseClient.js';
 
 const router = express.Router();
 
@@ -157,6 +158,30 @@ router.post('/login', async (req, res) => {
   const { email, password, pin } = req.body;
   const identifier = (email || '').trim().toLowerCase();
   const pinInput = (pin || password || '').trim();
+
+  // If Supabase is available, sync latest user record in real-time
+  const supabase = getSupabaseClient();
+  if (supabase && identifier) {
+    try {
+      const { data: remoteUsers } = await supabase
+        .from('users')
+        .select('*')
+        .or(`email.ilike.${identifier},phone.ilike.%${identifier}%,name.ilike.${identifier}`);
+
+      if (remoteUsers && remoteUsers.length > 0) {
+        for (const rUser of remoteUsers) {
+          const existing = db.findOne('users', (u) => u.id === rUser.id);
+          if (existing) {
+            db.update('users', (u) => u.id === rUser.id, rUser);
+          } else {
+            db.insert('users', rUser);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase real-time login sync notice:', err);
+    }
+  }
 
   const candidates = db.find('users', (u) => {
     if (identifier) {
@@ -639,6 +664,14 @@ router.post('/change-pin', async (req, res) => {
       password_hash: hashedPin,
     }
   );
+
+  if (updated) {
+    try {
+      await syncRecordToSupabase('users', updated, 'update');
+    } catch (err) {
+      console.warn('Direct Supabase update notice:', err);
+    }
+  }
 
   logActivity(
     user.family_id,
