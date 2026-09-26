@@ -95,13 +95,17 @@ router.post('/:id/expenses', requirePermission('FINANCE_EDIT'), (req: AuthReques
   res.status(201).json(newExpense);
 });
 
-// Bulk Upload Expenses via CSV / Batch
-router.post('/:id/expenses/bulk-upload', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
-  const familyId = req.params.id || req.familyId!;
+// Bulk Upload Handler
+const handleBulkUploadExpenses = (req: AuthRequest, res: express.Response) => {
+  const familyId = req.params.id || req.familyId || req.body.family_id;
   const { items } = req.body;
 
+  if (!familyId) {
+    return res.status(400).json({ error: 'Family ID is required' });
+  }
+
   if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'No expense items provided for bulk upload' });
+    return res.status(400).json({ error: 'No expense items provided for upload' });
   }
 
   const existingCategories = getOrCreateExpenseCategories(familyId);
@@ -139,7 +143,7 @@ router.post('/:id/expenses/bulk-upload', requirePermission('FINANCE_EDIT'), (req
       currency: 'INR',
       date: expDate,
       payment_method: item.payment_method || 'UPI',
-      merchant: (item.merchant || item.description || 'Imported Expense').trim(),
+      merchant: (item.merchant || item.description || 'Uploaded Expense').trim(),
       notes: (item.notes || '').trim(),
       location: (item.location || '').trim(),
       receipt_url: item.receipt_url || '',
@@ -157,9 +161,9 @@ router.post('/:id/expenses/bulk-upload', requirePermission('FINANCE_EDIT'), (req
       familyId, 
       req.user!.id, 
       req.user!.name, 
-      'Bulk Imported Expenses', 
+      'Bulk Uploaded Expenses', 
       'FINANCE', 
-      `Imported ${inserted.length} expense(s) totaling ₹${totalAmount.toLocaleString('en-IN')} via CSV`
+      `Uploaded ${inserted.length} expense(s) totaling ₹${totalAmount.toLocaleString('en-IN')} via CSV`
     );
   }
 
@@ -169,7 +173,12 @@ router.post('/:id/expenses/bulk-upload', requirePermission('FINANCE_EDIT'), (req
     totalAmount,
     expenses: inserted
   });
-});
+};
+
+// Register Bulk Upload Endpoints (supporting all route patterns)
+router.post('/:id/expenses/bulk-upload', requirePermission('FINANCE_EDIT'), handleBulkUploadExpenses);
+router.post('/:id/bulk-upload', requirePermission('FINANCE_EDIT'), handleBulkUploadExpenses);
+router.post('/bulk-upload', requirePermission('FINANCE_EDIT'), handleBulkUploadExpenses);
 
 // Scan Receipt (OCR Intelligence Simulation)
 router.post('/:id/expenses/scan-receipt', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {

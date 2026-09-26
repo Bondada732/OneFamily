@@ -364,22 +364,6 @@
       "created_at": "2026-09-15T00:24:53.236Z"
     },
     {
-      "id": "usr_head_1789381570680",
-      "family_id": "fam_1789381570680",
-      "email": "rambabub789@gmail.com",
-      "phone": "9849011856",
-      "name": "Rambabu",
-      "password_hash": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
-      "pin_code": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
-      "avatar_url": "https://imofsunuyhaqmjxxkshy.supabase.co/storage/v1/object/public/famora-memories/fam_1789381570680/avatar_usr_head_1789381570680_1790296264237_qk5xi.jpg",
-      "role": "FAMILY_HEAD",
-      "relationship": "Father / Family Head",
-      "birth_date": "1978-01-11",
-      "is_approved": true,
-      "status": "ACTIVE",
-      "created_at": "2026-09-14T10:26:10.681Z"
-    },
-    {
       "id": "usr_head_1789230941429",
       "family_id": "fam_1789230941429",
       "email": "king_1789230940542@camelot.com",
@@ -490,6 +474,22 @@
       "is_approved": false,
       "status": null,
       "created_at": "2026-09-12T16:49:23.978Z"
+    },
+    {
+      "id": "usr_head_1789381570680",
+      "family_id": "fam_1789381570680",
+      "email": "rambabub789@gmail.com",
+      "phone": "9849011856",
+      "name": "Rambabu",
+      "password_hash": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
+      "pin_code": "$2a$10$8DkoI/ud2vT/OMjwMZ6kvOXewcs8ns0vdguGclYkmP.3JYmI/Z.ji",
+      "avatar_url": "https://imofsunuyhaqmjxxkshy.supabase.co/storage/v1/object/public/famora-memories/fam_1789381570680/avatar_usr_head_1789381570680_1790296264237_qk5xi.jpg",
+      "role": "FAMILY_HEAD",
+      "relationship": "Father / Family Head",
+      "birth_date": "1978-01-11",
+      "is_approved": true,
+      "status": "ACTIVE",
+      "created_at": "2026-09-14T10:26:10.681Z"
     },
     {
       "id": "usr_m_1789388703735",

@@ -993,7 +993,7 @@ export const MoneyView: React.FC = () => {
                     }`}
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5" />
-                    <span>CSV Import / Export</span>
+                    <span>CSV Upload / Download</span>
                   </button>
                   <button
                     onClick={() => setShowManageCategories(true)}

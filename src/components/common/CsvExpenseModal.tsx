@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X, RefreshCw, Info, HelpCircle } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X, RefreshCw, FileText, Check, Trash2 } from 'lucide-react';
 import { Expense } from '../../types/index.js';
-import { formatCurrency, formatDate } from '../../utils/formatters.js';
+import { formatCurrency } from '../../utils/formatters.js';
 
 interface CsvExpenseModalProps {
   isOpen: boolean;
@@ -48,7 +49,7 @@ export const downloadCsvFile = (content: string, filename: string) => {
 };
 
 export const exportExpensesToCsv = (expenses: Expense[], familyName: string = 'Family') => {
-  const headers = ['Date', 'Category', 'Merchant / Description', 'Amount (INR)', 'Payment Method', 'Paid By', 'Notes', 'Location'];
+  const headers = ['Date', 'Category', 'Merchant', 'Amount', 'PaymentMethod', 'PaidBy', 'Notes', 'Location'];
   const escapeCsv = (val: any) => {
     if (val === null || val === undefined) return '""';
     const str = String(val).replace(/"/g, '""');
@@ -81,11 +82,10 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
   isLight,
   expenses,
   familyId,
-  categories,
   onImportSuccess,
   apiCall,
 }) => {
-  const [activeTab, setActiveTab] = useState<'IMPORT' | 'EXPORT'>('IMPORT');
+  const [activeTab, setActiveTab] = useState<'UPLOAD' | 'DOWNLOAD'>('UPLOAD');
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<ParsedExpenseRow[]>([]);
   const [isParsing, setIsParsing] = useState(false);
@@ -97,7 +97,6 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
   if (!isOpen) return null;
 
   const parseCsvText = (text: string): ParsedExpenseRow[] => {
-    // Regex for parsing CSV lines taking into account quotes with commas
     const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
     if (lines.length <= 1) return [];
 
@@ -127,7 +126,6 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
 
     const rawHeaders = parseLine(lines[0]).map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
     
-    // Find column index mappings
     const getIndex = (aliases: string[]) => {
       return rawHeaders.findIndex((h) => aliases.some((a) => h.includes(a)));
     };
@@ -164,7 +162,6 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
       const cols = parseLine(line);
 
       let rawDate = dateIdx >= 0 && cols[dateIdx] ? cols[dateIdx] : new Date().toISOString().split('T')[0];
-      // Normalize date if in DD/MM/YYYY or DD-MM-YYYY
       if (rawDate.includes('/') || (rawDate.includes('-') && rawDate.split('-')[0].length <= 2)) {
         const parts = rawDate.split(/[-/]/);
         if (parts.length === 3) {
@@ -190,8 +187,8 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
 
       const isValid = amount > 0 && !isNaN(amount) && Boolean(rawMerchant.trim());
       let error = '';
-      if (amount <= 0) error = 'Invalid or zero amount';
-      else if (!rawMerchant.trim()) error = 'Missing merchant / description';
+      if (amount <= 0) error = 'Invalid amount';
+      else if (!rawMerchant.trim()) error = 'Missing description';
 
       parsed.push({
         date: rawDate,
@@ -224,26 +221,26 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
         const text = event.target?.result as string;
         const rows = parseCsvText(text);
         if (rows.length === 0) {
-          setUploadError('No valid data rows found in the CSV file. Please check the template.');
+          setUploadError('No data rows found in this file. Please ensure it follows the template.');
         }
         setParsedRows(rows);
       } catch (err: any) {
-        setUploadError(`Failed to parse CSV file: ${err.message || 'Malformed structure'}`);
+        setUploadError(`Failed to read CSV file: ${err.message || 'Check file format'}`);
       } finally {
         setIsParsing(false);
       }
     };
     reader.onerror = () => {
-      setUploadError('Error reading file. Please try again.');
+      setUploadError('Error opening file. Please try again.');
       setIsParsing(false);
     };
     reader.readAsText(selected);
   };
 
-  const handleImportSubmit = async () => {
+  const handleUploadSubmit = async () => {
     const validItems = parsedRows.filter((r) => r.isValid);
     if (validItems.length === 0) {
-      setUploadError('There are no valid expense rows to import.');
+      setUploadError('Please select a valid CSV file with expense records.');
       return;
     }
 
@@ -252,45 +249,54 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
     setUploadSuccess('');
 
     try {
-      const res = await apiCall(`/expenses/${familyId}/bulk-upload`, {
-        method: 'POST',
-        body: JSON.stringify({ items: validItems }),
-      });
+      // Primary route: /api/expenses/:familyId/bulk-upload
+      let res;
+      try {
+        res = await apiCall(`/expenses/${familyId}/bulk-upload`, {
+          method: 'POST',
+          body: JSON.stringify({ items: validItems, family_id: familyId }),
+        });
+      } catch (err1) {
+        // Fallback route: /api/expenses/:familyId/expenses/bulk-upload
+        res = await apiCall(`/expenses/${familyId}/expenses/bulk-upload`, {
+          method: 'POST',
+          body: JSON.stringify({ items: validItems, family_id: familyId }),
+        });
+      }
 
-      if (res.success) {
-        setUploadSuccess(`Successfully imported ${res.count} expense(s) totaling ${formatCurrency(res.totalAmount)}!`);
+      if (res && res.success) {
+        setUploadSuccess(`Uploaded ${res.count} expense(s) totaling ${formatCurrency(res.totalAmount)}!`);
         if (res.expenses && Array.isArray(res.expenses)) {
           onImportSuccess(res.expenses);
         }
         setTimeout(() => {
           onClose();
-        }, 1800);
+        }, 1600);
       } else {
-        setUploadError(res.error || 'Failed to import expenses.');
+        setUploadError(res?.error || 'Failed to upload expenses. Please try again.');
       }
     } catch (err: any) {
-      setUploadError(err.message || 'Server error during import.');
+      setUploadError(err.message || 'Server connection error during upload.');
     } finally {
       setIsUploading(false);
     }
   };
 
   const validCount = parsedRows.filter((r) => r.isValid).length;
-  const invalidCount = parsedRows.filter((r) => !r.isValid).length;
-  const totalAmountToImport = parsedRows.filter((r) => r.isValid).reduce((sum, r) => sum + r.amount, 0);
+  const totalAmountToUpload = parsedRows.filter((r) => r.isValid).reduce((sum, r) => sum + r.amount, 0);
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in select-none">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in select-none">
       <div
-        className={`w-full max-w-2xl ${
+        className={`w-full max-w-lg ${
           isLight
             ? 'bg-[#F3E3D3] border-2 border-[#EAD6C4] text-[#1F1F1F]'
-            : 'bg-[#0f172a] border border-slate-700 text-slate-100'
-        } rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col`}
+            : 'bg-[#0b1329] border border-slate-700 text-slate-100'
+        } rounded-3xl p-5 shadow-2xl space-y-4 max-h-[92vh] flex flex-col`}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between border-b ${isLight ? 'border-[#DEC8B2]' : 'border-slate-800'} pb-3.5`}>
-          <div className="flex items-center gap-3">
+        <div className={`flex items-center justify-between border-b ${isLight ? 'border-[#DEC8B2]' : 'border-slate-800'} pb-3`}>
+          <div className="flex items-center gap-2.5">
             <div
               className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-md ${
                 isLight ? 'bg-[#FFF8F1] border border-[#DEC8B2] text-[#F05A28]' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
@@ -300,10 +306,10 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
             </div>
             <div>
               <h3 className={`text-base font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                CSV Expenses Manager
+                Upload & Download Expenses
               </h3>
               <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                Upload bulk expenses or download financial logs
+                Add multiple expenses via CSV, or download current records
               </p>
             </div>
           </div>
@@ -319,13 +325,13 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
           </button>
         </div>
 
-        {/* Tab Switcher */}
+        {/* Tab Switcher: Simple Upload / Download */}
         <div className={`grid grid-cols-2 p-1 rounded-2xl border ${isLight ? 'bg-[#EBDCD0] border-[#DEC8B2]' : 'bg-slate-900 border-slate-800'}`}>
           <button
             type="button"
-            onClick={() => setActiveTab('IMPORT')}
+            onClick={() => setActiveTab('UPLOAD')}
             className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'IMPORT'
+              activeTab === 'UPLOAD'
                 ? isLight
                   ? 'bg-[#FFF8F1] text-[#B84A1E] shadow-sm'
                   : 'bg-slate-800 text-amber-400 shadow-sm'
@@ -335,13 +341,13 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>Upload & Import CSV</span>
+            <span>Upload Expenses</span>
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('EXPORT')}
+            onClick={() => setActiveTab('DOWNLOAD')}
             className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'EXPORT'
+              activeTab === 'DOWNLOAD'
                 ? isLight
                   ? 'bg-[#FFF8F1] text-[#B84A1E] shadow-sm'
                   : 'bg-slate-800 text-amber-400 shadow-sm'
@@ -351,11 +357,11 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
             }`}
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export & Download CSV</span>
+            <span>Download Expenses</span>
           </button>
         </div>
 
-        {/* Error / Success Notifications */}
+        {/* Notifications */}
         {uploadError && (
           <div className="p-3 bg-rose-500/15 border border-rose-500/35 rounded-2xl text-xs text-rose-500 font-medium flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -369,38 +375,38 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
           </div>
         )}
 
-        {/* TAB 1: IMPORT CSV */}
-        {activeTab === 'IMPORT' && (
-          <div className="space-y-4 flex-1 overflow-y-auto pr-1">
-            {/* Template Box & Guide */}
+        {/* TAB 1: UPLOAD EXPENSES */}
+        {activeTab === 'UPLOAD' && (
+          <div className="space-y-3.5 flex-1 overflow-y-auto pr-0.5">
+            {/* Download Template Card */}
             <div
-              className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/80 border-slate-700'
+              className={`p-3.5 rounded-2xl border space-y-2.5 ${
+                isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/70 border-slate-700'
               }`}
             >
-              <div className="flex items-start gap-2.5">
-                <Info className={`w-4 h-4 mt-0.5 shrink-0 ${isLight ? 'text-[#F05A28]' : 'text-amber-400'}`} />
-                <div>
-                  <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                    Need the CSV format template?
-                  </div>
-                  <div className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                    Columns: Date, Category, Merchant, Amount, PaymentMethod, PaidBy, Notes, Location
-                  </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className={`w-4 h-4 ${isLight ? 'text-[#F05A28]' : 'text-amber-400'}`} />
+                  <span className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                    CSV Template Format
+                  </span>
                 </div>
+                <button
+                  type="button"
+                  onClick={downloadSampleTemplate}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isLight
+                      ? 'bg-[#F3E3D3] hover:bg-[#EBDCD0] border-[#DEC8B2] text-[#B84A1E]'
+                      : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
+                  }`}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Template</span>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={downloadSampleTemplate}
-                className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer ${
-                  isLight
-                    ? 'bg-[#F3E3D3] hover:bg-[#EBDCD0] border-[#DEC8B2] text-[#B84A1E]'
-                    : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
-                }`}
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download Sample Template</span>
-              </button>
+              <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'} leading-relaxed`}>
+                Required columns: <b>Date</b>, <b>Category</b>, <b>Merchant</b>, <b>Amount</b>, <b>PaymentMethod</b>, <b>PaidBy</b>, <b>Notes</b>, <b>Location</b>
+              </p>
             </div>
 
             {/* File Dropzone */}
@@ -428,53 +434,46 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
               </div>
               <div>
                 <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                  {file ? file.name : 'Select or Drop your Expenses CSV file here'}
+                  {file ? file.name : 'Tap to Select Expenses CSV File'}
                 </div>
                 <div className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                  {file ? `${(file.size / 1024).toFixed(1)} KB • Click to change file` : 'Supports .csv files up to 5 MB'}
+                  {file ? `${(file.size / 1024).toFixed(1)} KB • Tap to choose another file` : 'Supports .csv files from Excel or Sheets'}
                 </div>
               </div>
             </div>
 
-            {/* Parsing Progress */}
+            {/* Parsing Spinner */}
             {isParsing && (
-              <div className="flex items-center justify-center gap-2 p-4">
+              <div className="flex items-center justify-center gap-2 p-3">
                 <RefreshCw className="w-4 h-4 animate-spin text-[#F05A28]" />
                 <span className={`text-xs font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
-                  Parsing CSV rows...
+                  Reading CSV records...
                 </span>
               </div>
             )}
 
-            {/* Parsed Rows Preview */}
+            {/* Parsed Rows Stats & Submit */}
             {parsedRows.length > 0 && (
               <div className="space-y-3">
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className={`p-2.5 rounded-xl border ${isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/80 border-slate-700'}`}>
-                    <div className={`text-[10px] uppercase font-bold ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Total Rows</div>
-                    <div className={`text-sm font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{parsedRows.length}</div>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className={`p-2 rounded-xl border ${isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/80 border-slate-700'}`}>
+                    <div className={`text-[10px] uppercase font-bold ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Ready to Upload</div>
+                    <div className="text-sm font-bold text-emerald-600">{validCount} rows</div>
                   </div>
-                  <div className={`p-2.5 rounded-xl border ${isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-950/30 border-emerald-800/40'}`}>
-                    <div className="text-[10px] uppercase font-bold text-emerald-600">Valid to Import</div>
-                    <div className="text-sm font-bold text-emerald-600">{validCount}</div>
-                  </div>
-                  <div className={`p-2.5 rounded-xl border ${isLight ? 'bg-amber-50 border-amber-200' : 'bg-amber-950/30 border-amber-800/40'}`}>
+                  <div className={`p-2 rounded-xl border ${isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/80 border-slate-700'}`}>
                     <div className={`text-[10px] uppercase font-bold ${isLight ? 'text-[#B84A1E]' : 'text-amber-400'}`}>Total Amount</div>
-                    <div className={`text-sm font-bold ${isLight ? 'text-[#C24419]' : 'text-amber-400'}`}>{formatCurrency(totalAmountToImport)}</div>
+                    <div className={`text-sm font-bold ${isLight ? 'text-[#C24419]' : 'text-amber-400'}`}>{formatCurrency(totalAmountToUpload)}</div>
                   </div>
                 </div>
 
-                {/* Table Preview */}
-                <div className={`border rounded-2xl overflow-hidden max-h-56 overflow-y-auto ${isLight ? 'border-[#DEC8B2]' : 'border-slate-700'}`}>
+                {/* Table Preview (max height 160px for clean mobile view) */}
+                <div className={`border rounded-2xl overflow-hidden max-h-40 overflow-y-auto ${isLight ? 'border-[#DEC8B2]' : 'border-slate-700'}`}>
                   <table className="w-full text-left text-xs border-collapse">
-                    <thead className={`sticky top-0 text-[10px] font-bold uppercase tracking-wider ${isLight ? 'bg-[#EBDCD0] text-[#634B3F]' : 'bg-slate-800 text-slate-300'}`}>
+                    <thead className={`sticky top-0 text-[10px] font-bold uppercase ${isLight ? 'bg-[#EBDCD0] text-[#634B3F]' : 'bg-slate-800 text-slate-300'}`}>
                       <tr>
                         <th className="p-2">Date</th>
                         <th className="p-2">Merchant</th>
-                        <th className="p-2">Category</th>
                         <th className="p-2">Amount</th>
-                        <th className="p-2">Method</th>
                         <th className="p-2">Status</th>
                       </tr>
                     </thead>
@@ -483,19 +482,17 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
                         <tr key={idx} className={row.isValid ? '' : isLight ? 'bg-rose-50/50' : 'bg-rose-950/20'}>
                           <td className="p-2 whitespace-nowrap text-[11px]">{row.date}</td>
                           <td className="p-2 font-semibold truncate max-w-[120px]">{row.merchant}</td>
-                          <td className="p-2 text-[11px] text-slate-400 truncate max-w-[100px]">{row.category_name}</td>
                           <td className={`p-2 font-bold whitespace-nowrap ${isLight ? 'text-[#C24419]' : 'text-amber-400'}`}>
                             ₹{row.amount.toLocaleString('en-IN')}
                           </td>
-                          <td className="p-2 text-[10px] uppercase">{row.payment_method}</td>
                           <td className="p-2 whitespace-nowrap">
                             {row.isValid ? (
                               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-600">
                                 ✓ Ready
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/20 text-rose-500" title={row.error}>
-                                ✕ {row.error || 'Invalid'}
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/20 text-rose-500">
+                                ✕ Error
                               </span>
                             )}
                           </td>
@@ -505,10 +502,10 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
                   </table>
                 </div>
 
-                {/* Submit Import Button */}
+                {/* Upload Button */}
                 <button
                   type="button"
-                  onClick={handleImportSubmit}
+                  onClick={handleUploadSubmit}
                   disabled={isUploading || validCount === 0}
                   className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
                     isLight
@@ -519,12 +516,12 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
                   {isUploading ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Importing {validCount} Expenses...</span>
+                      <span>Uploading {validCount} Expenses...</span>
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      <span>Confirm & Import {validCount} Expenses ({formatCurrency(totalAmountToImport)})</span>
+                      <span>Upload {validCount} Expenses ({formatCurrency(totalAmountToUpload)})</span>
                     </>
                   )}
                 </button>
@@ -533,11 +530,11 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
           </div>
         )}
 
-        {/* TAB 2: EXPORT CSV */}
-        {activeTab === 'EXPORT' && (
-          <div className="space-y-4 flex-1 overflow-y-auto pr-1">
+        {/* TAB 2: DOWNLOAD EXPENSES */}
+        {activeTab === 'DOWNLOAD' && (
+          <div className="space-y-3.5 flex-1 overflow-y-auto pr-0.5">
             <div
-              className={`p-5 rounded-2xl border space-y-3 ${
+              className={`p-4 rounded-2xl border space-y-3 ${
                 isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/80 border-slate-700'
               }`}
             >
@@ -551,48 +548,46 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
                 </div>
                 <div>
                   <div className={`text-sm font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                    Export All Family Expenses
+                    Download All Family Expenses
                   </div>
                   <div className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                    Total Logged Records: <span className="font-bold">{expenses.length}</span> (
+                    Total Records: <span className="font-bold">{expenses.length}</span> (
                     {formatCurrency(expenses.reduce((s, e) => s + (e.amount || 0), 0))})
                   </div>
                 </div>
               </div>
 
               <p className={`text-xs leading-relaxed ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
-                Download your complete expense history as an Excel-compatible CSV file with full details including dates, categories, payment methods, notes, and locations.
+                Download all your family expense history as a CSV file compatible with Microsoft Excel and Google Sheets.
               </p>
 
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => exportExpensesToCsv(expenses, 'OneFamily')}
-                  disabled={expenses.length === 0}
-                  className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
-                    isLight
-                      ? 'bg-gradient-to-r from-[#F05A28] to-[#FF7A45] text-white shadow-[#F05A28]/25 hover:opacity-95'
-                      : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-indigo-500/25 hover:opacity-95'
-                  } disabled:opacity-50`}
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Expenses CSV ({expenses.length} records)</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => exportExpensesToCsv(expenses, 'OneFamily')}
+                disabled={expenses.length === 0}
+                className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
+                  isLight
+                    ? 'bg-gradient-to-r from-[#F05A28] to-[#FF7A45] text-white shadow-[#F05A28]/25 hover:opacity-95'
+                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-indigo-500/25 hover:opacity-95'
+                } disabled:opacity-50`}
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Expenses CSV ({expenses.length} records)</span>
+              </button>
             </div>
 
-            {/* Download Template Shortcut */}
+            {/* Template Shortcut Card */}
             <div
-              className={`p-4 rounded-2xl border flex items-center justify-between ${
+              className={`p-3.5 rounded-2xl border flex items-center justify-between ${
                 isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/50 border-slate-700'
               }`}
             >
               <div>
                 <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                  Blank CSV Template with Examples
+                  Sample CSV Template
                 </div>
                 <div className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                  Download the official template to prepare offline expense sheets
+                  Download blank sample template
                 </div>
               </div>
               <button
@@ -611,6 +606,7 @@ export const CsvExpenseModal: React.FC<CsvExpenseModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
