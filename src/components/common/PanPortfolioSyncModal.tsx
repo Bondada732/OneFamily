@@ -62,6 +62,7 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
       if (res.success && res.sessionId) {
         setSessionId(res.sessionId);
         setMaskedPhone(res.maskedPhone || '+91 ******3210');
+        setOtp('123456');
         setStep('OTP_VERIFY');
       } else {
         setErrorMsg(res.error || 'Failed to initiate PAN sync. Please try again.');
@@ -281,29 +282,39 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
         {/* STEP 2: OTP VERIFICATION */}
         {step === 'OTP_VERIFY' && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="text-center space-y-1">
+            <div className="text-center space-y-2">
               <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                Enter SEBI Consent OTP
+                Enter SEBI / CAMS Consent OTP
               </div>
               <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                A 6-digit verification code was sent to <span className="font-bold">{maskedPhone}</span>
+                Verification code for registered mobile <span className="font-bold">{maskedPhone}</span>
               </p>
-              <p className="text-[10px] text-emerald-400 font-mono bg-emerald-950/40 py-1 px-2 rounded-lg inline-block border border-emerald-800">
-                Sandbox Demo OTP: <strong>123456</strong>
-              </p>
+              <div
+                onClick={() => setOtp('123456')}
+                className={`cursor-pointer text-[11px] font-mono py-2 px-3 rounded-xl border flex items-center justify-center gap-1.5 transition-all select-none ${
+                  isLight
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+                    : 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/60'
+                }`}
+                title="Click to auto-fill OTP"
+              >
+                <span>⚡ Sandbox OTP:</span>
+                <strong className="tracking-widest text-sm font-black underline">123456</strong>
+                <span className="text-[10px] opacity-80">(Tap to auto-fill)</span>
+              </div>
             </div>
 
             <div>
               <input
                 type="text"
                 maxLength={6}
-                placeholder="• • • • • •"
+                placeholder="123456"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
                 className={`w-full py-3 text-center text-xl font-bold tracking-[0.4em] rounded-xl border outline-none ${
                   isLight
-                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]'
-                    : 'bg-slate-800 border-slate-700 text-white'
+                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                    : 'bg-slate-800 border-slate-700 text-emerald-400 focus:border-emerald-500'
                 }`}
                 autoFocus
                 required
