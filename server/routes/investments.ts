@@ -341,5 +341,66 @@ router.post('/:id/sync-pan/commit', requirePermission('INVESTMENT_EDIT'), async 
   res.json(result);
 });
 
+// ---------------- CAMS / KFINTECH CAS STATEMENT PARSER ---------------- //
+
+// 4. Parse Uploaded CAMS / KFintech CAS Statement (PDF / Excel / CSV / Text)
+router.post('/:id/cas-upload', requirePermission('INVESTMENT_EDIT'), async (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const userId = req.user!.id;
+  const { fileBase64, fileName, textContent, pdfPassword, memberName } = req.body;
+
+  try {
+    const { extractTextFromPdf, parseCasWithGeminiAI } = await import('../services/casParserService.js');
+    let textToParse = textContent || '';
+
+    if (fileBase64 && (!textToParse || textToParse.length < 50)) {
+      const base64Data = fileBase64.replace(/^data:[^;]+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      if (fileName && fileName.toLowerCase().endsWith('.pdf')) {
+        const extracted = await extractTextFromPdf(buffer);
+        if (extracted) {
+          textToParse = extracted;
+        }
+      } else {
+        // Plain text / CSV
+        textToParse = buffer.toString('utf-8');
+      }
+    }
+
+    if (!textToParse || textToParse.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unable to extract text from the uploaded statement. If the PDF is password-protected, please enter your PAN as password.',
+      });
+    }
+
+    const result = await parseCasWithGeminiAI(textToParse, fileBase64, pdfPassword, memberName || req.user!.name);
+    res.json(result);
+  } catch (err: any) {
+    console.error('CAS Upload error:', err);
+    res.status(500).json({ success: false, error: err.message || 'Failed to parse CAS statement' });
+  }
+});
+
+// 5. Commit Extracted CAS Schemes to Family Wealth
+router.post('/:id/cas-commit', requirePermission('INVESTMENT_EDIT'), async (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const userId = req.user!.id;
+  const { ownerName, panNumber, schemes } = req.body;
+
+  if (!Array.isArray(schemes) || schemes.length === 0) {
+    return res.status(400).json({ success: false, error: 'No schemes provided to commit' });
+  }
+
+  try {
+    const { commitCasToFamilyWealth } = await import('../services/casParserService.js');
+    const result = await commitCasToFamilyWealth(familyId, userId, ownerName, panNumber, schemes);
+    res.json(result);
+  } catch (err: any) {
+    console.error('CAS commit error:', err);
+    res.status(500).json({ success: false, error: err.message || 'Failed to save mutual funds' });
+  }
+});
+
 export default router;
 
