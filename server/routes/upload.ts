@@ -1,6 +1,7 @@
 import express from 'express';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { uploadBase64DataUrl } from '../services/storageService.js';
+import { uploadBase64ToAzureBlob, isAzureStorageConfigured } from '../services/azureStorageService.js';
 import { logActivity } from '../services/auditService.js';
 
 const router = express.Router();
@@ -8,7 +9,7 @@ router.use(authMiddleware);
 
 /**
  * POST /api/upload
- * Upload a file/photo to Supabase Cloud Storage.
+ * Upload a file/photo to Azure Blob Storage (or Supabase Cloud Storage).
  * Body: {
  *   fileData: string; // base64 data url
  *   fileName: string;
@@ -28,7 +29,14 @@ router.post('/', async (req: AuthRequest, res) => {
   const safeFileName = fileName || `file_${Date.now()}`;
 
   try {
-    const result = await uploadBase64DataUrl(targetBucket, fileData, safeFileName, familyId);
+    let result;
+
+    if (isAzureStorageConfigured()) {
+      const containerName = targetBucket.replace(/[^a-z0-9-]/g, '-').toLowerCase();
+      result = await uploadBase64ToAzureBlob(containerName, fileData, safeFileName, familyId);
+    } else {
+      result = await uploadBase64DataUrl(targetBucket, fileData, safeFileName, familyId);
+    }
 
     if (!result.success || !result.url) {
       return res.status(500).json({
