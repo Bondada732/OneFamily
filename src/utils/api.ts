@@ -141,9 +141,9 @@ export async function apiRequest<T = any>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  // Set a 30s timeout controller for mobile connections and cold start
+  // Set a 60s timeout controller for mobile connections and server cold start
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   let response: Response;
   try {
