@@ -1,5 +1,6 @@
 import express from 'express';
 import db from '../db/database.js';
+import { getAzurePool } from '../db/azurePostgres.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { logActivity } from '../services/auditService.js';
@@ -8,16 +9,64 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Get Memories, Voice Notes & Yearbook
-router.get('/:id/memories', requirePermission('MEMORY_VIEW'), (req: AuthRequest, res) => {
+router.get('/:id/memories', requirePermission('MEMORY_VIEW'), async (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
-  const memories = db.find('memories', (m) => m.family_id === familyId);
-  const voiceMemories = db.find('voice_memories', (v) => v.family_id === familyId);
+  const pool = getAzurePool();
 
-  const formattedMemories = memories.map((m) => ({
-    ...m,
-    photosList: typeof m.photos === 'string' ? JSON.parse(m.photos || '[]') : m.photos,
-    taggedMembersList: typeof m.tagged_members === 'string' ? JSON.parse(m.tagged_members || '[]') : m.tagged_members,
-  }));
+  let memories: any[] = [];
+  let voiceMemories: any[] = [];
+
+  if (pool) {
+    try {
+      const mRes = await pool.query(
+        'SELECT * FROM memories WHERE family_id = $1 ORDER BY date DESC, created_at DESC',
+        [familyId]
+      );
+      memories = mRes.rows;
+      const vRes = await pool.query(
+        'SELECT * FROM voice_memories WHERE family_id = $1 ORDER BY created_at DESC',
+        [familyId]
+      );
+      voiceMemories = vRes.rows;
+    } catch (e: any) {
+      console.warn('[Memories Route] Error querying Azure Postgres:', e.message);
+      memories = db.find('memories', (m) => m.family_id === familyId);
+      voiceMemories = db.find('voice_memories', (v) => v.family_id === familyId);
+    }
+  } else {
+    memories = db.find('memories', (m) => m.family_id === familyId);
+    voiceMemories = db.find('voice_memories', (v) => v.family_id === familyId);
+  }
+
+  const formattedMemories = memories.map((m) => {
+    let photosList: string[] = [];
+    if (Array.isArray(m.photos)) {
+      photosList = m.photos;
+    } else if (typeof m.photos === 'string') {
+      try {
+        photosList = JSON.parse(m.photos || '[]');
+      } catch {
+        photosList = m.photos ? [m.photos] : [];
+      }
+    }
+
+    let taggedMembersList: string[] = [];
+    if (Array.isArray(m.tagged_members)) {
+      taggedMembersList = m.tagged_members;
+    } else if (typeof m.tagged_members === 'string') {
+      try {
+        taggedMembersList = JSON.parse(m.tagged_members || '[]');
+      } catch {
+        taggedMembersList = m.tagged_members ? [m.tagged_members] : [];
+      }
+    }
+
+    return {
+      ...m,
+      photosList,
+      taggedMembersList,
+    };
+  });
 
   res.json({
     memories: formattedMemories,
@@ -26,7 +75,7 @@ router.get('/:id/memories', requirePermission('MEMORY_VIEW'), (req: AuthRequest,
 });
 
 // Add New Memory / Photo Story
-router.post('/:id/memories', requirePermission('MEMORY_UPLOAD'), (req: AuthRequest, res) => {
+router.post('/:id/memories', requirePermission('MEMORY_UPLOAD'), async (req: AuthRequest, res) => {
   const familyId = req.params.id || req.familyId!;
   const { title, date, location, album, description, photos, tagged_members } = req.body;
 
@@ -38,8 +87,8 @@ router.post('/:id/memories', requirePermission('MEMORY_UPLOAD'), (req: AuthReque
     location: location || '',
     album: album || 'Family Moments',
     description: description || '',
-    photos: JSON.stringify(photos || ['https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800']),
-    tagged_members: JSON.stringify(tagged_members || [req.user!.name]),
+    photos: Array.isArray(photos) ? JSON.stringify(photos) : (photos || '[]'),
+    tagged_members: Array.isArray(tagged_members) ? JSON.stringify(tagged_members) : (tagged_members || '[]'),
     created_at: new Date().toISOString(),
   };
 
@@ -50,12 +99,50 @@ router.post('/:id/memories', requirePermission('MEMORY_UPLOAD'), (req: AuthReque
 });
 
 // Update Memory
-router.patch('/:id/memories/:memId', requirePermission('MEMORY_UPLOAD'), (req: AuthRequest, res) => {
+router.patch('/:id/memories/:memId', requirePermission('MEMORY_UPLOAD'), async (req: AuthRequest, res) => {
   const { memId } = req.params;
   const familyId = req.params.id || req.familyId!;
   const { title, date, location, album, description, photos, tagged_members } = req.body;
 
   const existing = db.findOne('memories', (m) => m.id === memId && m.family_id === familyId);
+  
+  const pool = getAzurePool();
+  if (pool) {
+    try {
+      const updateFields: string[] = [];
+      const values: any[] = [];
+      let idx = 1;
+
+      if (title !== undefined) { updateFields.push(`title = $${idx++}`); values.push(title); }
+      if (date !== undefined) { updateFields.push(`date = $${idx++}`); values.push(date); }
+      if (location !== undefined) { updateFields.push(`location = $${idx++}`); values.push(location); }
+      if (album !== undefined) { updateFields.push(`album = $${idx++}`); values.push(album); }
+      if (description !== undefined) { updateFields.push(`description = $${idx++}`); values.push(description); }
+      if (photos !== undefined) {
+        updateFields.push(`photos = $${idx++}`);
+        values.push(Array.isArray(photos) ? JSON.stringify(photos) : photos);
+      }
+      if (tagged_members !== undefined) {
+        updateFields.push(`tagged_members = $${idx++}`);
+        values.push(Array.isArray(tagged_members) ? JSON.stringify(tagged_members) : tagged_members);
+      }
+      updateFields.push(`updated_at = $${idx++}`);
+      values.push(new Date().toISOString());
+
+      values.push(memId, familyId);
+      const sql = `UPDATE memories SET ${updateFields.join(', ')} WHERE id = $${idx++} AND family_id = $${idx++} RETURNING *`;
+      const resDb = await pool.query(sql, values);
+      if (resDb.rows.length > 0) {
+        const row = resDb.rows[0];
+        db.update('memories', (m) => m.id === memId && m.family_id === familyId, row);
+        logActivity(familyId, req.user!.id, req.user!.name, 'Updated Family Memory', 'MEMORY', `Updated memory "${title || row.title}"`);
+        return res.json(row);
+      }
+    } catch (e: any) {
+      console.warn('[Memories Route] Error updating in Azure Postgres:', e.message);
+    }
+  }
+
   if (!existing) return res.status(404).json({ error: 'Memory not found' });
 
   const updated = db.update('memories', (m) => m.id === memId && m.family_id === familyId, {
@@ -64,8 +151,8 @@ router.patch('/:id/memories/:memId', requirePermission('MEMORY_UPLOAD'), (req: A
     location: location ?? existing.location,
     album: album ?? existing.album,
     description: description ?? existing.description,
-    photos: photos ? JSON.stringify(photos) : existing.photos,
-    tagged_members: tagged_members ? JSON.stringify(tagged_members) : existing.tagged_members,
+    photos: photos ? (Array.isArray(photos) ? JSON.stringify(photos) : photos) : existing.photos,
+    tagged_members: tagged_members ? (Array.isArray(tagged_members) ? JSON.stringify(tagged_members) : tagged_members) : existing.tagged_members,
     updated_at: new Date().toISOString(),
   });
 
