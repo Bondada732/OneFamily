@@ -654,6 +654,18 @@ export const MoneyView: React.FC = () => {
             {activeSubTab === 'WEALTH' ? (
               <>
                 <button
+                  onClick={() => setShowPanSyncModal(true)}
+                  className={`p-2 px-2.5 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all shadow-sm ${
+                    isLight
+                      ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700 text-white border-transparent'
+                      : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white border-transparent shadow-indigo-600/30'
+                  }`}
+                  title="Automated Mutual Fund & Demat Sync via PAN"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Sync PAN</span>
+                </button>
+                <button
                   onClick={() => setShowAddInvestment(true)}
                   className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
                     isLight
@@ -818,6 +830,41 @@ export const MoneyView: React.FC = () => {
               </ResponsiveContainer>
             </div>
           </div>
+
+          {/* Quick Auto-Sync Banner for Mutual Funds & Demat */}
+          {canEditFinance && (
+            <div className={`p-4 rounded-3xl flex items-center justify-between gap-3 border kinora-3d-card ${
+              isLight
+                ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_8px_20px_-4px_rgba(130,80,45,0.12)]'
+                : 'bg-gradient-to-r from-amber-500/20 via-indigo-950/60 to-slate-900 border-indigo-500/40 shadow-xl'
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-md kinora-3d-icon-box ${
+                  isLight ? 'bg-gradient-to-tr from-[#F05A28] to-amber-500 text-white' : 'bg-gradient-to-tr from-amber-500 to-indigo-600 text-white'
+                }`}>
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className={`text-xs sm:text-sm font-black ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                    Auto-Sync Mutual Funds & Demat
+                  </h4>
+                  <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
+                    Sync portfolios via PAN & CAMS without manual imports
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPanSyncModal(true)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold shrink-0 shadow-md transition-all text-white ${
+                  isLight
+                    ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700'
+                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500'
+                }`}
+              >
+                Sync PAN ⚡
+              </button>
+            </div>
+          )}
 
           {/* Quick Expense Breakdown */}
           <div className={`p-4 rounded-3xl space-y-3 kinora-3d-card ${
