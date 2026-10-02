@@ -283,15 +283,6 @@ class DatabaseService {
     }
   }
 
-  public initSupabaseRealtime() {
-    // Initial sync from Azure PostgreSQL first, then Supabase if configured
-    this.hydrateFromAzurePostgres().then((success) => {
-      if (!success) {
-        this.hydrateFromSupabase().catch(() => {});
-      }
-    }).catch(() => {});
-  }
-
   public getTable<K extends keyof DBStore>(tableName: K): DBStore[K] {
     if (!this.data[tableName]) {
       this.data[tableName] = [] as any;
@@ -353,5 +344,4 @@ class DatabaseService {
 }
 
 export const db = new DatabaseService();
-db.initSupabaseRealtime();
 export default db;

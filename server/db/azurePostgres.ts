@@ -11,8 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const AZURE_POSTGRES_URL =
   process.env.AZURE_POSTGRES_URL ||
-  process.env.DATABASE_URL ||
-  'postgresql://kinoraadmin:KinoraSecure2026!@kinoraone-db.postgres.database.azure.com/postgres?sslmode=require';
+  process.env.DATABASE_URL;
 
 let pool: pg.Pool | null = null;
 

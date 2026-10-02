@@ -11,6 +11,7 @@ import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { CsvExpenseModal, exportExpensesToCsv, downloadSampleTemplate } from '../../components/common/CsvExpenseModal.js';
+import { PanPortfolioSyncModal } from '../../components/common/PanPortfolioSyncModal.js';
 import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3, FileSpreadsheet, Download, Upload } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -106,6 +107,7 @@ export const MoneyView: React.FC = () => {
 
   // Wealth & Goals Modals State
   const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const [showPanSyncModal, setShowPanSyncModal] = useState(false);
   const [showAddLiability, setShowAddLiability] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [contributingGoal, setContributingGoal] = useState<Goal | null>(null);
@@ -353,6 +355,19 @@ export const MoneyView: React.FC = () => {
       refreshDashboard();
     } catch (err) {
       console.error('Failed to delete investment:', err);
+    }
+  };
+
+  const refreshInvestments = async () => {
+    if (!family?.id) return;
+    try {
+      const invData = await apiRequest(`/investments/${family.id}/investments`);
+      setInvestments(invData.investments || []);
+      setLiabilities(invData.liabilities || []);
+      setNetWorthData(invData);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to refresh investments:', err);
     }
   };
 
@@ -1147,23 +1162,36 @@ export const MoneyView: React.FC = () => {
                 Family Investments & Assets ({formatCurrency(investments.reduce((s, i) => s + (i.current_value || 0), 0), true)})
               </span>
               {canEditFinance && (
-                <button
-                  onClick={() => setShowAddInvestment(true)}
-                  className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#2E7D32] hover:underline' : 'text-emerald-400 hover:underline'}`}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Asset</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowPanSyncModal(true)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                      isLight
+                        ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700 text-white'
+                        : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white'
+                    }`}
+                    title="Automated Mutual Fund & Demat Sync via PAN (CAMS / KFintech)"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Auto-Sync (PAN)</span>
+                  </button>
+                  <button
+                    onClick={() => setShowAddInvestment(true)}
+                    className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#2E7D32] hover:underline' : 'text-emerald-400 hover:underline'}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Asset</span>
+                  </button>
+                </div>
               )}
             </div>
 
             {investments.length === 0 ? (
               <div
-                onClick={() => setShowAddInvestment(true)}
-                className={`p-5 rounded-2xl border border-dashed text-center cursor-pointer transition-all space-y-2 kinora-3d-card ${
+                className={`p-5 rounded-2xl border border-dashed text-center transition-all space-y-2.5 kinora-3d-card ${
                   isLight
-                    ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-emerald-500'
-                    : 'bg-slate-800/60 border-slate-700 hover:border-emerald-500/50 hover:bg-slate-800/90'
+                    ? 'bg-[#F3E3D3] border-[#DEC8B2]'
+                    : 'bg-slate-800/60 border-slate-700'
                 }`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto kinora-3d-icon-box ${
@@ -1175,13 +1203,28 @@ export const MoneyView: React.FC = () => {
                 <p className={`text-[11px] max-w-xs mx-auto ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Track Mutual Funds, Stocks, Gold, FDs, PPF, and Real Estate in one consolidated family portfolio.
                 </p>
-                <button className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1 border ${
-                  isLight
-                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow-sm'
-                    : 'bg-emerald-600/30 text-emerald-300 border-emerald-500/40'
-                }`}>
-                  <Plus className="w-3.5 h-3.5" /> Add Investment / Asset
-                </button>
+                <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+                  <button
+                    onClick={() => setShowPanSyncModal(true)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm text-white ${
+                      isLight
+                        ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700'
+                        : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Auto-Sync via PAN (CAMS)
+                  </button>
+                  <button
+                    onClick={() => setShowAddInvestment(true)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1 border ${
+                      isLight
+                        ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#1F1F1F] border-[#DEC8B2]'
+                        : 'bg-slate-700/60 hover:bg-slate-700 text-slate-200 border-slate-600'
+                    }`}
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Manual Entry
+                  </button>
+                </div>
               </div>
             ) : (
               investments.map((inv) => (
@@ -2620,6 +2663,22 @@ export const MoneyView: React.FC = () => {
           familyId={family?.id || ''}
           categories={categories}
           onImportSuccess={handleImportCsvSuccess}
+          apiCall={apiRequest}
+        />
+      )}
+
+      {/* PAN Mutual Fund & Demat Portfolio Sync Modal */}
+      {showPanSyncModal && (
+        <PanPortfolioSyncModal
+          isOpen={showPanSyncModal}
+          onClose={() => setShowPanSyncModal(false)}
+          isLight={isLight}
+          familyId={family?.id || ''}
+          members={familyMembers || []}
+          currentUserName={currentUser?.name || 'Self'}
+          onSyncComplete={() => {
+            refreshInvestments();
+          }}
           apiCall={apiRequest}
         />
       )}

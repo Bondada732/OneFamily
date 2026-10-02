@@ -285,5 +285,61 @@ router.delete('/:id/insurance/:polId', requirePermission('INVESTMENT_EDIT'), (re
   res.json({ success: deleted });
 });
 
+// ---------------- PAN / CAMS AUTOMATED PORTFOLIO SYNC ---------------- //
+
+// 1. Initiate PAN Portfolio Sync & Send Verification OTP
+router.post('/:id/sync-pan/initiate', requirePermission('INVESTMENT_EDIT'), async (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const userId = req.user!.id;
+  const { panNumber, phone, memberName } = req.body;
+
+  if (!panNumber) {
+    return res.status(400).json({ success: false, error: 'PAN Number is required' });
+  }
+
+  const { initiatePanPortfolioSync } = await import('../services/portfolioSyncService.js');
+  const result = await initiatePanPortfolioSync(familyId, userId, panNumber, phone, memberName || req.user!.name);
+
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.message });
+  }
+
+  res.json(result);
+});
+
+// 2. Verify OTP & Extract CAMS / Demat Portfolio
+router.post('/:id/sync-pan/verify', requirePermission('INVESTMENT_EDIT'), async (req: AuthRequest, res) => {
+  const { sessionId, otp } = req.body;
+
+  if (!sessionId || !otp) {
+    return res.status(400).json({ success: false, error: 'Session ID and verification OTP are required' });
+  }
+
+  const { verifyOtpAndExtractPortfolio } = await import('../services/portfolioSyncService.js');
+  const result = await verifyOtpAndExtractPortfolio(sessionId, otp);
+
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.message });
+  }
+
+  res.json(result);
+});
+
+// 3. Commit Extracted Portfolio to Family Wealth Database
+router.post('/:id/sync-pan/commit', requirePermission('INVESTMENT_EDIT'), async (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const userId = req.user!.id;
+  const { ownerName, panNumber, schemes } = req.body;
+
+  if (!Array.isArray(schemes) || schemes.length === 0) {
+    return res.status(400).json({ success: false, error: 'No schemes provided to commit' });
+  }
+
+  const { commitPortfolioToWealth } = await import('../services/portfolioSyncService.js');
+  const result = await commitPortfolioToWealth(familyId, userId, ownerName, panNumber, schemes);
+
+  res.json(result);
+});
+
 export default router;
 

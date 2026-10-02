@@ -3,6 +3,7 @@ import cors from 'cors';
 import { PORT, APP_NAME, TAGLINE } from './config.js';
 import { seedDatabase } from './db/seed.js';
 import db from './db/database.js';
+import { isAzurePostgresConfigured } from './db/azurePostgres.js';
 
 import authRouter from './routes/auth.js';
 import familiesRouter from './routes/families.js';
@@ -27,19 +28,6 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// Hydrate persistent data from Supabase Cloud on startup
-db.hydrateFromSupabase().then(() => {
-  if (db.getTable('users').length === 0) {
-    console.log('⚡ Initializing and seeding Sharma Family demo data...');
-    seedDatabase();
-  }
-}).catch((err) => {
-  console.warn('⚠️ Supabase hydration note:', err);
-  if (db.getTable('users').length === 0) {
-    seedDatabase();
-  }
-});
 
 // Root & Health Check Endpoints
 app.get('/', (req, res) => {
@@ -99,7 +87,30 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`✨ ${APP_NAME} Backend running on http://localhost:${PORT}`);
-  console.log(`🏡 "${TAGLINE}"`);
+async function startServer() {
+  const azureConfigured = isAzurePostgresConfigured();
+
+  if (azureConfigured) {
+    const hydratedFromAzure = await db.hydrateFromAzurePostgres();
+    if (!hydratedFromAzure) {
+      console.error('Azure PostgreSQL is configured, but app data could not be loaded. Skipping Supabase fallback and demo seeding.');
+    }
+  } else {
+    await db.hydrateFromSupabase();
+  }
+
+  if (db.getTable('users').length === 0 && !azureConfigured) {
+    console.log('⚡ Initializing and seeding Sharma Family demo data...');
+    seedDatabase();
+  }
+
+  app.listen(PORT, () => {
+    console.log(`✨ ${APP_NAME} Backend running on http://localhost:${PORT}`);
+    console.log(`🏡 "${TAGLINE}"`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error('Failed to initialize the database:', err);
+  process.exitCode = 1;
 });
