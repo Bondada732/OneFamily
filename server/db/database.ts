@@ -3,6 +3,7 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import { fileURLToPath } from 'url';
 import { syncRecordToSupabase, fetchAllFromSupabase, isSupabaseConfigured } from './supabaseClient.js';
+import { syncRecordToAzurePostgres, fetchAllFromAzurePostgres, isAzurePostgresConfigured } from './azurePostgres.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -218,9 +219,77 @@ class DatabaseService {
     }
   }
 
+  public async hydrateFromAzurePostgres(): Promise<boolean> {
+    if (!isAzurePostgresConfigured()) {
+      return false;
+    }
+
+    try {
+      const tables: (keyof DBStore)[] = [
+        'families',
+        'users',
+        'permissions',
+        'member_permissions',
+        'devices',
+        'audit_logs',
+        'expense_categories',
+        'expenses',
+        'budgets',
+        'investments',
+        'insurance_policies',
+        'liabilities',
+        'goals',
+        'calendar_events',
+        'reminders',
+        'document_categories',
+        'documents',
+        'emergency_contacts',
+        'emergency_profiles',
+        'memories',
+        'tasks',
+        'grocery_items',
+        'maintenance_items',
+        'notifications',
+        'ai_conversations',
+      ];
+
+      const remoteUsers = await fetchAllFromAzurePostgres('users');
+      if (remoteUsers.length === 0) {
+        return false;
+      }
+
+      for (const table of tables) {
+        const records = await fetchAllFromAzurePostgres(table as string);
+        if (records && records.length > 0) {
+          this.data[table] = records.map((r: any) => {
+            const copy = { ...r };
+            if (copy.photos && typeof copy.photos === 'string' && copy.photos.startsWith('[')) {
+              try { copy.photos = JSON.parse(copy.photos); } catch {}
+            }
+            if (copy.tagged_members && typeof copy.tagged_members === 'string' && copy.tagged_members.startsWith('[')) {
+              try { copy.tagged_members = JSON.parse(copy.tagged_members); } catch {}
+            }
+            return copy;
+          }) as any;
+        }
+      }
+
+      this.save();
+      console.log('⚡ Successfully hydrated database from Azure PostgreSQL!');
+      return true;
+    } catch (err) {
+      console.error('⚠️ Failed to hydrate database from Azure PostgreSQL:', err);
+      return false;
+    }
+  }
+
   public initSupabaseRealtime() {
-    // Initial sync from Supabase on startup
-    this.hydrateFromSupabase().catch(() => {});
+    // Initial sync from Azure PostgreSQL first, then Supabase if configured
+    this.hydrateFromAzurePostgres().then((success) => {
+      if (!success) {
+        this.hydrateFromSupabase().catch(() => {});
+      }
+    }).catch(() => {});
   }
 
   public getTable<K extends keyof DBStore>(tableName: K): DBStore[K] {
@@ -246,7 +315,8 @@ class DatabaseService {
   public insert<K extends keyof DBStore>(tableName: K, record: any): any {
     this.getTable(tableName).push(record);
     this.save();
-    // Real-time synchronization to Supabase Cloud Database
+    // Real-time synchronization to Azure PostgreSQL & Supabase Cloud
+    syncRecordToAzurePostgres(tableName as string, record, 'insert').catch(() => {});
     syncRecordToSupabase(tableName as string, record, 'insert').catch(() => {});
     return record;
   }
@@ -257,7 +327,8 @@ class DatabaseService {
     if (index !== -1) {
       table[index] = { ...table[index], ...updates };
       this.save();
-      // Real-time synchronization to Supabase Cloud Database
+      // Real-time synchronization to Azure PostgreSQL & Supabase Cloud
+      syncRecordToAzurePostgres(tableName as string, table[index], 'update').catch(() => {});
       syncRecordToSupabase(tableName as string, table[index], 'update').catch(() => {});
       return table[index];
     }
@@ -273,6 +344,7 @@ class DatabaseService {
     if (removed) {
       this.save();
       if (itemToDelete) {
+        syncRecordToAzurePostgres(tableName as string, itemToDelete, 'delete').catch(() => {});
         syncRecordToSupabase(tableName as string, itemToDelete, 'delete').catch(() => {});
       }
     }
