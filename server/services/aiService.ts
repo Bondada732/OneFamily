@@ -1,4 +1,11 @@
 import db from '../db/database.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 export interface AIResponse {
   message: string;
@@ -61,7 +68,7 @@ export async function processAIChat(
   if (apiKey) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       const systemPrompt = `You are "One Family AI" assistant for ${family?.name || 'Famora'} household in India.
 Current User: ${user.name}
@@ -79,28 +86,51 @@ Instructions:
 4. DO NOT include raw asterisks like *** or markdown hashes like ###.`;
 
       if (provider === 'gemini') {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          signal: controller.signal,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nQuestion:\n${query}` }] }],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 600 },
-          }),
-        });
-        clearTimeout(timeoutId);
+        const candidateModels = [
+          'gemini-3.5-flash-lite',
+          'gemini-3.5-flash',
+          'gemini-3.1-flash-lite',
+          'gemini-flash-lite-latest',
+          'gemini-3-flash-preview',
+        ];
 
-        if (response.ok) {
-          const data: any = await response.json();
-          const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (answer) {
-            return {
-              message: cleanText(answer),
-              category: detectCategory(query),
-              sourcesUsed: ['Gemini AI'],
-            };
+        let answer = '';
+        for (const modelName of candidateModels) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            const response = await fetch(geminiUrl, {
+              method: 'POST',
+              signal: controller.signal,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: `${systemPrompt}\n\nQuestion:\n${query}` }] }],
+                generationConfig: { temperature: 0.5, maxOutputTokens: 800 },
+              }),
+            });
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+              const data: any = await response.json();
+              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text && text.trim()) {
+                answer = text;
+                break;
+              }
+            }
+          } catch (e) {
+            // Try next candidate model
           }
+        }
+
+        if (answer) {
+          return {
+            message: cleanText(answer),
+            category: detectCategory(query),
+            sourcesUsed: ['Google Gemini AI'],
+          };
         }
       } else if (provider === 'openai' || provider === 'groq') {
         const endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
