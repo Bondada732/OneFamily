@@ -51,6 +51,27 @@ export async function fetchAllFromAzurePostgres(tableName: string): Promise<any[
   }
 }
 
+const tableColumnsCache: Record<string, Set<string>> = {};
+
+async function getTableColumns(tableName: string): Promise<Set<string>> {
+  if (tableColumnsCache[tableName]) {
+    return tableColumnsCache[tableName];
+  }
+  if (!pool) return new Set();
+  try {
+    const res = await pool.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
+      [tableName]
+    );
+    const cols = new Set(res.rows.map((r) => r.column_name));
+    tableColumnsCache[tableName] = cols;
+    return cols;
+  } catch (err: any) {
+    console.warn(`[Azure Postgres] Error fetching schema for ${tableName}:`, err.message);
+    return new Set();
+  }
+}
+
 export async function syncRecordToAzurePostgres(
   tableName: string,
   record: any,
@@ -71,7 +92,11 @@ export async function syncRecordToAzurePostgres(
       return true;
     }
 
-    const keys = Object.keys(record);
+    const tableCols = await getTableColumns(tableName);
+    let keys = Object.keys(record);
+    if (tableCols.size > 0) {
+      keys = keys.filter((k) => tableCols.has(k));
+    }
     if (keys.length === 0) return false;
 
     const values = keys.map((k) => {
