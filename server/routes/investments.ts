@@ -357,7 +357,7 @@ router.post('/:id/cas-upload', requirePermission('INVESTMENT_EDIT'), async (req:
       const base64Data = fileBase64.replace(/^data:[^;]+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
       if (fileName && fileName.toLowerCase().endsWith('.pdf')) {
-        const extracted = await extractTextFromPdf(buffer);
+        const extracted = await extractTextFromPdf(buffer, pdfPassword);
         if (extracted) {
           textToParse = extracted;
         }

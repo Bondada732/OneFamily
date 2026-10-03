@@ -1,6 +1,12 @@
 import db from '../db/database.js';
 import { logActivity } from './auditService.js';
-import { GoogleGenAI } from '@google/genai';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -33,21 +39,41 @@ export interface CasParseResult {
 }
 
 /**
- * Extract raw text from PDF buffer
+ * Extract raw text from PDF buffer with password support (CAMS uses PAN as password)
  */
-export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+export async function extractTextFromPdf(buffer: Buffer, password?: string): Promise<string> {
   try {
     const pdfParse = (await import('pdf-parse')).default;
-    const data = await pdfParse(buffer);
+    const options: any = {};
+    if (password && password.trim()) {
+      options.password = password.trim();
+    }
+    const data = await pdfParse(buffer, options);
     return data.text || '';
   } catch (err: any) {
-    console.warn('pdf-parse warning (may be password-protected or scanned):', err.message);
+    console.warn('pdf-parse warning:', err.message);
+    // If standard attempt fails with password, try common CAMS upper/lower variations
+    if (password) {
+      try {
+        const pdfParse = (await import('pdf-parse')).default;
+        const upperData = await pdfParse(buffer, { password: password.toUpperCase() });
+        if (upperData.text) return upperData.text;
+      } catch (e) {
+        try {
+          const pdfParse = (await import('pdf-parse')).default;
+          const lowerData = await pdfParse(buffer, { password: password.toLowerCase() });
+          if (lowerData.text) return lowerData.text;
+        } catch (e2) {
+          console.warn('All password attempts failed for PDF');
+        }
+      }
+    }
     return '';
   }
 }
 
 /**
- * Parse CAMS / KFintech / MF Central statement text using Google Gemini AI
+ * Parse CAMS / KFintech / MF Central statement text using Google Gemini AI via native fetch
  */
 export async function parseCasWithGeminiAI(
   textContent: string,
@@ -56,7 +82,6 @@ export async function parseCasWithGeminiAI(
   defaultOwner = 'Rambabu'
 ): Promise<CasParseResult> {
   try {
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
     const prompt = `You are an expert Indian Mutual Fund & Demat Consolidated Account Statement (CAS) parser for CAMS, KFintech, MF Central, Zerodha, and Groww statements.
 
 Task:
@@ -105,18 +130,36 @@ ${textContent.slice(0, 50000)}
       'gemini-3.5-flash',
       'gemini-flash-lite-latest',
       'gemini-3.1-flash-lite',
+      'gemini-3-flash-preview',
     ];
 
     let responseText = '';
+    const apiKey = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
+
     for (const modelName of candidateModels) {
       try {
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: prompt,
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 2500 },
+          }),
         });
-        if (response?.text) {
-          responseText = response.text;
-          break;
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data: any = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text && text.trim()) {
+            responseText = text;
+            break;
+          }
         }
       } catch (e: any) {
         console.warn(`Model ${modelName} attempt failed:`, e.message);
@@ -124,7 +167,7 @@ ${textContent.slice(0, 50000)}
     }
 
     if (!responseText) {
-      throw new Error('Could not get response from AI parser');
+      return fallbackRegexParser(textContent, defaultOwner);
     }
 
     // Clean JSON response
@@ -205,15 +248,15 @@ function fallbackRegexParser(text: string, defaultOwner: string): CasParseResult
     }
 
     // Look for scheme names with Growth / Direct / Dividend
-    if (/(?:growth|direct|regular|dividend|idcw|index|flexi|equity|debt|hybrid)/i.test(line) && line.length > 10 && line.length < 120) {
+    if (/(?:growth|direct|regular|dividend|idcw|index|flexi|equity|debt|hybrid|large cap|small cap|mid cap)/i.test(line) && line.length > 10 && line.length < 120) {
       const schemeName = line;
       let units = 0;
       let nav = 0;
       let currentValue = 0;
       let investedAmount = 0;
 
-      // Look in next 3 lines for numeric balances
-      for (let j = 1; j <= 3 && i + j < lines.length; j++) {
+      // Look in next 4 lines for numeric balances
+      for (let j = 1; j <= 4 && i + j < lines.length; j++) {
         const nextLine = lines[i + j];
         const nums = nextLine.match(/[\d,]+(?:\.\d+)?/g);
         if (nums && nums.length >= 2) {
@@ -224,7 +267,7 @@ function fallbackRegexParser(text: string, defaultOwner: string): CasParseResult
             if (parsedNums.length >= 3) {
               nav = parsedNums[1];
             }
-            investedAmount = currentValue * 0.85; // approx cost if not explicitly given
+            investedAmount = currentValue * 0.85;
             break;
           }
         }
@@ -254,7 +297,7 @@ function fallbackRegexParser(text: string, defaultOwner: string): CasParseResult
     success: schemes.length > 0,
     message: schemes.length > 0
       ? `Parsed ${schemes.length} schemes using tabular parser.`
-      : 'Could not automatically identify fund rows. Please check if file is password-protected.',
+      : 'Could not automatically identify fund rows. If your PDF is password-protected, please ensure your PAN is entered.',
     ownerName: defaultOwner,
     totalInvested,
     totalCurrentValue,
@@ -291,7 +334,7 @@ export async function commitCasToFamilyWealth(
       folio_number: s.folioNumber,
       maturity_date: '',
       nominee: 'Family Nominee',
-      notes: `Units: ${s.units?.toLocaleString('en-IN') || '0'} • NAV: ₹${s.nav || '0'} • CAS Auto-Synced`,
+      notes: `Units: ${s.units?.toLocaleString('en-IN') || '0'} • NAV: ₹${s.nav || '0'} • CAS Real Auto-Sync`,
       owner_name: ownerName || 'Rambabu',
       created_by: userId,
       created_at: new Date().toISOString(),
