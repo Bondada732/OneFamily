@@ -13,6 +13,7 @@ import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { CsvExpenseModal, exportExpensesToCsv, downloadSampleTemplate } from '../../components/common/CsvExpenseModal.js';
 import { PanPortfolioSyncModal } from '../../components/common/PanPortfolioSyncModal.js';
 import { WealthSection } from './WealthSection.js';
+import { GoalsSection } from './GoalsSection.js';
 import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3, FileSpreadsheet, Download, Upload } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -644,10 +645,10 @@ export const MoneyView: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-            Family Wealth & Budget
+            {activeSubTab === 'GOALS' ? 'Family Goals' : 'Family Wealth & Budget'}
           </h2>
           <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-            Total control over Indian family finances
+            {activeSubTab === 'GOALS' ? 'Plan today for a brighter tomorrow' : 'Total control over Indian family finances'}
           </p>
         </div>
         {canEditFinance && (
@@ -680,14 +681,14 @@ export const MoneyView: React.FC = () => {
             ) : activeSubTab === 'GOALS' ? (
               <button
                 onClick={() => setShowAddGoal(true)}
-                className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
+                className={`px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 font-bold transition-all shadow-md ${
                   isLight
-                    ? 'bg-[#F05A28] hover:bg-[#E76F3C] text-white border-[#F05A28] shadow-sm'
-                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white shadow-md shadow-amber-500/20'
+                    ? 'bg-[#F05A28] hover:bg-[#E76F3C] text-white shadow-orange-500/20'
+                    : 'bg-[#F05A28] hover:bg-[#E76F3C] text-white shadow-orange-500/30'
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>New Goal</span>
+                <span>Add Goal</span>
               </button>
             ) : (
               <>
@@ -1228,137 +1229,21 @@ export const MoneyView: React.FC = () => {
 
       {/* 5. GOALS SUBTAB */}
       {activeSubTab === 'GOALS' && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-              Family Future Goals
-            </span>
-            {canEditFinance && (
-              <button
-                onClick={() => setShowAddGoal(true)}
-                className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#B84A1E] hover:underline' : 'text-amber-400 hover:underline'}`}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Goal</span>
-              </button>
-            )}
-          </div>
-
-          {goals.length === 0 ? (
-            <div
-              onClick={() => setShowAddGoal(true)}
-              className={`p-6 rounded-3xl border border-dashed text-center cursor-pointer transition-all space-y-3 kinora-3d-card ${
-                isLight
-                  ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-[#F05A28]'
-                  : 'bg-slate-800/60 border-slate-700 hover:border-amber-400 hover:bg-slate-800/90'
-              }`}
-            >
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto kinora-3d-icon-box ${
-                isLight ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-500/20 text-amber-400'
-              }`}>
-                <Target className="w-6 h-6" />
-              </div>
-              <div>
-                <div className={`text-sm font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Family Financial Goals Set</div>
-                <p className={`text-xs max-w-xs mx-auto mt-1 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                  Plan for your child's college, a new dream house, annual family vacation, or emergency safety net.
-                </p>
-              </div>
-              <button className={`px-4 py-2 font-bold rounded-xl text-xs shadow-lg text-white ${
-                isLight ? 'bg-[#F05A28] hover:bg-[#E76F3C]' : 'bg-gradient-to-r from-amber-500 to-indigo-600'
-              }`}>
-                + Set Your First Family Goal
-              </button>
-            </div>
-          ) : (
-            goals.map((goal) => {
-              const pct = goal.target_amount > 0 ? Math.min(100, Math.round(((goal.current_amount || 0) / goal.target_amount) * 100)) : 0;
-              return (
-                <div key={goal.id} className={`p-4 rounded-2xl border space-y-3 shadow-sm kinora-3d-card ${
-                  isLight
-                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2]'
-                    : 'bg-slate-800/90 border-slate-700/80'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{goal.title}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
-                          isLight
-                            ? 'bg-amber-100 text-amber-900 border-amber-300'
-                            : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                        }`}>
-                          {goal.category}
-                        </span>
-                      </div>
-                      <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                        Target Date: {goal.target_date} • SIP: ₹{(goal.monthly_contribution ?? 0).toLocaleString('en-IN')}/mo
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`text-sm font-extrabold ${isLight ? 'text-[#B84A1E]' : 'text-amber-400'}`}>{pct}%</span>
-                      {canEditFinance && (
-                        <div className="flex items-center gap-1.5 ml-auto mt-1">
-                          <button
-                            onClick={() => {
-                              setContributingGoal(goal);
-                              setContributionAmount(String(goal.monthly_contribution || '10000'));
-                            }}
-                            className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-colors border ${
-                              isLight
-                                ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300'
-                                : 'bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border-indigo-500/40'
-                            }`}
-                          >
-                            + Add Savings
-                          </button>
-                          <button
-                            onClick={() => setEditingGoal(goal)}
-                            className={`p-1 rounded-lg border transition-colors ${
-                              isLight
-                                ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
-                                : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
-                            }`}
-                            title="Edit Goal"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteGoal(goal.id)}
-                            className={`p-1 rounded-lg border transition-colors ${
-                              isLight
-                                ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#EAD6C4]'
-                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
-                            }`}
-                            title="Delete Goal"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className={`w-full h-2.5 rounded-full overflow-hidden ${isLight ? 'bg-[#E0CCBB]' : 'bg-slate-700'}`}>
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        isLight ? 'bg-gradient-to-r from-[#F05A28] to-amber-500' : 'bg-gradient-to-r from-amber-400 to-indigo-500'
-                      }`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-
-                  <div className={`flex items-center justify-between text-[11px] pt-1 border-t ${
-                    isLight ? 'text-[#634B3F] border-[#DEC8B2]' : 'text-slate-400 border-slate-700/50'
-                  }`}>
-                    <span>Saved: {isPrivacyMode ? '••••' : formatCurrency(goal.current_amount)}</span>
-                    <span>Target: {formatCurrency(goal.target_amount)}</span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+        <GoalsSection
+          goals={goals}
+          members={familyMembers}
+          currentUser={currentUser}
+          isLight={isLight}
+          isPrivacyMode={isPrivacyMode}
+          canEditFinance={canEditFinance}
+          onOpenAddGoal={() => setShowAddGoal(true)}
+          onEditGoal={(goal) => setEditingGoal(goal)}
+          onDeleteGoal={(id) => handleDeleteGoal(id)}
+          onContributeGoal={(goal) => {
+            setContributingGoal(goal);
+            setContributionAmount(String(goal.monthly_contribution || '10000'));
+          }}
+        />
       )}
 
       {/* Add Expense Modal (Interactive Category Cards & Quick Preset Pills) */}
