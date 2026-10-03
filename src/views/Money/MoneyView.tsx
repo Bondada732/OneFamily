@@ -12,6 +12,7 @@ import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { CsvExpenseModal, exportExpensesToCsv, downloadSampleTemplate } from '../../components/common/CsvExpenseModal.js';
 import { PanPortfolioSyncModal } from '../../components/common/PanPortfolioSyncModal.js';
+import { WealthSection } from './WealthSection.js';
 import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3, FileSpreadsheet, Download, Upload } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -1199,244 +1200,42 @@ export const MoneyView: React.FC = () => {
         </div>
       )}
 
-      {/* 4. WEALTH SUBTAB (Investments, Assets & Liabilities) */}
+      {/* 4. WEALTH SUBTAB (Redesigned with Interactive Category Sub-screens matching Figma / Mockup) */}
       {activeSubTab === 'WEALTH' && (
-        <div className="space-y-4">
-          {/* Asset Categories */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                Family Investments & Assets ({formatCurrency(investments.reduce((s, i) => s + (i.current_value || 0), 0), true)})
-              </span>
-              {canEditFinance && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowPanSyncModal(true)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all shadow-sm ${
-                      isLight
-                        ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700 text-white'
-                        : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white'
-                    }`}
-                    title="Automated Mutual Fund & Demat Sync via PAN (CAMS / KFintech)"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Auto-Sync (PAN)</span>
-                  </button>
-                  <button
-                    onClick={() => setShowAddInvestment(true)}
-                    className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#2E7D32] hover:underline' : 'text-emerald-400 hover:underline'}`}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Asset</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {investments.length === 0 ? (
-              <div
-                className={`p-5 rounded-2xl border border-dashed text-center transition-all space-y-2.5 kinora-3d-card ${
-                  isLight
-                    ? 'bg-[#F3E3D3] border-[#DEC8B2]'
-                    : 'bg-slate-800/60 border-slate-700'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto kinora-3d-icon-box ${
-                  isLight ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-400'
-                }`}>
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Assets Added Yet</div>
-                <p className={`text-[11px] max-w-xs mx-auto ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                  Track Mutual Funds, Stocks, Gold, FDs, PPF, and Real Estate in one consolidated family portfolio.
-                </p>
-                <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                  <button
-                    onClick={() => setShowPanSyncModal(true)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm text-white ${
-                      isLight
-                        ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700'
-                        : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500'
-                    }`}
-                  >
-                    <Sparkles className="w-3.5 h-3.5" /> Auto-Sync via PAN (CAMS)
-                  </button>
-                  <button
-                    onClick={() => setShowAddInvestment(true)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1 border ${
-                      isLight
-                        ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#1F1F1F] border-[#DEC8B2]'
-                        : 'bg-slate-700/60 hover:bg-slate-700 text-slate-200 border-slate-600'
-                    }`}
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Manual Entry
-                  </button>
-                </div>
-              </div>
-            ) : (
-              investments.map((inv) => (
-                <div key={inv.id} className={`p-3.5 rounded-2xl border flex items-center justify-between shadow-sm kinora-3d-tile ${
-                  isLight
-                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
-                    : 'bg-slate-800/90 border-slate-700/80'
-                }`}>
-                  <div className="overflow-hidden mr-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{inv.title}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
-                        isLight ? 'bg-[#EAD8C7] text-[#634B3F] border border-[#DEC8B2]' : 'bg-slate-700 text-slate-300'
-                      }`}>
-                        {inv.type}
-                      </span>
-                    </div>
-                    <div className={`text-[11px] mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                      {inv.institution} • Owner: {inv.owner_name}
-                    </div>
-                    {inv.notes && <div className={`text-[10px] mt-0.5 truncate ${isLight ? 'text-[#2E7D32]' : 'text-emerald-400'}`}>{inv.notes}</div>}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="text-right">
-                      <div className={`text-sm font-bold ${isLight ? 'text-[#2E7D32]' : 'text-emerald-400'}`}>
-                        {isPrivacyMode ? '••••' : formatCurrency(inv.current_value)}
-                      </div>
-                      <div className={`text-[10px] ${isLight ? 'text-[#8C7A6B]' : 'text-slate-400'}`}>
-                        Invested: ₹{(((inv.invested_amount || 0)) / 100000).toFixed(1)}L
-                      </div>
-                    </div>
-                    {canEditFinance && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => setEditingInvestment(inv)}
-                          className={`p-1.5 rounded-lg border transition-colors ${
-                            isLight
-                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
-                              : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
-                          }`}
-                          title="Edit Asset"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteInvestment(inv.id)}
-                          className={`p-1.5 rounded-lg border transition-colors ${
-                            isLight
-                              ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#EAD6C4]'
-                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
-                          }`}
-                          title="Delete Asset"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Liabilities */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                Liabilities & Loans ({formatCurrency(liabilities.reduce((s, l) => s + (l.outstanding_amount || 0), 0), true)})
-              </span>
-              {canEditFinance && (
-                <button
-                  onClick={() => setShowAddLiability(true)}
-                  className={`flex items-center gap-1 font-bold text-xs ${isLight ? 'text-[#C24419] hover:underline' : 'text-rose-400 hover:underline'}`}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Loan</span>
-                </button>
-              )}
-            </div>
-
-            {liabilities.length === 0 ? (
-              <div
-                onClick={() => setShowAddLiability(true)}
-                className={`p-5 rounded-2xl border border-dashed text-center cursor-pointer transition-all space-y-2 kinora-3d-card ${
-                  isLight
-                    ? 'bg-[#F3E3D3] border-[#DEC8B2] hover:border-rose-500'
-                    : 'bg-slate-800/60 border-slate-700 hover:border-rose-500/50 hover:bg-slate-800/90'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto kinora-3d-icon-box ${
-                  isLight ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-rose-500/20 text-rose-400'
-                }`}>
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>No Active Loans or Debts</div>
-                <p className={`text-[11px] max-w-xs mx-auto ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                  Keep track of Home Loans, Car Loans, EMIs, and Credit Cards to manage family cash flow.
-                </p>
-                <button className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1 border ${
-                  isLight
-                    ? 'bg-[#C24419] hover:bg-[#A83813] text-white border-[#C24419] shadow-sm'
-                    : 'bg-rose-600/30 text-rose-300 border-rose-500/40'
-                }`}>
-                  <Plus className="w-3.5 h-3.5" /> Add Loan or EMI
-                </button>
-              </div>
-            ) : (
-              liabilities.map((lia) => (
-                <div key={lia.id} className={`p-3.5 rounded-2xl border flex items-center justify-between shadow-sm kinora-3d-tile ${
-                  isLight
-                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2]'
-                    : 'bg-slate-800/90 border-slate-700/80'
-                }`}>
-                  <div className="overflow-hidden mr-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>{lia.title}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
-                        isLight ? 'bg-[#EAD8C7] text-[#634B3F] border border-[#DEC8B2]' : 'bg-slate-700 text-slate-300'
-                      }`}>
-                        {lia.type}
-                      </span>
-                    </div>
-                    <div className={`text-[11px] mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                      {lia.lender} • Monthly EMI: ₹{(lia.monthly_emi ?? 0).toLocaleString('en-IN')}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="text-right">
-                      <div className={`text-sm font-bold ${isLight ? 'text-[#C24419]' : 'text-rose-400'}`}>
-                        {isPrivacyMode ? '••••' : formatCurrency(lia.outstanding_amount)}
-                      </div>
-                      <div className={`text-[10px] ${isLight ? 'text-[#8C7A6B]' : 'text-slate-400'}`}>Rate: {lia.interest_rate}%</div>
-                    </div>
-                    {canEditFinance && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => setEditingLiability(lia)}
-                          className={`p-1.5 rounded-lg border transition-colors ${
-                            isLight
-                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
-                              : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
-                          }`}
-                          title="Edit Loan"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteLiability(lia.id)}
-                          className={`p-1.5 rounded-lg border transition-colors ${
-                            isLight
-                              ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#EAD6C4]'
-                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
-                          }`}
-                          title="Delete Loan"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <WealthSection
+          investments={investments}
+          liabilities={liabilities}
+          goals={goals}
+          members={familyMembers || []}
+          currentUser={currentUser}
+          isLight={isLight}
+          isPrivacyMode={isPrivacyMode}
+          canEditFinance={canEditFinance}
+          onAddInvestment={(catType) => {
+            if (catType) {
+              let defaultType = 'MUTUAL_FUND';
+              if (catType === 'EQUITY') defaultType = 'STOCK';
+              else if (catType === 'PF') defaultType = 'PF';
+              else if (catType === 'PPF') defaultType = 'PPF';
+              else if (catType === 'NPS') defaultType = 'NPS';
+              else if (catType === 'FD') defaultType = 'FIXED_DEPOSIT';
+              else if (catType === 'RD') defaultType = 'RD';
+              else if (catType === 'SMALL_SAVINGS') defaultType = 'SMALL_SAVINGS';
+              else if (catType === 'BONDS') defaultType = 'BONDS';
+              else if (catType === 'GOLD') defaultType = 'GOLD';
+              setNewInvestment((prev) => ({ ...prev, type: defaultType }));
+            }
+            setShowAddInvestment(true);
+          }}
+          onEditInvestment={(inv) => setEditingInvestment(inv)}
+          onDeleteInvestment={(id) => handleDeleteInvestment(id)}
+          onOpenPanSync={() => setShowPanSyncModal(true)}
+          onAddLiability={() => setShowAddLiability(true)}
+          onEditLiability={(lia) => setEditingLiability(lia)}
+          onDeleteLiability={(id) => handleDeleteLiability(id)}
+          onOpenAddGoal={() => setShowAddGoal(true)}
+          onSelectGoalTab={() => setActiveSubTab('GOALS')}
+        />
       )}
 
       {/* 5. GOALS SUBTAB */}

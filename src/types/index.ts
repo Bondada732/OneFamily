@@ -72,7 +72,20 @@ export interface Investment {
   family_id: string;
   user_id: string;
   owner_name: string;
-  type: 'MUTUAL_FUND' | 'STOCK' | 'SIP' | 'FIXED_DEPOSIT' | 'GOLD' | 'PPF' | 'BONDS' | 'OTHER';
+  type:
+    | 'MUTUAL_FUND'
+    | 'STOCK'
+    | 'SIP'
+    | 'FIXED_DEPOSIT'
+    | 'GOLD'
+    | 'PPF'
+    | 'PF'
+    | 'NPS'
+    | 'RD'
+    | 'SMALL_SAVINGS'
+    | 'BONDS'
+    | 'REAL_ESTATE'
+    | 'OTHER';
   title: string;
   institution?: string;
   invested_amount: number;
