@@ -447,184 +447,179 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
             return (
               <div
                 key={goal.id}
-                className={`p-4 sm:p-5 rounded-3xl border transition-all shadow-sm kinora-3d-card ${
+                className={`p-4 sm:p-4.5 rounded-3xl border transition-all shadow-sm kinora-3d-card space-y-3.5 ${
                   isLight
                     ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2]'
                     : 'bg-slate-800/90 border-slate-700/80 hover:border-slate-600'
                 }`}
               >
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                  {/* Left Column: Icon, Title, Subtitle, Progress, Metrics */}
-                  <div className="lg:col-span-7 space-y-3">
-                    {/* Top Row: Icon + Title + Category Pill */}
-                    <div className="flex items-start gap-3">
-                      <div className={`w-11 h-11 rounded-2xl ${meta.iconBg} flex items-center justify-center shrink-0 border shadow-xs`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className={`text-sm sm:text-base font-extrabold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                            {goal.title}
-                          </h3>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase border ${meta.badgeBg}`}>
-                            {meta.name}
-                          </span>
-                        </div>
-
-                        <p className={`text-xs mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                          {(goal as any).subtitle || `${goal.category} goal`}
-                        </p>
-
-                        <div className={`flex items-center gap-3 text-[11px] mt-1.5 flex-wrap ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 opacity-70" />
-                            <span>{goal.target_date ? formatDate(goal.target_date) : '31 Dec 2028'}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            {beneficiaryLabel.includes('Family') ? (
-                              <Users className="w-3.5 h-3.5 opacity-70" />
-                            ) : (
-                              <User className="w-3.5 h-3.5 opacity-70" />
-                            )}
-                            <span className="font-semibold">{beneficiaryLabel}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Horizontal Progress Bar with Percentage */}
-                    <div className="space-y-1 pt-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="w-full bg-[#DEC8B2]/50 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden mr-3">
-                          <div
-                            className={`h-full rounded-full bg-gradient-to-r ${meta.barColor} transition-all duration-700`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className={`text-xs font-black shrink-0 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                          {pct}%
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 3 Metric Summary: Saved | Target | Still Needed */}
-                    <div className={`grid grid-cols-3 gap-2 pt-2 border-t text-left ${isLight ? 'border-[#DEC8B2]' : 'border-slate-700/60'}`}>
-                      <div>
-                        <div className={`text-xs sm:text-sm font-black ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                          {isPrivacyMode ? '••••' : formatCurrency(current)}
-                        </div>
-                        <div className={`text-[10.5px] font-medium ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                          Saved
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className={`text-xs sm:text-sm font-black ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                          {isPrivacyMode ? '••••' : formatCurrency(target)}
-                        </div>
-                        <div className={`text-[10.5px] font-medium ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                          Target
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="text-xs sm:text-sm font-black text-[#C24419] dark:text-rose-400">
-                          {isPrivacyMode ? '••••' : formatCurrency(stillNeeded)}
-                        </div>
-                        <div className={`text-[10.5px] font-medium ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                          Still needed
-                        </div>
-                      </div>
-                    </div>
+                {/* 1. Top Section: Icon, Title, Subtitle, Timeline, Beneficiary */}
+                <div className="flex items-start gap-3">
+                  <div className={`w-11 h-11 rounded-2xl ${meta.iconBg} flex items-center justify-center shrink-0 border shadow-xs`}>
+                    <Icon className="w-5 h-5" />
                   </div>
 
-                  {/* Right Column: Status Banner, Guidance Note, Monthly Info, Add Money & Menu */}
-                  <div className={`lg:col-span-5 p-3 sm:p-3.5 rounded-2xl flex flex-col justify-between border relative ${
-                    isLight ? 'bg-[#F8EDE0]/70 border-[#EAD6C4]' : 'bg-slate-900/60 border-slate-700/70'
-                  }`}>
-                    {/* Header of Action Box: Status Badge + Context Menu */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md font-bold text-[11px] border ${statusBadge.badgeClass}`}>
-                        <statusBadge.Icon className="w-3.5 h-3.5" />
-                        <span>{statusBadge.label}</span>
-                      </div>
-
-                      {/* 3-Dots Action Menu for Goal */}
-                      {canEditFinance && (
-                        <div className="relative">
-                          <button
-                            onClick={() => setOpenMenuId(openMenuId === goal.id ? null : goal.id)}
-                            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {openMenuId === goal.id && (
-                            <div className="absolute right-0 top-6 w-32 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-20">
-                              <button
-                                onClick={() => {
-                                  setOpenMenuId(null);
-                                  onEditGoal(goal);
-                                }}
-                                className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1.5 text-slate-700 dark:text-slate-200"
-                              >
-                                <Edit3 className="w-3.5 h-3.5 text-amber-500" />
-                                <span>Edit Goal</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setOpenMenuId(null);
-                                  onDeleteGoal(goal.id);
-                                }}
-                                className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 text-rose-600 dark:text-rose-400"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Delete Goal</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className={`text-sm sm:text-base font-extrabold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                        {goal.title}
+                      </h3>
+                      <span className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold uppercase border ${meta.badgeBg}`}>
+                        {meta.name}
+                      </span>
                     </div>
 
-                    {/* Explanatory Guidance Text */}
-                    <p className={`text-[11px] mt-2 font-medium leading-relaxed ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
-                      {statusBadge.note}
+                    <p className={`text-xs mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                      {(goal as any).subtitle || `${goal.category} goal`}
                     </p>
 
-                    {/* Monthly Contribution Stats */}
-                    <div className="mt-2.5 pt-2 border-t border-slate-300/40 dark:border-slate-700/60 space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className={`text-[10.5px] font-medium ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                          {statusBadge.metricLabel}
-                        </span>
-                        <span className={`font-black ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                          {statusBadge.metricVal}
-                        </span>
+                    <div className={`flex items-center gap-3 text-[10.5px] mt-1.5 flex-wrap ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                        <span>{goal.target_date ? formatDate(goal.target_date) : '31 Dec 2028'}</span>
                       </div>
+                      <div className="flex items-center gap-1">
+                        {beneficiaryLabel.includes('Family') ? (
+                          <Users className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                        ) : (
+                          <User className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                        )}
+                        <span className="font-semibold">{beneficiaryLabel}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                      {statusBadge.secMetricLabel && (
-                        <div className="flex items-center justify-between text-xs">
-                          <span className={`text-[10.5px] font-medium ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                            {statusBadge.secMetricLabel}
-                          </span>
-                          <span className={`font-black ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                            {statusBadge.secMetricVal}
-                          </span>
-                        </div>
-                      )}
+                {/* 2. Progress Bar with Percentage */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="w-full bg-[#DEC8B2]/50 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden mr-3">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${meta.barColor} transition-all duration-700`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs font-black shrink-0 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                      {pct}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. 3-Metric Summary: Saved | Target | Still Needed (Full width, zero overlap) */}
+                <div className={`grid grid-cols-3 gap-2 pt-2 border-t text-left ${isLight ? 'border-[#DEC8B2]' : 'border-slate-700/60'}`}>
+                  <div className="min-w-0">
+                    <div className={`text-xs sm:text-sm font-black tracking-tight truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                      {isPrivacyMode ? '••••' : formatCurrency(current)}
+                    </div>
+                    <div className={`text-[10px] font-medium leading-tight truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                      Saved
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className={`text-xs sm:text-sm font-black tracking-tight truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                      {isPrivacyMode ? '••••' : formatCurrency(target)}
+                    </div>
+                    <div className={`text-[10px] font-medium leading-tight truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                      Target
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-black tracking-tight truncate text-[#C24419] dark:text-rose-400">
+                      {isPrivacyMode ? '••••' : formatCurrency(stillNeeded)}
+                    </div>
+                    <div className={`text-[10px] font-medium leading-tight truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                      Still needed
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Action Box: Status Banner, Guidance Note, Monthly Metrics & Add Money */}
+                <div className={`p-3 rounded-2xl border space-y-2 relative ${
+                  isLight ? 'bg-[#F8EDE0]/70 border-[#EAD6C4]' : 'bg-slate-900/60 border-slate-700/70'
+                }`}>
+                  {/* Status Badge + 3-Dots Action Menu */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md font-bold text-[11px] border ${statusBadge.badgeClass}`}>
+                      <statusBadge.Icon className="w-3.5 h-3.5" />
+                      <span>{statusBadge.label}</span>
                     </div>
 
-                    {/* "+ Add Money" Button */}
-                    <button
-                      onClick={() => onContributeGoal(goal)}
-                      className={`w-full mt-3 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 border transition-all cursor-pointer shadow-xs ${statusBadge.btnClass}`}
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Money</span>
-                    </button>
+                    {/* 3-Dots Action Menu for Goal */}
+                    {canEditFinance && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === goal.id ? null : goal.id)}
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {openMenuId === goal.id && (
+                          <div className="absolute right-0 top-6 w-32 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-20">
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                onEditGoal(goal);
+                              }}
+                              className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1.5 text-slate-700 dark:text-slate-200"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-amber-500" />
+                              <span>Edit Goal</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                onDeleteGoal(goal.id);
+                              }}
+                              className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5 text-rose-600 dark:text-rose-400"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete Goal</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
+
+                  {/* Guidance Text */}
+                  <p className={`text-[11px] font-medium leading-relaxed ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
+                    {statusBadge.note}
+                  </p>
+
+                  {/* Monthly Contribution Stats */}
+                  <div className="pt-2 border-t border-slate-300/40 dark:border-slate-700/60 space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={`text-[10.5px] font-medium truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                        {statusBadge.metricLabel}
+                      </span>
+                      <span className={`font-black shrink-0 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                        {statusBadge.metricVal}
+                      </span>
+                    </div>
+
+                    {statusBadge.secMetricLabel && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className={`text-[10.5px] font-medium truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                          {statusBadge.secMetricLabel}
+                        </span>
+                        <span className={`font-black shrink-0 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                          {statusBadge.secMetricVal}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* "+ Add Money" Button */}
+                  <button
+                    onClick={() => onContributeGoal(goal)}
+                    className={`w-full pt-2 pb-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 border transition-all cursor-pointer shadow-xs ${statusBadge.btnClass}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Money</span>
+                  </button>
                 </div>
               </div>
             );
