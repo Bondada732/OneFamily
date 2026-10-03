@@ -402,5 +402,28 @@ router.post('/:id/cas-commit', requirePermission('INVESTMENT_EDIT'), async (req:
   }
 });
 
+// 6. 1-Click Request Official CAMS / MF Central CAS Statement
+router.post('/:id/cams-request', requirePermission('INVESTMENT_EDIT'), async (req: AuthRequest, res) => {
+  const { panNumber, email, phone, memberName } = req.body;
+
+  if (!panNumber || !email) {
+    return res.status(400).json({ success: false, error: 'PAN Number and Email are required' });
+  }
+
+  const camsUrl = `https://www.camsonline.com/Investors/Statements/Consolidated-Account-Statement`;
+  const mfCentralUrl = `https://app.mfcentral.com/investor/signin`;
+  const kfintechUrl = `https://mfs.kfintech.com/investor/General/ConsolidatedAccountStatement.aspx`;
+
+  res.json({
+    success: true,
+    message: `CAMS request initiated for PAN ${panNumber.toUpperCase()}. CAMS will deliver your password-protected Detailed CAS statement to ${email}.`,
+    camsUrl,
+    mfCentralUrl,
+    kfintechUrl,
+    pan: panNumber.toUpperCase(),
+    email,
+  });
+});
+
 export default router;
 

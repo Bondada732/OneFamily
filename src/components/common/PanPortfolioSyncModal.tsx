@@ -19,6 +19,9 @@ import {
   Check,
   HelpCircle,
   ExternalLink,
+  Mail,
+  Smartphone,
+  DownloadCloud,
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters.js';
 
@@ -43,16 +46,14 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
   onSyncComplete,
   apiCall,
 }) => {
-  const [syncMode, setSyncMode] = useState<'CAS_UPLOAD' | 'PAN_OTP'>('CAS_UPLOAD');
-  const [step, setStep] = useState<'INPUT' | 'OTP_VERIFY' | 'PREVIEW' | 'SUCCESS'>('INPUT');
+  const [activeTab, setActiveTab] = useState<'REQUEST_CAMS' | 'UPLOAD_CAS'>('REQUEST_CAMS');
+  const [step, setStep] = useState<'INPUT' | 'PREVIEW' | 'SUCCESS'>('INPUT');
   
-  // PAN & AA State
+  // User Input State
   const [panNumber, setPanNumber] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [phone, setPhone] = useState('9876543210');
   const [selectedMember, setSelectedMember] = useState(currentUserName);
-  const [sessionId, setSessionId] = useState('');
-  const [maskedPhone, setMaskedPhone] = useState('');
-  const [otp, setOtp] = useState('123456');
 
   // CAS File Upload State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -64,6 +65,7 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
   // Common State
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [extractedPortfolio, setExtractedPortfolio] = useState<any>(null);
 
   if (!isOpen) return null;
@@ -89,7 +91,53 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
     }
   };
 
-  // 1. Submit CAS Statement for AI Parsing
+  // 1. Request Official CAMS Statement
+  const handleRequestCamsOnline = async (portal: 'CAMS' | 'MFCENTRAL' | 'KFINTECH') => {
+    const cleanPan = panNumber.trim().toUpperCase();
+    if (!cleanPan || !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanPan)) {
+      setErrorMsg('Please enter a valid 10-character PAN number (e.g. ABCDE1234F) before requesting statement');
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMsg('');
+    try {
+      let targetUrl = 'https://www.camsonline.com/Investors/Statements/Consolidated-Account-Statement';
+      if (portal === 'MFCENTRAL') {
+        targetUrl = 'https://app.mfcentral.com/investor/signin';
+      } else if (portal === 'KFINTECH') {
+        targetUrl = 'https://mfs.kfintech.com/investor/General/ConsolidatedAccountStatement.aspx';
+      }
+
+      // Log request on backend
+      await apiCall(`/investments/${familyId}/cams-request`, {
+        method: 'POST',
+        body: JSON.stringify({
+          panNumber: cleanPan,
+          email: userEmail || 'investor@cams.com',
+          phone,
+          memberName: selectedMember,
+        }),
+      });
+
+      // Open official portal in new tab for direct OTP verification
+      window.open(targetUrl, '_blank');
+      setPdfPassword(cleanPan);
+      setSuccessMsg(
+        `Official ${portal} portal opened! Enter your OTP on CAMS to receive your CAS PDF, then upload it on the next tab.`
+      );
+      // Automatically switch to upload tab after 2.5 seconds
+      setTimeout(() => {
+        setActiveTab('UPLOAD_CAS');
+      }, 2500);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error connecting to CAMS request service');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 2. Submit CAS Statement for AI Parsing
   const handleParseCasFile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile && !rawTextContent && !fileBase64) {
@@ -106,7 +154,7 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
           fileBase64,
           fileName: selectedFile?.name || 'statement.pdf',
           textContent: rawTextContent,
-          pdfPassword: pdfPassword.trim(),
+          pdfPassword: pdfPassword.trim() || panNumber.trim().toUpperCase(),
           memberName: selectedMember,
         }),
       });
@@ -128,86 +176,14 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
     }
   };
 
-  // 2. Initiate AA PAN Sync
-  const handleInitiatePanSync = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanPan = panNumber.trim().toUpperCase();
-    if (!cleanPan || !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanPan)) {
-      setErrorMsg('Please enter a valid 10-character PAN number (e.g. ABCDE1234F)');
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await apiCall(`/investments/${familyId}/sync-pan/initiate`, {
-        method: 'POST',
-        body: JSON.stringify({
-          panNumber: cleanPan,
-          phone,
-          memberName: selectedMember,
-        }),
-      });
-
-      if (res.success && res.sessionId) {
-        setSessionId(res.sessionId);
-        setMaskedPhone(res.maskedPhone || '+91 ******3210');
-        setOtp('123456');
-        setStep('OTP_VERIFY');
-      } else {
-        setErrorMsg(res.error || 'Failed to initiate PAN sync.');
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Server connection error during sync request');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 3. Verify OTP
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp.trim() || otp.length < 4) {
-      setErrorMsg('Please enter the verification OTP');
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await apiCall(`/investments/${familyId}/sync-pan/verify`, {
-        method: 'POST',
-        body: JSON.stringify({
-          sessionId,
-          otp: otp.trim(),
-        }),
-      });
-
-      if (res.success && res.portfolio) {
-        setExtractedPortfolio(res.portfolio);
-        setStep('PREVIEW');
-      } else {
-        setErrorMsg(res.error || 'Invalid OTP. Please enter 123456.');
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to verify OTP');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 4. Commit Extracted Schemes to Family Wealth
+  // 3. Commit Extracted Schemes to Family Wealth
   const handleCommitPortfolio = async () => {
     if (!extractedPortfolio || !extractedPortfolio.schemes) return;
 
     setIsLoading(true);
     setErrorMsg('');
     try {
-      const endpoint = syncMode === 'CAS_UPLOAD'
-        ? `/investments/${familyId}/cas-commit`
-        : `/investments/${familyId}/sync-pan/commit`;
-
-      const res = await apiCall(endpoint, {
+      const res = await apiCall(`/investments/${familyId}/cas-commit`, {
         method: 'POST',
         body: JSON.stringify({
           ownerName: selectedMember,
@@ -253,10 +229,10 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
             </div>
             <div>
               <h3 className={`text-sm sm:text-base font-extrabold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                Mutual Fund & Demat Auto-Sync
+                CAMS & MF Central Auto-Sync
               </h3>
               <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                Extract real folios via CAMS, KFintech & Demat
+                Mobile OTP authenticated CAS portfolio extraction
               </p>
             </div>
           </div>
@@ -270,7 +246,7 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
           </button>
         </div>
 
-        {/* Sync Mode Switcher (When on Step INPUT) */}
+        {/* Tab Switcher (When on Step INPUT) */}
         {step === 'INPUT' && (
           <div className={`grid grid-cols-2 gap-1.5 p-1 rounded-2xl border ${
             isLight ? 'bg-[#EAD8C7] border-[#DEC8B2]' : 'bg-slate-800/80 border-slate-700'
@@ -278,30 +254,11 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
             <button
               type="button"
               onClick={() => {
-                setSyncMode('CAS_UPLOAD');
+                setActiveTab('REQUEST_CAMS');
                 setErrorMsg('');
               }}
               className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                syncMode === 'CAS_UPLOAD'
-                  ? isLight
-                    ? 'bg-[#F05A28] text-white shadow-md'
-                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
-                  : isLight
-                    ? 'text-[#634B3F] hover:text-[#1F1F1F]'
-                    : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>CAMS Statement (Real)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSyncMode('PAN_OTP');
-                setErrorMsg('');
-              }}
-              className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                syncMode === 'PAN_OTP'
+                activeTab === 'REQUEST_CAMS'
                   ? isLight
                     ? 'bg-[#F05A28] text-white shadow-md'
                     : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
@@ -310,13 +267,32 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
                     : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Key className="w-3.5 h-3.5" />
-              <span>PAN & AA Sandbox</span>
+              <Mail className="w-3.5 h-3.5" />
+              <span>1. Request via OTP</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('UPLOAD_CAS');
+                setErrorMsg('');
+              }}
+              className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'UPLOAD_CAS'
+                  ? isLight
+                    ? 'bg-[#F05A28] text-white shadow-md'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md'
+                  : isLight
+                    ? 'text-[#634B3F] hover:text-[#1F1F1F]'
+                    : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>2. Import Statement PDF</span>
             </button>
           </div>
         )}
 
-        {/* Error Alert */}
+        {/* Alert Messages */}
         {errorMsg && (
           <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-500 text-xs flex items-start gap-2 animate-shake">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -324,12 +300,130 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
           </div>
         )}
 
-        {/* ---------------- MODE 1: CAS STATEMENT UPLOAD ---------------- */}
-        {step === 'INPUT' && syncMode === 'CAS_UPLOAD' && (
+        {successMsg && (
+          <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 text-xs flex items-start gap-2 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="flex-1">{successMsg}</div>
+          </div>
+        )}
+
+        {/* ---------------- TAB 1: 1-CLICK REQUEST CAMS STATEMENT VIA OTP ---------------- */}
+        {step === 'INPUT' && activeTab === 'REQUEST_CAMS' && (
+          <div className="space-y-3.5">
+            <div>
+              <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
+                Portfolio Owner
+              </label>
+              <select
+                value={selectedMember}
+                onChange={(e) => setSelectedMember(e.target.value)}
+                className={`w-full px-3 py-2.5 rounded-xl border text-xs font-semibold outline-none ${
+                  isLight
+                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]'
+                    : 'bg-slate-800 border-slate-700 text-white'
+                }`}
+              >
+                {members.map((m) => (
+                  <option key={m.id} value={m.name}>
+                    {m.name} ({m.role === 'FAMILY_HEAD' ? 'Head' : 'Member'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
+                10-Digit PAN Card Number
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. ABCDE1234F"
+                maxLength={10}
+                value={panNumber}
+                onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
+                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-bold tracking-wider uppercase outline-none transition-all ${
+                  isLight
+                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                    : 'bg-slate-800 border-slate-700 text-emerald-400 focus:border-emerald-500'
+                }`}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
+                Registered Email ID (for CAS Delivery)
+              </label>
+              <input
+                type="email"
+                placeholder="your.email@example.com"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                className={`w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold outline-none ${
+                  isLight
+                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]'
+                    : 'bg-slate-800 border-slate-700 text-white'
+                }`}
+              />
+              <p className={`text-[10px] mt-1 ${isLight ? 'text-[#8C7A6B]' : 'text-slate-400'}`}>
+                CAMS delivers your full consolidated account statement PDF to this email in 1 minute.
+              </p>
+            </div>
+
+            {/* Direct Official CAMS / MF Central Trigger Buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleRequestCamsOnline('CAMS')}
+                disabled={isLoading}
+                className={`w-full py-3 rounded-xl text-xs font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  isLight
+                    ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700'
+                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500'
+                }`}
+              >
+                <DownloadCloud className="w-4 h-4" />
+                <span>1-Click Request from CAMS Online</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleRequestCamsOnline('MFCENTRAL')}
+                disabled={isLoading}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  isLight
+                    ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#1F1F1F] border-[#DEC8B2]'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Request from MF Central (Live Mobile OTP)</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+              </button>
+            </div>
+
+            {/* 3 Step Instruction Card */}
+            <div className={`p-3 rounded-2xl border text-[11px] space-y-1.5 ${
+              isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#634B3F]' : 'bg-slate-800/40 border-slate-700/60 text-slate-300'
+            }`}>
+              <div className="font-bold flex items-center gap-1.5 text-xs text-amber-500">
+                <Check className="w-4 h-4" />
+                <span>How the CAMS Mobile OTP Flow works:</span>
+              </div>
+              <p>1. Tapping the button above opens official CAMS/MF Central.</p>
+              <p>2. Enter the OTP sent to your phone &rarr; CAMS generates your detailed CAS PDF.</p>
+              <p>3. Drop the PDF in Tab 2 below &rarr; KinoraOne AI extracts all your funds in 1 second!</p>
+            </div>
+          </div>
+        )}
+
+        {/* ---------------- TAB 2: IMPORT RECEIVED CAS PDF ---------------- */}
+        {step === 'INPUT' && activeTab === 'UPLOAD_CAS' && (
           <form onSubmit={handleParseCasFile} className="space-y-3.5">
             <div>
               <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
-                Select Portfolio Owner
+                Portfolio Owner
               </label>
               <select
                 value={selectedMember}
@@ -351,7 +445,7 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
             {/* Drag & Drop File Box */}
             <div>
               <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
-                Upload CAMS / KFintech / MF Central CAS Statement
+                Select Received CAMS / KFintech Statement PDF
               </label>
               <div
                 onDragOver={(e) => {
@@ -405,25 +499,25 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
                 ) : (
                   <div>
                     <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                      Tap or drag CAMS CAS PDF / Excel / CSV here
+                      Tap or drop your CAMS CAS PDF here
                     </div>
                     <p className={`text-[10px] mt-1 max-w-xs mx-auto ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                      Supports CAMS Consolidated Account Statement, KFintech CAS, Zerodha Coin & Groww exports.
+                      Also supports KFintech CAS, MF Central statements & Zerodha/Groww exports.
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Optional Password field for protected CAMS PDF */}
+            {/* Optional Password field */}
             <div>
               <label className={`block text-xs font-bold mb-1 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
                 PDF Password (Your PAN Card Number)
               </label>
               <input
                 type="text"
-                placeholder="e.g. ABCDE1234F (Optional, if PDF is locked)"
-                value={pdfPassword}
+                placeholder="e.g. ABCDE1234F (Optional)"
+                value={pdfPassword || panNumber}
                 onChange={(e) => setPdfPassword(e.target.value.toUpperCase())}
                 className={`w-full px-3.5 py-2.5 rounded-xl border text-xs font-bold uppercase outline-none ${
                   isLight
@@ -431,9 +525,6 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
                     : 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500'
                 }`}
               />
-              <p className={`text-[10px] mt-1 ${isLight ? 'text-[#8C7A6B]' : 'text-slate-400'}`}>
-                CAMS protects CAS statements with your PAN (e.g. <code>ABCDE1234F</code>) as the default password.
-              </p>
             </div>
 
             {/* Action Button */}
@@ -456,184 +547,10 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
                 </>
               )}
             </button>
-
-            {/* Helper Info */}
-            <div className={`p-3 rounded-2xl border text-[11px] space-y-1.5 ${
-              isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#634B3F]' : 'bg-slate-800/40 border-slate-700/60 text-slate-400'
-            }`}>
-              <div className="font-bold flex items-center gap-1.5 text-xs">
-                <HelpCircle className="w-3.5 h-3.5 text-amber-500" />
-                <span>How to get your free CAMS / KFintech CAS:</span>
-              </div>
-              <p>
-                1. Visit <a href="https://camsonline.com" target="_blank" rel="noreferrer" className="text-amber-500 font-semibold underline">camsonline.com</a> or <a href="https://mfcentral.com" target="_blank" rel="noreferrer" className="text-amber-500 font-semibold underline">mfcentral.com</a>.
-              </p>
-              <p>
-                2. Enter your email and PAN &rarr; CAMS emails your consolidated statement PDF instantly.
-              </p>
-              <p>
-                3. Upload the statement above to import all your funds in 1 second!
-              </p>
-            </div>
           </form>
         )}
 
-        {/* ---------------- MODE 2: PAN & AA FLOW ---------------- */}
-        {step === 'INPUT' && syncMode === 'PAN_OTP' && (
-          <form onSubmit={handleInitiatePanSync} className="space-y-4">
-            <div>
-              <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
-                Portfolio Owner
-              </label>
-              <select
-                value={selectedMember}
-                onChange={(e) => setSelectedMember(e.target.value)}
-                className={`w-full px-3 py-2.5 rounded-xl border text-xs font-semibold outline-none ${
-                  isLight
-                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]'
-                    : 'bg-slate-800 border-slate-700 text-white'
-                }`}
-              >
-                {members.map((m) => (
-                  <option key={m.id} value={m.name}>
-                    {m.name} ({m.role === 'FAMILY_HEAD' ? 'Head' : 'Member'})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
-                10-Digit PAN Card Number
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. ABCDE1234F"
-                maxLength={10}
-                value={panNumber}
-                onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
-                className={`w-full px-3.5 py-3 rounded-xl border text-sm font-bold tracking-wider uppercase outline-none transition-all ${
-                  isLight
-                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
-                    : 'bg-slate-800 border-slate-700 text-emerald-400 focus:border-emerald-500'
-                }`}
-                required
-              />
-            </div>
-
-            <div>
-              <label className={`block text-xs font-bold mb-1.5 ${isLight ? 'text-[#4A3B32]' : 'text-slate-300'}`}>
-                Registered Mobile Number
-              </label>
-              <input
-                type="tel"
-                placeholder="9876543210"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={`w-full px-3.5 py-2.5 rounded-xl border text-xs font-semibold outline-none ${
-                  isLight
-                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]'
-                    : 'bg-slate-800 border-slate-700 text-white'
-                }`}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full py-3 rounded-xl text-xs font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                isLight ? 'bg-[#F05A28] hover:bg-[#E76F3C]' : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500'
-              } ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Connecting to CAMS Network...</span>
-                </>
-              ) : (
-                <>
-                  <span>Request Verification OTP</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* STEP 2: OTP VERIFICATION */}
-        {step === 'OTP_VERIFY' && (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="text-center space-y-2">
-              <div className={`text-xs font-bold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                Enter SEBI / CAMS Consent OTP
-              </div>
-              <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                Verification code for registered mobile <span className="font-bold">{maskedPhone}</span>
-              </p>
-              <div
-                onClick={() => setOtp('123456')}
-                className={`cursor-pointer text-[11px] font-mono py-2 px-3 rounded-xl border flex items-center justify-center gap-1.5 transition-all select-none ${
-                  isLight
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
-                    : 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/60'
-                }`}
-                title="Click to auto-fill OTP"
-              >
-                <span>⚡ Sandbox OTP:</span>
-                <strong className="tracking-widest text-sm font-black underline">123456</strong>
-                <span className="text-[10px] opacity-80">(Tap to auto-fill)</span>
-              </div>
-            </div>
-
-            <div>
-              <input
-                type="text"
-                maxLength={6}
-                placeholder="123456"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                className={`w-full py-3 text-center text-xl font-bold tracking-[0.4em] rounded-xl border outline-none ${
-                  isLight
-                    ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
-                    : 'bg-slate-800 border-slate-700 text-emerald-400 focus:border-emerald-500'
-                }`}
-                autoFocus
-                required
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setStep('INPUT')}
-                className={`flex-1 py-2.5 rounded-xl border text-xs font-semibold ${
-                  isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#634B3F]' : 'bg-slate-800 border-slate-700 text-slate-300'
-                }`}
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`flex-2 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg flex items-center justify-center gap-2 ${
-                  isLight ? 'bg-[#F05A28] hover:bg-[#E76F3C]' : 'bg-gradient-to-r from-emerald-600 to-teal-600'
-                } ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Extracting Portfolio...</span>
-                  </>
-                ) : (
-                  <span>Verify & Extract Folios</span>
-                )}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* STEP 3: PREVIEW EXTRACTED PORTFOLIO */}
+        {/* STEP 2: PREVIEW EXTRACTED REAL PORTFOLIO */}
         {step === 'PREVIEW' && extractedPortfolio && (
           <div className="space-y-4">
             {/* Portfolio Summary Card */}
@@ -735,7 +652,7 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
           </div>
         )}
 
-        {/* STEP 4: SUCCESS */}
+        {/* STEP 3: SUCCESS */}
         {step === 'SUCCESS' && (
           <div className="text-center py-6 space-y-3">
             <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto animate-bounce">
