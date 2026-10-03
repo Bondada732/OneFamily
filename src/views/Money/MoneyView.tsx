@@ -363,6 +363,9 @@ export const MoneyView: React.FC = () => {
   const refreshInvestments = async () => {
     if (!family?.id) return;
     try {
+      // Clear stale localStorage cache so mobile/APK always gets fresh data after CAS import
+      const cacheKey = `kinora_api_cache_/investments/${family.id}/investments`;
+      localStorage.removeItem(cacheKey);
       const invData = await apiRequest(`/investments/${family.id}/investments`);
       setInvestments(invData.investments || []);
       setLiabilities(invData.liabilities || []);
@@ -2396,7 +2399,8 @@ export const MoneyView: React.FC = () => {
           members={familyMembers || []}
           currentUserName={currentUser?.name || 'Self'}
           onSyncComplete={() => {
-            refreshInvestments();
+            // Small delay ensures server has persisted data before we re-fetch
+            setTimeout(() => refreshInvestments(), 500);
           }}
           apiCall={apiRequest}
         />
