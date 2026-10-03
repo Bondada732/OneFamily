@@ -655,18 +655,6 @@ export const MoneyView: React.FC = () => {
             {activeSubTab === 'WEALTH' ? (
               <>
                 <button
-                  onClick={() => setShowPanSyncModal(true)}
-                  className={`p-2 px-2.5 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all shadow-sm ${
-                    isLight
-                      ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700 text-white border-transparent'
-                      : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white border-transparent shadow-indigo-600/30'
-                  }`}
-                  title="Automated Mutual Fund & Demat Sync via PAN"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Sync PAN</span>
-                </button>
-                <button
                   onClick={() => setShowAddInvestment(true)}
                   className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
                     isLight

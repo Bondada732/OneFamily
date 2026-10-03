@@ -431,7 +431,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
             }}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
               isLight
-                ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F] hover:bg-amber-100/60'
+                ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2px] border-b-[#DEC8B2] text-[#1F1F1F] hover:bg-[#EAD8C7]'
                 : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
             }`}
           >
@@ -470,7 +470,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
         <div
           className={`p-5 rounded-3xl relative overflow-hidden shadow-xl ${
             isLight
-              ? 'bg-gradient-to-br from-[#FFF8F1] via-[#FCEEE1] to-[#F3E3D3] border-2 border-[#DEC8B2] text-[#1F1F1F]'
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)] text-[#1F1F1F]'
               : 'bg-gradient-to-br from-[#061220] via-[#0B1E36] to-[#0D2B4D] border border-slate-800 text-white'
           }`}
         >
@@ -532,7 +532,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`w-full pl-9 pr-3 py-2 rounded-xl text-xs border outline-none ${
                 isLight
-                  ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F] focus:border-[#F05A28]'
+                  ? 'bg-[#F3E3D3] border-[#EAD6C4] text-[#1F1F1F] focus:border-[#F05A28]'
                   : 'bg-slate-800 border-slate-700 text-white focus:border-amber-400'
               }`}
             />
@@ -543,7 +543,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
               value={amcFilter}
               onChange={(e) => setAmcFilter(e.target.value)}
               className={`px-3 py-2 rounded-xl text-xs font-semibold border outline-none ${
-                isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-800 border-slate-700 text-white'
+                isLight ? 'bg-[#F3E3D3] border-[#EAD6C4] text-[#1F1F1F]' : 'bg-slate-800 border-slate-700 text-white'
               }`}
             >
               <option value="ALL">All AMCs / Institutions</option>
@@ -591,7 +591,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                   <button
                     onClick={() => onAddInvestment(currentCatMeta.id)}
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${
-                      isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-800 border-slate-700 text-white'
+                      isLight ? 'bg-[#F3E3D3] border-[#DEC8B2] text-[#1F1F1F]' : 'bg-slate-800 border-slate-700 text-white'
                     }`}
                   >
                     <Plus className="w-4 h-4" />
@@ -612,7 +612,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                   key={inv.id}
                   className={`p-4 rounded-2xl border transition-all shadow-sm ${
                     isLight
-                      ? 'bg-[#FFF8F1] border-[#DEC8B2] hover:border-[#F05A28]'
+                      ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)] hover:border-[#F05A28]'
                       : 'bg-slate-800/80 border-slate-700 hover:border-slate-600'
                   }`}
                 >
@@ -633,7 +633,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-3 text-xs mt-1 text-slate-400 flex-wrap">
+                      <div className={`flex items-center gap-3 text-xs mt-1 flex-wrap ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                         {inv.folio_number && <span>Folio: <b>{inv.folio_number}</b></span>}
                         <span>Owner: <b>{inv.owner_name}</b></span>
                         {inv.maturity_date && <span>Maturity: {inv.maturity_date}</span>}
@@ -646,7 +646,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                       </div>
                       <div
                         className={`text-xs font-bold flex items-center justify-end gap-0.5 ${
-                          isProfit ? 'text-emerald-500' : 'text-rose-500'
+                          isProfit ? (isLight ? 'text-emerald-700' : 'text-emerald-500') : 'text-rose-500'
                         }`}
                       >
                         {isProfit ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -658,7 +658,9 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-slate-700/30 mt-3 pt-2.5 text-xs text-slate-400">
+                  <div className={`flex items-center justify-between border-t mt-3 pt-2.5 text-xs ${
+                    isLight ? 'border-[#DEC8B2] text-[#634B3F]' : 'border-slate-700/30 text-slate-400'
+                  }`}>
                     <div>
                       Invested: <b>{isPrivacyMode ? '••••' : formatCurrency(inv.invested_amount)}</b>
                     </div>
@@ -667,14 +669,14 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => onEditInvestment(inv)}
-                          className="p-1 hover:text-amber-400 transition-colors"
+                          className="p-1 hover:text-amber-500 transition-colors"
                           title="Edit Holding"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => onDeleteInvestment(inv.id)}
-                          className="p-1 hover:text-rose-400 transition-colors"
+                          className="p-1 hover:text-rose-500 transition-colors"
                           title="Delete Holding"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -700,7 +702,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
       <div
         className={`p-5 sm:p-6 rounded-3xl relative overflow-hidden shadow-2xl ${
           isLight
-            ? 'bg-gradient-to-br from-[#FFF8F1] via-[#FCEEE1] to-[#F3E3D3] border-2 border-[#DEC8B2] text-[#1F1F1F]'
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)] text-[#1F1F1F]'
             : 'bg-gradient-to-br from-[#061220] via-[#0B1E36] to-[#0E2F52] border border-slate-800 text-white'
         }`}
       >
@@ -738,18 +740,18 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
               onChange={(e) => setSelectedMember(e.target.value)}
               className={`appearance-none backdrop-blur-md border px-3 py-1.5 pr-7 rounded-xl text-xs font-semibold outline-none cursor-pointer transition-all ${
                 isLight
-                  ? 'bg-white/80 hover:bg-white text-[#1F1F1F] border-[#DEC8B2]'
+                  ? 'bg-[#EAD8C7] hover:bg-[#DEC8B2] text-[#1F1F1F] border-[#DEC8B2]'
                   : 'bg-white/10 hover:bg-white/15 text-white border-white/20'
               }`}
             >
-              <option value="ALL" className={isLight ? 'bg-[#FFF8F1] text-[#1F1F1F]' : 'bg-slate-900 text-white'}>
+              <option value="ALL" className={isLight ? 'bg-[#F3E3D3] text-[#1F1F1F]' : 'bg-slate-900 text-white'}>
                 All Members
               </option>
               {members.map((m) => (
                 <option
                   key={m.id}
                   value={m.name}
-                  className={isLight ? 'bg-[#FFF8F1] text-[#1F1F1F]' : 'bg-slate-900 text-white'}
+                  className={isLight ? 'bg-[#F3E3D3] text-[#1F1F1F]' : 'bg-slate-900 text-white'}
                 >
                   {m.name}
                 </option>
@@ -812,7 +814,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
           </div>
 
           <div>
-            <div className={`text-xs sm:text-sm font-black truncate ${isLight ? 'text-amber-600 dark:text-amber-300' : 'text-amber-300'}`}>
+            <div className={`text-xs sm:text-sm font-black truncate ${isLight ? 'text-[#B84A1E]' : 'text-amber-300'}`}>
               {xirrPct}
             </div>
             <div className={`text-[10px] sm:text-[11px] mt-0.5 font-medium truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
@@ -826,7 +828,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
       <div
         className={`p-4 sm:p-5 rounded-3xl border shadow-sm ${
           isLight
-            ? 'bg-[#FFF8F1] border-[#DEC8B2]'
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
             : 'bg-slate-800/70 border-slate-700'
         }`}
       >
@@ -847,7 +849,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
           <div className="sm:col-span-5 flex items-center justify-center py-2">
             <div className="relative w-36 h-36 flex items-center justify-center">
               <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="38" fill="transparent" stroke={isLight ? '#EAD8C7' : '#334155'} strokeWidth="14" />
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke={isLight ? '#DEC8B2' : '#334155'} strokeWidth="14" />
                 {donutSegments.map((seg) => (
                   <circle
                     key={seg.id}
@@ -881,7 +883,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`flex items-center justify-between p-1.5 rounded-xl transition-all cursor-pointer ${
-                  isLight ? 'hover:bg-[#F3E3D3]' : 'hover:bg-slate-700/60'
+                  isLight ? 'hover:bg-[#EAD8C7]' : 'hover:bg-slate-700/60'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -931,7 +933,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between shadow-sm group ${
                   isLight
-                    ? 'bg-[#FFF8F1] border-[#DEC8B2] hover:border-[#F05A28] hover:shadow-md'
+                    ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)] hover:border-[#F05A28] hover:shadow-md'
                     : 'bg-slate-800/80 border-slate-700 hover:border-slate-600 hover:bg-slate-800'
                 }`}
               >
@@ -951,7 +953,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                   <div className={`text-sm font-extrabold mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                     {isPrivacyMode ? '••••' : formatCurrency(cat.val)}
                   </div>
-                  <div className="text-[10px] font-bold text-emerald-500 mt-0.5">
+                  <div className={`text-[10px] font-bold mt-0.5 ${isLight ? 'text-emerald-700' : 'text-emerald-500'}`}>
                     {cat.gainPct}
                   </div>
                 </div>
@@ -964,7 +966,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
             onClick={() => setSelectedCategory('MANAGE_ASSETS')}
             className={`p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between shadow-sm group ${
               isLight
-                ? 'bg-[#FFF8F1] border-[#DEC8B2] hover:border-[#F05A28]'
+                ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-[0_6px_14px_-2px_rgba(130,80,45,0.12)] hover:border-[#F05A28]'
                 : 'bg-slate-800/80 border-slate-700 hover:border-slate-600'
             }`}
           >
@@ -992,7 +994,9 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
         <div
           onClick={onSelectGoalTab}
           className={`p-4 rounded-3xl border shadow-sm transition-all cursor-pointer ${
-            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2] hover:border-[#F05A28]' : 'bg-slate-800/70 border-slate-700 hover:border-slate-600'
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)] hover:border-[#F05A28]'
+              : 'bg-slate-800/70 border-slate-700 hover:border-slate-600'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
@@ -1029,7 +1033,9 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
         {/* Right: Upcoming Investments Card */}
         <div
           className={`p-4 rounded-3xl border shadow-sm ${
-            isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/70 border-slate-700'
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+              : 'bg-slate-800/70 border-slate-700'
           }`}
         >
           <div className="flex items-center justify-between mb-2.5">
@@ -1049,7 +1055,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                 HDFC Flexi Cap SIP
               </span>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-emerald-500">₹10,000</span>
+                <span className="font-bold text-emerald-600">₹10,000</span>
                 <span className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>05 Oct</span>
               </div>
             </div>
@@ -1059,7 +1065,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                 PPF Contribution
               </span>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-emerald-500">₹12,500</span>
+                <span className="font-bold text-emerald-600">₹12,500</span>
                 <span className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>10 Oct</span>
               </div>
             </div>
@@ -1069,7 +1075,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                 RD Installment
               </span>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-emerald-500">₹5,000</span>
+                <span className="font-bold text-emerald-600">₹5,000</span>
                 <span className={`text-[10px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>15 Oct</span>
               </div>
             </div>
@@ -1080,7 +1086,9 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
       {/* 5. RECENT ACTIVITY SECTION */}
       <div
         className={`p-4 sm:p-5 rounded-3xl border shadow-sm space-y-3 ${
-          isLight ? 'bg-[#FFF8F1] border-[#DEC8B2]' : 'bg-slate-800/70 border-slate-700'
+          isLight
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+            : 'bg-slate-800/70 border-slate-700'
         }`}
       >
         <div className="flex items-center justify-between">
@@ -1105,7 +1113,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
         <div className="space-y-2">
           <div
             className={`p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
-              isLight ? 'bg-white border-[#EAD8C7] hover:bg-[#F3E3D3]' : 'bg-slate-800 border-slate-700 hover:bg-slate-700/60'
+              isLight ? 'bg-[#F8EDE0] border-[#EAD6C4] hover:bg-[#EAD8C7]' : 'bg-slate-800 border-slate-700 hover:bg-slate-700/60'
             }`}
           >
             <div className="flex items-center gap-2.5">
@@ -1129,7 +1137,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
 
           <div
             className={`p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
-              isLight ? 'bg-white border-[#EAD8C7] hover:bg-[#F3E3D3]' : 'bg-slate-800 border-slate-700 hover:bg-slate-700/60'
+              isLight ? 'bg-[#F8EDE0] border-[#EAD6C4] hover:bg-[#EAD8C7]' : 'bg-slate-800 border-slate-700 hover:bg-slate-700/60'
             }`}
           >
             <div className="flex items-center gap-2.5">
@@ -1153,7 +1161,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
 
           <div
             className={`p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
-              isLight ? 'bg-white border-[#EAD8C7] hover:bg-[#F3E3D3]' : 'bg-slate-800 border-slate-700 hover:bg-slate-700/60'
+              isLight ? 'bg-[#F8EDE0] border-[#EAD6C4] hover:bg-[#EAD8C7]' : 'bg-slate-800 border-slate-700 hover:bg-slate-700/60'
             }`}
           >
             <div className="flex items-center gap-2.5">
