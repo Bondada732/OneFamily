@@ -10255,10 +10255,11 @@
       "invested_amount": 800000,
       "current_value": 1250000,
       "gain_loss": 450000,
+      "maturity_date": null,
       "folio_number": "10928374/2",
       "nominee": "Swathi (100%)",
       "notes": "Monthly SIP ₹15,000 active • CAS Verified",
-      "maturity_date": ""
+      "updated_at": "2026-10-03 07:34:39.758594+00"
     },
     {
       "id": "inv_mf_2",
@@ -10271,10 +10272,11 @@
       "invested_amount": 450000,
       "current_value": 600000,
       "gain_loss": 150000,
+      "maturity_date": null,
       "folio_number": "99281726/1",
       "nominee": "Swathi (100%)",
       "notes": "Monthly SIP ₹10,000 active • CAS Verified",
-      "maturity_date": ""
+      "updated_at": "2026-10-03 07:34:39.79928+00"
     },
     {
       "id": "inv_mf_3",
@@ -10287,10 +10289,11 @@
       "invested_amount": 200000,
       "current_value": 250000,
       "gain_loss": 50000,
+      "maturity_date": null,
       "folio_number": "3819204/5",
       "nominee": "Swathi",
       "notes": "Lump sum investment • CAS Verified",
-      "maturity_date": ""
+      "updated_at": "2026-10-03 07:34:39.835582+00"
     },
     {
       "id": "inv_eq_1",
@@ -10303,10 +10306,11 @@
       "invested_amount": 650000,
       "current_value": 869840,
       "gain_loss": 219840,
+      "maturity_date": null,
       "folio_number": "120816000293847",
       "nominee": "Swathi",
       "notes": "Blue chip long term dividend stocks",
-      "maturity_date": ""
+      "updated_at": "2026-10-03 07:34:39.873698+00"
     },
     {
       "id": "inv_pf_1",
@@ -10319,10 +10323,11 @@
       "invested_amount": 420000,
       "current_value": 579200,
       "gain_loss": 159200,
+      "maturity_date": null,
       "folio_number": "UAN: 100928374615",
       "nominee": "Swathi",
       "notes": "Monthly payroll EPF & VPF contribution",
-      "maturity_date": ""
+      "updated_at": "2026-10-03 07:34:39.911388+00"
     },
     {
       "id": "inv_ppf_1",
@@ -10335,10 +10340,11 @@
       "invested_amount": 310000,
       "current_value": 386450,
       "gain_loss": 76450,
+      "maturity_date": "2036-03-31",
       "folio_number": "PPF-0029182",
       "nominee": "Swathi",
       "notes": "Tax-free compound interest, 7.1%",
-      "maturity_date": "2036-03-31"
+      "updated_at": "2026-10-03 07:34:39.94718+00"
     },
     {
       "id": "inv_nps_1",
@@ -10351,10 +10357,11 @@
       "invested_amount": 280000,
       "current_value": 338770,
       "gain_loss": 58770,
+      "maturity_date": "2050-12-31",
       "folio_number": "PRAN: 110029384756",
       "nominee": "Swathi",
       "notes": "Active Choice (75% Equity, 25% Corp Bonds)",
-      "maturity_date": "2050-12-31"
+      "updated_at": "2026-10-03 07:34:39.983664+00"
     },
     {
       "id": "inv_fd_1",
@@ -10367,10 +10374,11 @@
       "invested_amount": 250000,
       "current_value": 289500,
       "gain_loss": 39500,
+      "maturity_date": "2026-12-15",
       "folio_number": "SBI-FD-482910",
       "nominee": "Swathi",
       "notes": "Interest Rate 7.2% p.a.",
-      "maturity_date": "2026-12-15"
+      "updated_at": "2026-10-03 07:34:40.036715+00"
     },
     {
       "id": "inv_rd_1",
@@ -10383,10 +10391,11 @@
       "invested_amount": 110000,
       "current_value": 124600,
       "gain_loss": 14600,
+      "maturity_date": "2027-06-30",
       "folio_number": "HDFC-RD-928172",
       "nominee": "Swathi",
       "notes": "Monthly ₹5,000 installment",
-      "maturity_date": "2027-06-30"
+      "updated_at": "2026-10-03 07:34:40.102854+00"
     },
     {
       "id": "inv_ss_1",
@@ -10399,10 +10408,11 @@
       "invested_amount": 95000,
       "current_value": 105740,
       "gain_loss": 10740,
+      "maturity_date": "2028-03-31",
       "folio_number": "PO-NSC-827163",
       "nominee": "Swathi",
       "notes": "Government guaranteed 7.7% return",
-      "maturity_date": "2028-03-31"
+      "updated_at": "2026-10-03 07:34:40.195562+00"
     },
     {
       "id": "inv_bonds_1",
@@ -10415,10 +10425,11 @@
       "invested_amount": 70000,
       "current_value": 78300,
       "gain_loss": 8300,
+      "maturity_date": "2031-08-31",
       "folio_number": "RBI-FRB-2024",
       "nominee": "Swathi",
       "notes": "Half-yearly interest payout",
-      "maturity_date": "2031-08-31"
+      "updated_at": "2026-10-03 07:34:40.240643+00"
     },
     {
       "id": "inv_gold_1",
@@ -10431,10 +10442,11 @@
       "invested_amount": 125000,
       "current_value": 162590,
       "gain_loss": 37590,
+      "maturity_date": "2029-11-30",
       "folio_number": "SGB-2021-HYD",
       "nominee": "Swathi",
       "notes": "25 grams gold + 2.5% p.a. interest",
-      "maturity_date": "2029-11-30"
+      "updated_at": "2026-10-03 07:34:40.292724+00"
     },
     {
       "id": "inv_oth_1",
@@ -10447,10 +10459,11 @@
       "invested_amount": 110000,
       "current_value": 131688,
       "gain_loss": 21688,
+      "maturity_date": null,
       "folio_number": "DOC-8271-AP",
       "nominee": "Swathi",
       "notes": "Appreciating asset",
-      "maturity_date": ""
+      "updated_at": "2026-10-03 07:34:40.330184+00"
     }
   ],
   "insurance_policies": [

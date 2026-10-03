@@ -113,27 +113,56 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
 
     filteredInvestments.forEach((inv) => {
       const type = (inv.type || '').toUpperCase();
+      const title = (inv.title || '').toUpperCase();
+      const inst = (inv.institution || '').toUpperCase();
       let catKey: keyof typeof defaultStats = 'OTHERS';
 
-      if (type.includes('MUTUAL') || type === 'SIP' || type === 'MF') {
+      if (
+        type.includes('MUTUAL') ||
+        type === 'SIP' ||
+        type === 'MF' ||
+        title.includes('MUTUAL') ||
+        title.includes('FUND') ||
+        title.includes('FLEXI CAP') ||
+        title.includes('LARGE CAP') ||
+        inst.includes('MUTUAL') ||
+        inst.includes('AMC') ||
+        inst.includes('PPFAS')
+      ) {
         catKey = 'MUTUAL_FUND';
-      } else if (type.includes('STOCK') || type.includes('EQUITY') || type === 'DEMAT') {
+      } else if (
+        type.includes('STOCK') ||
+        type.includes('EQUITY') ||
+        type === 'DEMAT' ||
+        title.includes('EQUITY') ||
+        title.includes('STOCK') ||
+        inst.includes('ZERODHA') ||
+        inst.includes('GROWW')
+      ) {
         catKey = 'EQUITY';
-      } else if (type === 'PF' || type === 'EPF' || type === 'VPF') {
+      } else if (type === 'PF' || type === 'EPF' || type === 'VPF' || title.includes('EPFO') || title.includes('PROVIDENT')) {
         catKey = 'PF';
-      } else if (type === 'PPF') {
+      } else if (type === 'PPF' || title.includes('PPF')) {
         catKey = 'PPF';
-      } else if (type === 'NPS') {
+      } else if (type === 'NPS' || title.includes('NPS') || title.includes('PENSION')) {
         catKey = 'NPS';
-      } else if (type === 'FIXED_DEPOSIT' || type === 'FD') {
+      } else if (type === 'FIXED_DEPOSIT' || type === 'FD' || title.includes('FIXED DEPOSIT') || title.includes('FD')) {
         catKey = 'FD';
-      } else if (type === 'RD' || type.includes('RECURRING')) {
+      } else if (type === 'RD' || type.includes('RECURRING') || title.includes('RD') || title.includes('RECURRING')) {
         catKey = 'RD';
-      } else if (type === 'SMALL_SAVINGS' || type === 'NSC' || type === 'SSY' || type === 'KVP') {
+      } else if (
+        type === 'SMALL_SAVINGS' ||
+        type === 'NSC' ||
+        type === 'SSY' ||
+        type === 'KVP' ||
+        title.includes('NSC') ||
+        title.includes('SSY') ||
+        title.includes('SAVINGS')
+      ) {
         catKey = 'SMALL_SAVINGS';
-      } else if (type === 'BONDS' || type === 'SGB' || type === 'NCD') {
+      } else if (type === 'BONDS' || type === 'SGB' || type === 'NCD' || title.includes('BOND') || title.includes('SGB')) {
         catKey = 'BONDS';
-      } else if (type === 'GOLD' || type === 'SILVER') {
+      } else if (type === 'GOLD' || type === 'SILVER' || title.includes('GOLD')) {
         catKey = 'GOLD';
       }
 
@@ -348,27 +377,61 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
   }, [assetCategories]);
 
   // Specific Category Items for Detail View
+  // Specific Category Items for Detail View
   const activeCategoryInvestments = useMemo(() => {
     if (!selectedCategory) return [];
     if (selectedCategory === 'MANAGE_ASSETS') return filteredInvestments;
 
     return filteredInvestments.filter((inv) => {
       const type = (inv.type || '').toUpperCase();
+      const title = (inv.title || '').toUpperCase();
+      const inst = (inv.institution || '').toUpperCase();
+
       if (selectedCategory === 'MUTUAL_FUNDS') {
-        return type.includes('MUTUAL') || type === 'SIP' || type === 'MF';
+        return (
+          type.includes('MUTUAL') ||
+          type === 'SIP' ||
+          type === 'MF' ||
+          title.includes('MUTUAL') ||
+          title.includes('FUND') ||
+          title.includes('FLEXI CAP') ||
+          title.includes('LARGE CAP') ||
+          inst.includes('MUTUAL') ||
+          inst.includes('AMC') ||
+          inst.includes('PPFAS')
+        );
       }
       if (selectedCategory === 'EQUITY') {
-        return type.includes('STOCK') || type.includes('EQUITY') || type === 'DEMAT';
+        return (
+          type.includes('STOCK') ||
+          type.includes('EQUITY') ||
+          type === 'DEMAT' ||
+          title.includes('EQUITY') ||
+          title.includes('STOCK') ||
+          inst.includes('ZERODHA') ||
+          inst.includes('GROWW') ||
+          inst.includes('KITE')
+        );
       }
-      if (selectedCategory === 'PF') return type === 'PF' || type === 'EPF' || type === 'VPF';
-      if (selectedCategory === 'PPF') return type === 'PPF';
-      if (selectedCategory === 'NPS') return type === 'NPS';
-      if (selectedCategory === 'FD') return type === 'FIXED_DEPOSIT' || type === 'FD';
-      if (selectedCategory === 'RD') return type === 'RD' || type.includes('RECURRING');
-      if (selectedCategory === 'SMALL_SAVINGS') return type === 'SMALL_SAVINGS' || type === 'NSC' || type === 'SSY';
-      if (selectedCategory === 'BONDS') return type === 'BONDS' || type === 'SGB';
-      if (selectedCategory === 'GOLD') return type === 'GOLD';
-      if (selectedCategory === 'OTHERS') return type === 'OTHER' || type === 'REAL_ESTATE';
+      if (selectedCategory === 'PF') return type === 'PF' || type === 'EPF' || type === 'VPF' || title.includes('EPFO') || title.includes('PROVIDENT');
+      if (selectedCategory === 'PPF') return type === 'PPF' || title.includes('PPF');
+      if (selectedCategory === 'NPS') return type === 'NPS' || title.includes('NPS') || title.includes('PENSION');
+      if (selectedCategory === 'FD') return type === 'FIXED_DEPOSIT' || type === 'FD' || title.includes('FIXED DEPOSIT') || title.includes('FD');
+      if (selectedCategory === 'RD') return type === 'RD' || type.includes('RECURRING') || title.includes('RD') || title.includes('RECURRING');
+      if (selectedCategory === 'SMALL_SAVINGS') {
+        return (
+          type === 'SMALL_SAVINGS' ||
+          type === 'NSC' ||
+          type === 'SSY' ||
+          type === 'KVP' ||
+          title.includes('NSC') ||
+          title.includes('SSY') ||
+          title.includes('SAVINGS')
+        );
+      }
+      if (selectedCategory === 'BONDS') return type === 'BONDS' || type === 'SGB' || type === 'NCD' || title.includes('BOND') || title.includes('SGB');
+      if (selectedCategory === 'GOLD') return type === 'GOLD' || type === 'SILVER' || title.includes('GOLD');
+      if (selectedCategory === 'OTHERS') return true;
       return true;
     });
   }, [filteredInvestments, selectedCategory]);
@@ -460,7 +523,15 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add {currentCatMeta.name}</span>
+                <span>
+                  {currentCatMeta.id === 'MUTUAL_FUNDS'
+                    ? 'Add MFs'
+                    : currentCatMeta.id === 'EQUITY'
+                    ? 'Add Equity'
+                    : currentCatMeta.id === 'SMALL_SAVINGS'
+                    ? 'Add Savings'
+                    : `Add ${currentCatMeta.name}`}
+                </span>
               </button>
             )}
           </div>
@@ -491,10 +562,13 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
 
           <div className="mt-3 flex items-baseline gap-3 flex-wrap">
             <div className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-              {isPrivacyMode ? '••••••' : formatCurrency(categoryTotalVal || (currentCatMeta as any).defaultVal || 0)}
+              {isPrivacyMode
+                ? '••••••'
+                : formatCurrency(categoryTotalVal || (categoryTotalInv > 0 ? categoryTotalInv : 0))}
             </div>
             <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-              Gain: +{isPrivacyMode ? '••••' : formatCurrency(categoryGain > 0 ? categoryGain : categoryTotalVal * 0.2)}
+              Gain: {categoryGain >= 0 ? '+' : ''}
+              {isPrivacyMode ? '••••' : formatCurrency(categoryGain)}
             </div>
           </div>
 
@@ -505,21 +579,24 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
             <div>
               <div className={`text-[10px] font-medium uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Invested</div>
               <div className={`text-xs sm:text-sm font-bold mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                {isPrivacyMode ? '••••' : formatCurrency(categoryTotalInv || (categoryTotalVal * 0.8))}
+                {isPrivacyMode ? '••••' : formatCurrency(categoryTotalInv)}
               </div>
             </div>
             <div>
               <div className={`text-[10px] font-medium uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Holdings</div>
               <div className={`text-xs sm:text-sm font-bold mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                {activeCategoryInvestments.length} Folios
+                {activeCategoryInvestments.length} {selectedCategory === 'MUTUAL_FUNDS' ? 'Folios' : 'Holdings'}
               </div>
             </div>
             <div>
               <div className={`text-[10px] font-medium uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>XIRR</div>
-              <div className={`text-xs sm:text-sm font-bold mt-0.5 ${isLight ? 'text-amber-600' : 'text-amber-300'}`}>14.2%</div>
+              <div className={`text-xs sm:text-sm font-bold mt-0.5 ${isLight ? 'text-amber-600' : 'text-amber-300'}`}>
+                {currentCatMeta.gainPct || '14.2%'}
+              </div>
             </div>
           </div>
         </div>
+
 
         {/* Search & Filter Controls */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -666,20 +743,30 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                     </div>
 
                     {canEditFinance && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => onEditInvestment(inv)}
-                          className="p-1 hover:text-amber-500 transition-colors"
+                          className={`px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 text-[11px] font-bold ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#DEC8B2]'
+                              : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-300 hover:text-amber-400 border-slate-600'
+                          }`}
                           title="Edit Holding"
                         >
-                          <Edit3 className="w-3.5 h-3.5" />
+                          <Edit3 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                          <span>Edit</span>
                         </button>
                         <button
                           onClick={() => onDeleteInvestment(inv.id)}
-                          className="p-1 hover:text-rose-500 transition-colors"
+                          className={`px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 text-[11px] font-bold ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-rose-100 text-[#C24419] border-[#DEC8B2]'
+                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-rose-400 border-slate-600'
+                          }`}
                           title="Delete Holding"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                          <span>Delete</span>
                         </button>
                       </div>
                     )}
