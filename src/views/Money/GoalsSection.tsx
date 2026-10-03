@@ -184,16 +184,16 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
       totalSaved,
       totalNeeded,
       overallPct,
-      totalGoalsCount,
-      onTrackCount: onTrackCount || 4,
-      attentionCount: attentionCount || 1,
-      myCount: myCount || 3,
-      famCount: famCount || 3,
+      totalGoalsCount: goals.length,
+      onTrackCount,
+      attentionCount,
+      myCount,
+      famCount,
     };
   }, [goals, currentUser]);
 
   // Donut SVG circumference calculation
-  const radius = 38;
+  const radius = 32;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (stats.overallPct / 100) * circumference;
 
@@ -201,39 +201,39 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
     <div className="space-y-4 animate-fade-in pb-12">
       {/* 1. OVERALL PROGRESS HERO CARD (MATCHING FIGMA / MOCKUP) */}
       <div
-        className={`p-4 sm:p-5 rounded-3xl border shadow-sm relative overflow-hidden kinora-3d-card ${
+        className={`p-3.5 sm:p-4 rounded-3xl border shadow-sm relative overflow-hidden kinora-3d-card ${
           isLight
             ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
             : 'bg-slate-800/80 border-slate-700 shadow-xl'
         }`}
       >
-        <div className="flex items-center justify-between mb-3">
-          <div className={`flex items-center gap-1 text-sm font-extrabold cursor-pointer ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className={`flex items-center gap-1 text-xs sm:text-sm font-extrabold cursor-pointer ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
             <span>Overall Progress</span>
-            <ChevronRight className="w-4 h-4 opacity-70" />
+            <ChevronRight className="w-3.5 h-3.5 opacity-70" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <div className="flex items-center justify-between gap-1.5 sm:gap-3">
           {/* Left: Donut Chart Ring */}
-          <div className="md:col-span-3 flex items-center justify-center">
-            <div className="relative w-28 h-28 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+          <div className="shrink-0 flex items-center justify-center">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+              <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 80 80">
                 <circle
-                  cx="50"
-                  cy="50"
+                  cx="40"
+                  cy="40"
                   r={radius}
                   fill="transparent"
                   stroke={isLight ? '#DEC8B2' : '#334155'}
-                  strokeWidth="12"
+                  strokeWidth="9"
                 />
                 <circle
-                  cx="50"
-                  cy="50"
+                  cx="40"
+                  cy="40"
                   r={radius}
                   fill="transparent"
                   stroke="#2563EB"
-                  strokeWidth="12"
+                  strokeWidth="9"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
@@ -241,65 +241,72 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className={`text-xl font-black ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                <span className={`text-sm sm:text-base font-black leading-none ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                   {stats.overallPct}%
                 </span>
-                <span className={`text-[10px] font-semibold ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                <span className={`text-[8.5px] sm:text-[9.5px] font-semibold mt-0.5 leading-none ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                   Achieved
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Middle: 4 Key Metrics (2x2 Grid) */}
-          <div className="md:col-span-5 grid grid-cols-2 gap-x-4 gap-y-3">
-            <div>
-              <div className={`text-base sm:text-lg font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+          {/* Middle: 4 Key Metrics (2 clean columns, no overlap) */}
+          <div className="flex-1 min-w-0 grid grid-cols-2 gap-x-2 gap-y-1.5 sm:gap-y-2 px-1">
+            <div className="min-w-0">
+              <div className={`text-[11px] sm:text-xs font-black tracking-tight truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                 {isPrivacyMode ? '••••' : formatCurrency(stats.totalSaved)}
               </div>
-              <div className={`text-[11px] font-medium mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              <div className={`text-[9.5px] sm:text-[10px] font-medium leading-tight truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 Total Saved
               </div>
             </div>
 
-            <div>
-              <div className={`text-base sm:text-lg font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+            <div className="min-w-0">
+              <div className={`text-[11px] sm:text-xs font-black tracking-tight truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                 {isPrivacyMode ? '••••' : formatCurrency(stats.totalTarget)}
               </div>
-              <div className={`text-[11px] font-medium mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              <div className={`text-[9.5px] sm:text-[10px] font-medium leading-tight truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 Total Target
               </div>
             </div>
 
-            <div>
-              <div className={`text-base sm:text-lg font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+            <div className="min-w-0">
+              <div className={`text-[11px] sm:text-xs font-black tracking-tight truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                 {isPrivacyMode ? '••••' : formatCurrency(stats.totalNeeded)}
               </div>
-              <div className={`text-[11px] font-medium mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              <div className={`text-[9.5px] sm:text-[10px] font-medium leading-tight truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 Still Needed
               </div>
             </div>
 
-            <div>
-              <div className={`text-base sm:text-lg font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+            <div className="min-w-0">
+              <div className={`text-[11px] sm:text-xs font-black tracking-tight truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                 {stats.totalGoalsCount}
               </div>
-              <div className={`text-[11px] font-medium mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              <div className={`text-[9.5px] sm:text-[10px] font-medium leading-tight truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
                 Active Goals
               </div>
             </div>
           </div>
 
           {/* Right: Mountain Illustration & Goal Status Callout */}
-          <div className="md:col-span-4 flex flex-col items-center justify-center p-3 rounded-2xl bg-[#EAD8C7]/50 dark:bg-slate-700/40 border border-[#DEC8B2]/60 dark:border-slate-600/50 text-center relative overflow-hidden">
-            {/* SVG Mountain Peaks with Red Goal Flag */}
-            <div className="relative w-full h-14 flex items-center justify-center">
-              <div className="text-3xl filter drop-shadow">🏔️</div>
-              <div className="text-xl -mt-6 -ml-2 drop-shadow animate-bounce">🚩</div>
+          <div className="shrink-0 w-22 sm:w-28 flex flex-col items-center justify-center text-center">
+            {/* SVG Mountain with Summit Flag matching Mockup */}
+            <div className="relative w-full h-8 flex items-center justify-center">
+              <svg className="w-14 h-7" viewBox="0 0 80 45" fill="none">
+                <polygon points="8,42 26,18 44,42" fill="#93C5FD" opacity="0.6" />
+                <polygon points="32,42 54,12 74,42" fill="#60A5FA" opacity="0.8" />
+                <polygon points="18,42 40,6 62,42" fill="#3B82F6" />
+                <polygon points="40,6 35,14 45,14" fill="#EFF6FF" />
+                <polygon points="54,12 49,18 59,18" fill="#EFF6FF" />
+                <line x1="40" y1="6" x2="40" y2="1" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
+                <polygon points="40,1 48,3.5 40,6" fill="#EF4444" />
+              </svg>
             </div>
 
-            <p className={`text-xs font-bold mt-1 max-w-[210px] leading-tight ${isLight ? 'text-[#1F1F1F]' : 'text-slate-200'}`}>
-              You are on track for <span className="text-emerald-600 dark:text-emerald-400">{stats.onTrackCount} goals</span>. <span className="text-amber-600 dark:text-amber-400">{stats.attentionCount} goal needs attention.</span>
+            <p className={`text-[8.5px] sm:text-[9.5px] font-semibold leading-tight mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-slate-200'}`}>
+              You are on track for <span className="text-emerald-700 dark:text-emerald-400 font-bold">{stats.onTrackCount} goals</span>. <span className="text-amber-700 dark:text-amber-400 font-bold">{stats.attentionCount} goal needs attention.</span>
             </p>
           </div>
         </div>
