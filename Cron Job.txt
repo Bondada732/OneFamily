@@ -1,0 +1,6 @@
+https://console.cron-job.org/jobs
+
+Parudigitalx@gmail.com/Paru@bondada1
+
+Below KinoraOne App URL scheduled every 15 min so that it will not sleep
+https://onefamily-ydkb.onrender.com/api/health

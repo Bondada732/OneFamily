@@ -468,51 +468,55 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
 
         {/* Hero Summary Card for Category */}
         <div
-          className={`p-5 rounded-3xl relative overflow-hidden shadow-xl text-white ${
+          className={`p-5 rounded-3xl relative overflow-hidden shadow-xl ${
             isLight
-              ? 'bg-gradient-to-br from-[#0D233A] via-[#0E2E4E] to-[#0A3D62]'
-              : 'bg-gradient-to-br from-[#061220] via-[#0B1E36] to-[#0D2B4D] border border-slate-800'
+              ? 'bg-gradient-to-br from-[#FFF8F1] via-[#FCEEE1] to-[#F3E3D3] border-2 border-[#DEC8B2] text-[#1F1F1F]'
+              : 'bg-gradient-to-br from-[#061220] via-[#0B1E36] to-[#0D2B4D] border border-slate-800 text-white'
           }`}
         >
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/15">
-                <currentCatMeta.icon className="w-4 h-4 text-amber-400" />
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${
+                isLight ? 'bg-amber-500/15 border-amber-500/30' : 'bg-white/10 backdrop-blur-md border-white/15'
+              }`}>
+                <currentCatMeta.icon className="w-4 h-4 text-amber-500" />
               </div>
               <h2 className="text-lg font-extrabold">{currentCatMeta.name} Portfolio</h2>
             </div>
-            <div className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1">
+            <div className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
               <span>+{categoryGainPct}% Return</span>
             </div>
           </div>
 
           <div className="mt-3 flex items-baseline gap-3 flex-wrap">
-            <div className="text-2xl sm:text-3xl font-black tracking-tight">
+            <div className={`text-2xl sm:text-3xl font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
               {isPrivacyMode ? '••••••' : formatCurrency(categoryTotalVal || (currentCatMeta as any).defaultVal || 0)}
             </div>
-            <div className="text-xs text-emerald-400 font-semibold">
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
               Gain: +{isPrivacyMode ? '••••' : formatCurrency(categoryGain > 0 ? categoryGain : categoryTotalVal * 0.2)}
             </div>
           </div>
 
           {/* 3 Metric Grid */}
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10 text-center">
+          <div className={`grid grid-cols-3 gap-2 mt-4 pt-3 border-t text-center ${
+            isLight ? 'border-[#DEC8B2]' : 'border-white/10'
+          }`}>
             <div>
-              <div className="text-[10px] text-slate-300 font-medium uppercase">Invested</div>
-              <div className="text-xs sm:text-sm font-bold text-white mt-0.5">
+              <div className={`text-[10px] font-medium uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Invested</div>
+              <div className={`text-xs sm:text-sm font-bold mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                 {isPrivacyMode ? '••••' : formatCurrency(categoryTotalInv || (categoryTotalVal * 0.8))}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-slate-300 font-medium uppercase">Holdings</div>
-              <div className="text-xs sm:text-sm font-bold text-white mt-0.5">
+              <div className={`text-[10px] font-medium uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>Holdings</div>
+              <div className={`text-xs sm:text-sm font-bold mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                 {activeCategoryInvestments.length} Folios
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-slate-300 font-medium uppercase">XIRR</div>
-              <div className="text-xs sm:text-sm font-bold text-amber-300 mt-0.5">14.2%</div>
+              <div className={`text-[10px] font-medium uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>XIRR</div>
+              <div className={`text-xs sm:text-sm font-bold mt-0.5 ${isLight ? 'text-amber-600' : 'text-amber-300'}`}>14.2%</div>
             </div>
           </div>
         </div>
@@ -694,21 +698,21 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
     <div className="space-y-4 animate-fade-in pb-12">
       {/* 1. HERO CARD: FAMILY WEALTH GRADIENT BANNER */}
       <div
-        className={`p-5 sm:p-6 rounded-3xl relative overflow-hidden shadow-2xl text-white ${
+        className={`p-5 sm:p-6 rounded-3xl relative overflow-hidden shadow-2xl ${
           isLight
-            ? 'bg-gradient-to-br from-[#0B1E36] via-[#0D2847] to-[#0A3D62]'
-            : 'bg-gradient-to-br from-[#061220] via-[#0B1E36] to-[#0E2F52] border border-slate-800'
+            ? 'bg-gradient-to-br from-[#FFF8F1] via-[#FCEEE1] to-[#F3E3D3] border-2 border-[#DEC8B2] text-[#1F1F1F]'
+            : 'bg-gradient-to-br from-[#061220] via-[#0B1E36] to-[#0E2F52] border border-slate-800 text-white'
         }`}
       >
         {/* Background Plant & Coins Illustration */}
         <div className="absolute right-3 bottom-12 w-32 sm:w-40 h-28 opacity-90 pointer-events-none flex items-end justify-end">
           <div className="relative">
             {/* Plant Sprout */}
-            <div className="text-4xl sm:text-5xl text-emerald-400 drop-shadow-[0_4px_12px_rgba(16,185,129,0.5)]">
+            <div className="text-4xl sm:text-5xl text-emerald-500 drop-shadow-[0_4px_12px_rgba(16,185,129,0.3)]">
               🌱
             </div>
             {/* Coins Stack */}
-            <div className="text-3xl sm:text-4xl -mt-3 ml-2 drop-shadow-[0_4px_8px_rgba(245,158,11,0.5)]">
+            <div className="text-3xl sm:text-4xl -mt-3 ml-2 drop-shadow-[0_4px_8px_rgba(245,158,11,0.3)]">
               🪙
             </div>
           </div>
@@ -718,9 +722,11 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
         <div className="flex items-center justify-between relative z-10">
           <button
             onClick={() => setSelectedCategory('MANAGE_ASSETS')}
-            className="flex items-center gap-1.5 text-sm sm:text-base font-extrabold text-white hover:text-amber-300 transition-colors group cursor-pointer"
+            className={`flex items-center gap-1.5 text-sm sm:text-base font-extrabold transition-colors group cursor-pointer ${
+              isLight ? 'text-[#1F1F1F] hover:text-[#F05A28]' : 'text-white hover:text-amber-300'
+            }`}
           >
-            <Users className="w-4 h-4 text-amber-400" />
+            <Users className={`w-4 h-4 ${isLight ? 'text-[#F05A28]' : 'text-amber-400'}`} />
             <span>Family Wealth</span>
             <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform opacity-70" />
           </button>
@@ -730,68 +736,86 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
             <select
               value={selectedMember}
               onChange={(e) => setSelectedMember(e.target.value)}
-              className="appearance-none bg-white/10 hover:bg-white/15 backdrop-blur-md text-white border border-white/20 px-3 py-1.5 pr-7 rounded-xl text-xs font-semibold outline-none cursor-pointer transition-all"
+              className={`appearance-none backdrop-blur-md border px-3 py-1.5 pr-7 rounded-xl text-xs font-semibold outline-none cursor-pointer transition-all ${
+                isLight
+                  ? 'bg-white/80 hover:bg-white text-[#1F1F1F] border-[#DEC8B2]'
+                  : 'bg-white/10 hover:bg-white/15 text-white border-white/20'
+              }`}
             >
-              <option value="ALL" className="bg-slate-900 text-white">
+              <option value="ALL" className={isLight ? 'bg-[#FFF8F1] text-[#1F1F1F]' : 'bg-slate-900 text-white'}>
                 All Members
               </option>
               {members.map((m) => (
-                <option key={m.id} value={m.name} className="bg-slate-900 text-white">
+                <option
+                  key={m.id}
+                  value={m.name}
+                  className={isLight ? 'bg-[#FFF8F1] text-[#1F1F1F]' : 'bg-slate-900 text-white'}
+                >
                   {m.name}
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-3.5 h-3.5 text-white/70 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown
+              className={`w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${
+                isLight ? 'text-[#634B3F]' : 'text-white/70'
+              }`}
+            />
           </div>
         </div>
 
         {/* Net Worth Big Number */}
         <div className="mt-3 relative z-10">
-          <div className="text-3xl sm:text-4xl font-black tracking-tight drop-shadow-sm">
+          <div className={`text-3xl sm:text-4xl font-black tracking-tight drop-shadow-sm ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
             {isPrivacyMode ? '••••••••' : formatCurrency(totalCurrentValue)}
           </div>
-          <div className="flex items-center gap-1.5 mt-1 text-xs text-emerald-400 font-bold">
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
             <TrendingUp className="w-3.5 h-3.5" />
             <span>
               +{isPrivacyMode ? '••••' : formatCurrency(totalGainLoss > 0 ? totalGainLoss : 842316)} (+
               {totalGainPct}%)
             </span>
-            <span className="text-slate-300 font-normal">vs last year</span>
+            <span className={`font-normal ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>vs last year</span>
           </div>
         </div>
 
         {/* 4-Box Key Metrics Row */}
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mt-6 pt-3.5 border-t border-white/15 text-center relative z-10">
-          <div className="border-r border-white/10 pr-1">
-            <div className="text-xs sm:text-sm font-black text-white truncate">
+        <div
+          className={`grid grid-cols-4 gap-1.5 sm:gap-2 mt-6 pt-3.5 border-t text-center relative z-10 ${
+            isLight ? 'border-[#DEC8B2]' : 'border-white/15'
+          }`}
+        >
+          <div className={`border-r pr-1 ${isLight ? 'border-[#DEC8B2]' : 'border-white/10'}`}>
+            <div className={`text-xs sm:text-sm font-black truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
               {isPrivacyMode ? '••••' : formatCurrency(totalInvested, true)}
             </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-300 mt-0.5 font-medium truncate">
+            <div className={`text-[10px] sm:text-[11px] mt-0.5 font-medium truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
               Total Invested
             </div>
           </div>
 
-          <div className="border-r border-white/10 pr-1">
-            <div className="text-xs sm:text-sm font-black text-white truncate">
+          <div className={`border-r pr-1 ${isLight ? 'border-[#DEC8B2]' : 'border-white/10'}`}>
+            <div className={`text-xs sm:text-sm font-black truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
               {isPrivacyMode ? '••••' : formatCurrency(totalCurrentValue, true)}
             </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-300 mt-0.5 font-medium truncate">
+            <div className={`text-[10px] sm:text-[11px] mt-0.5 font-medium truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
               Current Value
             </div>
           </div>
 
-          <div className="border-r border-white/10 pr-1">
-            <div className="text-xs sm:text-sm font-black text-emerald-400 truncate">
+          <div className={`border-r pr-1 ${isLight ? 'border-[#DEC8B2]' : 'border-white/10'}`}>
+            <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 truncate">
               +{isPrivacyMode ? '••••' : formatCurrency(totalGainLoss > 0 ? totalGainLoss : 1014468, true)}
             </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-300 mt-0.5 font-medium truncate">
+            <div className={`text-[10px] sm:text-[11px] mt-0.5 font-medium truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
               Total Gain/Loss
             </div>
           </div>
 
           <div>
-            <div className="text-xs sm:text-sm font-black text-amber-300 truncate">{xirrPct}</div>
-            <div className="text-[10px] sm:text-[11px] text-slate-300 mt-0.5 font-medium truncate">
+            <div className={`text-xs sm:text-sm font-black truncate ${isLight ? 'text-amber-600 dark:text-amber-300' : 'text-amber-300'}`}>
+              {xirrPct}
+            </div>
+            <div className={`text-[10px] sm:text-[11px] mt-0.5 font-medium truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-300'}`}>
               XIRR
             </div>
           </div>
