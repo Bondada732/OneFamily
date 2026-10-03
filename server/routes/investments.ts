@@ -356,7 +356,12 @@ router.post('/:id/cas-upload', requirePermission('INVESTMENT_EDIT'), async (req:
     if (fileBase64 && (!textToParse || textToParse.length < 50)) {
       const base64Data = fileBase64.replace(/^data:[^;]+;base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
-      if (fileName && fileName.toLowerCase().endsWith('.pdf')) {
+      const isPdf =
+        (fileName && fileName.toLowerCase().endsWith('.pdf')) ||
+        (fileBase64 && fileBase64.startsWith('data:application/pdf')) ||
+        (buffer.length > 4 && buffer.slice(0, 4).toString() === '%PDF');
+
+      if (isPdf) {
         const extracted = await extractTextFromPdf(buffer, pdfPassword);
         if (extracted) {
           textToParse = extracted;
@@ -370,7 +375,7 @@ router.post('/:id/cas-upload', requirePermission('INVESTMENT_EDIT'), async (req:
     if (!textToParse || textToParse.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Unable to extract text from the uploaded statement. If the PDF is password-protected, please enter your PAN as password.',
+        error: `Unable to extract text from the uploaded statement. If your PDF is password-protected, please ensure the PDF Password entered matches the exact password you set when requesting the statement from CAMS.`,
       });
     }
 

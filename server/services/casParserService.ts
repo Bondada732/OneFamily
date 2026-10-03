@@ -39,37 +39,49 @@ export interface CasParseResult {
 }
 
 /**
- * Extract raw text from PDF buffer with password support (CAMS uses PAN as password)
+ * Extract raw text from PDF buffer with password unlocking support (CAMS / KFintech CAS)
  */
 export async function extractTextFromPdf(buffer: Buffer, password?: string): Promise<string> {
-  try {
-    const pdfParse = (await import('pdf-parse')).default;
-    const options: any = {};
-    if (password && password.trim()) {
-      options.password = password.trim();
-    }
-    const data = await pdfParse(buffer, options);
-    return data.text || '';
-  } catch (err: any) {
-    console.warn('pdf-parse warning:', err.message);
-    // If standard attempt fails with password, try common CAMS upper/lower variations
-    if (password) {
-      try {
-        const pdfParse = (await import('pdf-parse')).default;
-        const upperData = await pdfParse(buffer, { password: password.toUpperCase() });
-        if (upperData.text) return upperData.text;
-      } catch (e) {
-        try {
-          const pdfParse = (await import('pdf-parse')).default;
-          const lowerData = await pdfParse(buffer, { password: password.toLowerCase() });
-          if (lowerData.text) return lowerData.text;
-        } catch (e2) {
-          console.warn('All password attempts failed for PDF');
+  const parseModule: any = await import('pdf-parse');
+  const PDFParseClass = parseModule.PDFParse || parseModule.default?.PDFParse;
+
+  const passwordsToTry: (string | undefined)[] = [];
+  if (password && password.trim()) {
+    const raw = password.trim();
+    passwordsToTry.push(raw);
+    if (raw.toUpperCase() !== raw) passwordsToTry.push(raw.toUpperCase());
+    if (raw.toLowerCase() !== raw) passwordsToTry.push(raw.toLowerCase());
+  }
+  passwordsToTry.push(undefined); // also try unencrypted
+
+  for (const pwd of passwordsToTry) {
+    try {
+      if (PDFParseClass) {
+        const options: any = { data: buffer };
+        if (pwd) options.password = pwd;
+        const instance = new PDFParseClass(options);
+        const result = await instance.getText();
+        if (result && typeof result.text === 'string' && result.text.trim().length > 0) {
+          console.log(`[extractTextFromPdf] Successfully extracted ${result.text.length} chars using password: ${pwd ? 'PROVIDED_PASSWORD' : 'NONE'}`);
+          return result.text;
+        }
+      } else {
+        const defaultFn = parseModule.default || parseModule;
+        if (typeof defaultFn === 'function') {
+          const options: any = {};
+          if (pwd) options.password = pwd;
+          const data = await defaultFn(buffer, options);
+          if (data && data.text && data.text.trim().length > 0) {
+            return data.text;
+          }
         }
       }
+    } catch (err: any) {
+      console.warn(`[extractTextFromPdf] Attempt with password "${pwd ? '***' : 'NONE'}" failed:`, err.message);
     }
-    return '';
   }
+
+  return '';
 }
 
 /**
