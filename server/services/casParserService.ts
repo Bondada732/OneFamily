@@ -359,15 +359,14 @@ export async function commitCasToFamilyWealth(
   }
 
   // Audit Log
-  logActivity({
+  logActivity(
     familyId,
     userId,
-    userName: ownerName,
-    action: 'CREATE',
-    resource: 'INVESTMENT',
-    resourceId: inserted[0]?.id || 'cas_sync',
-    details: `Imported ${schemes.length} real mutual fund folios totaling ₹${totalValue.toLocaleString('en-IN')} from CAMS / KFintech CAS statement for ${ownerName}`,
-  });
+    ownerName,
+    'CAS Statement Sync',
+    'FINANCE',
+    `Imported ${schemes.length} real mutual fund folios totaling ₹${totalValue.toLocaleString('en-IN')} from CAMS / KFintech CAS statement for ${ownerName}`
+  );
 
   return {
     success: true,
