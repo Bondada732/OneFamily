@@ -559,37 +559,66 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
               </p>
             </div>
 
-            {/* Direct Official CAMS / MF Central Trigger Buttons */}
+            {/* Direct Official CAMS / NSDL / CDSL Trigger Buttons */}
             <div className="space-y-2 pt-1">
               <button
                 type="button"
                 onClick={() => handleRequestCamsOnline('CAMS')}
                 disabled={isLoading}
-                className={`w-full py-3 rounded-xl text-xs font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`w-full py-2.5 rounded-xl text-xs font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   isLight
                     ? 'bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-700 hover:to-indigo-700'
                     : 'bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500'
                 }`}
               >
                 <DownloadCloud className="w-4 h-4" />
-                <span>1-Click Open CAMS CAS Request Form</span>
+                <span>1-Click CAMS (Mutual Funds)</span>
                 <ExternalLink className="w-3.5 h-3.5 opacity-80" />
               </button>
 
               <button
                 type="button"
-                onClick={() => handleRequestCamsOnline('MFCENTRAL')}
+                onClick={() => handleRequestCamsOnline('NSDL')}
                 disabled={isLoading}
                 className={`w-full py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   isLight
-                    ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#1F1F1F] border-[#DEC8B2]'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                    ? 'bg-[#E8F4F8] hover:bg-[#D1EAF2] text-[#0A415C] border-[#B9DCE7]'
+                    : 'bg-slate-800 hover:bg-slate-700 text-cyan-400 border-slate-700'
                 }`}
               >
-                <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Request from MF Central (Live Mobile OTP)</span>
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>NSDL e-CAS (Equity Shares & MFs)</span>
                 <ExternalLink className="w-3.5 h-3.5 opacity-60" />
               </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleRequestCamsOnline('MFCENTRAL')}
+                  disabled={isLoading}
+                  className={`py-2.5 rounded-xl text-[10px] sm:text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    isLight
+                      ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#1F1F1F] border-[#DEC8B2]'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                  }`}
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>MF Central</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRequestCamsOnline('CDSL')}
+                  disabled={isLoading}
+                  className={`py-2.5 rounded-xl text-[10px] sm:text-xs font-bold border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    isLight
+                      ? 'bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#1E293B] border-[#CBD5E1]'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                  }`}
+                >
+                  <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+                  <span>CDSL e-CAS</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
