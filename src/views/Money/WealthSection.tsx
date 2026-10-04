@@ -1274,3 +1274,6 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
     </div>
   );
 };
+
+
+
