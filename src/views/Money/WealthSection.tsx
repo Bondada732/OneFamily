@@ -661,7 +661,7 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
                     className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-indigo-600 shadow-md flex items-center gap-1.5"
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>Auto-Sync from CAMS</span>
+                    <span>{selectedCategory === 'EQUITY' ? 'Auto-Sync Demat/eCAS' : 'Auto-Sync from CAMS'}</span>
                   </button>
                 )}
                 {canEditFinance && (
@@ -1274,6 +1274,8 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
     </div>
   );
 };
+
+
 
 
 
