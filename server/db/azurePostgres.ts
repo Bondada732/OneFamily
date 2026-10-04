@@ -51,24 +51,35 @@ export async function fetchAllFromAzurePostgres(tableName: string): Promise<any[
 }
 
 const tableColumnsCache: Record<string, Set<string>> = {};
+const pendingPromises: Record<string, Promise<Set<string>>> = {};
 
 async function getTableColumns(tableName: string): Promise<Set<string>> {
   if (tableColumnsCache[tableName]) {
     return tableColumnsCache[tableName];
   }
-  if (!pool) return new Set();
-  try {
-    const res = await pool.query(
-      `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
-      [tableName]
-    );
-    const cols = new Set(res.rows.map((r) => r.column_name));
-    tableColumnsCache[tableName] = cols;
-    return cols;
-  } catch (err: any) {
-    console.warn(`[Azure Postgres] Error fetching schema for ${tableName}:`, err.message);
-    return new Set();
+  if (pendingPromises[tableName]) {
+    return pendingPromises[tableName];
   }
+  if (!pool) return new Set();
+
+  pendingPromises[tableName] = (async () => {
+    try {
+      const res = await pool!.query(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
+        [tableName]
+      );
+      const cols = new Set(res.rows.map((r) => r.column_name));
+      tableColumnsCache[tableName] = cols;
+      return cols;
+    } catch (err: any) {
+      console.warn(`[Azure Postgres] Error fetching schema for ${tableName}:`, err.message);
+      return new Set();
+    } finally {
+      delete pendingPromises[tableName];
+    }
+  })();
+
+  return pendingPromises[tableName];
 }
 
 export async function syncRecordToAzurePostgres(
