@@ -348,7 +348,8 @@ export async function commitCasToFamilyWealth(
       nominee: 'Family Nominee',
       notes: `Units: ${s.units?.toLocaleString('en-IN') || '0'} • NAV: ₹${s.nav || '0'} • CAS Real Auto-Sync`,
       owner_name: ownerName || 'Rambabu',
-      created_by: userId,
+      user_id: userId,
+      gain_loss: s.currentValue - s.investedAmount,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
