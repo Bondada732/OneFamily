@@ -95,20 +95,20 @@ export async function parseCasWithGeminiAI(
   defaultOwner = 'Rambabu'
 ): Promise<CasParseResult> {
   try {
-    const prompt = `You are an expert Indian Mutual Fund & Demat Consolidated Account Statement (CAS) parser for CAMS, KFintech, MF Central, Zerodha, and Groww statements.
+    const prompt = `You are an expert Indian Mutual Fund & Demat Consolidated Account Statement (CAS) parser for CAMS, KFintech, MF Central, NSDL, CDSL, Zerodha, and Groww statements.
 
 Task:
-Parse the following CAS financial statement text and extract all Mutual Fund folios / schemes accurately into a strict JSON object.
+Parse the following CAS financial statement text and extract all Mutual Fund folios AND Equity / Stock Market Shares accurately into a strict JSON object.
 
-Extract details for each scheme:
-- schemeName (e.g., "Parag Parikh Flexi Cap Fund - Direct Plan - Growth")
-- amc (e.g., "PPFAS Mutual Fund", "SBI Mutual Fund", "HDFC Mutual Fund", etc.)
-- folioNumber (e.g., "1234567/89")
-- units (number of units held, float)
-- nav (current NAV per unit, float)
+Extract details for each holding (Mutual Fund or Stock):
+- schemeName (e.g., "Parag Parikh Flexi Cap Fund - Direct Plan", "TCS - Equity Shares", "Reliance Industries Ltd")
+- amc (e.g., "PPFAS Mutual Fund", "Zerodha", "Upstox", "NSDL", "CDSL")
+- folioNumber (e.g., "1234567/89", "IN300123...")
+- units (number of units/shares held, float)
+- nav (current NAV per unit or current share price, float)
 - investedAmount (cost value / purchase value in INR, float)
 - currentValue (valuation / current market value in INR, float)
-- assetType ("MUTUAL_FUND" or "STOCK" or "GOLD")
+- assetType ("MUTUAL_FUND", "STOCK", or "GOLD")
 
 Also extract overall:
 - ownerName (Investor name or "${defaultOwner}")

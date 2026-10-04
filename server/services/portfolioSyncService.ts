@@ -134,6 +134,27 @@ function generateRealisticPortfolio(pan: string, memberName: string): SyncedMfSc
       baseInvest: 60000,
       mult: 1.26,
     },
+    {
+      scheme: 'TCS - Equity Shares',
+      amc: 'Zerodha',
+      type: 'STOCK',
+      baseInvest: 150000,
+      mult: 1.85,
+    },
+    {
+      scheme: 'Reliance Industries Ltd',
+      amc: 'Upstox',
+      type: 'STOCK',
+      baseInvest: 120000,
+      mult: 1.45,
+    },
+    {
+      scheme: 'HDFC Bank Ltd',
+      amc: 'Groww',
+      type: 'STOCK',
+      baseInvest: 90000,
+      mult: 1.15,
+    },
   ];
 
   // Pick 3 to 5 schemes based on PAN
@@ -287,3 +308,4 @@ export async function commitPortfolioToWealth(
     items: inserted,
   };
 }
+

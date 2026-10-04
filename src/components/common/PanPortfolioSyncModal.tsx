@@ -122,8 +122,8 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
     }
   };
 
-  // 1. Request Official CAMS Statement with Pre-filled Parameters
-  const handleRequestCamsOnline = async (portal: 'CAMS' | 'MFCENTRAL' | 'KFINTECH') => {
+  // 1. Request Official CAMS / NSDL / CDSL Statement with Pre-filled Parameters
+  const handleRequestCamsOnline = async (portal: 'CAMS' | 'MFCENTRAL' | 'KFINTECH' | 'NSDL' | 'CDSL') => {
     const cleanPan = panNumber.trim().toUpperCase();
     const cleanEmail = userEmail.trim().toLowerCase();
     const cleanPwd = pdfPassword.trim();
@@ -140,7 +140,7 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
 
     if (!isCamsPasswordValid) {
       setErrorMsg(
-        'CAMS requires PDF Password to have at least 1 uppercase letter, 1 lowercase letter, 1 number, 1 special character (@, #, $), and at least 8 characters (e.g. Kinora@2026).'
+        'CAS requires PDF Password to have at least 1 uppercase letter, 1 lowercase letter, 1 number, 1 special character (@, #, $), and at least 8 characters (e.g. Kinora@2026).'
       );
       return;
     }
@@ -148,12 +148,16 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
     setIsLoading(true);
     setErrorMsg('');
     try {
-      // Direct CAS Request form URL for CAMS (CAS - CAMS + KFintech Statement)
+      // Direct CAS Request form URL for CAMS/Demat
       let targetUrl = `https://www.camsonline.com/Investors/Statements/Consolidated-Account-Statement`;
       if (portal === 'MFCENTRAL') {
         targetUrl = `https://app.mfcentral.com/investor/cas`;
       } else if (portal === 'KFINTECH') {
         targetUrl = `https://mfs.kfintech.com/investor/General/ConsolidatedAccountStatement.aspx`;
+      } else if (portal === 'NSDL') {
+        targetUrl = `https://nsdl.cas.kfintech.com/`;
+      } else if (portal === 'CDSL') {
+        targetUrl = `https://www.cdslindia.com/cas/logincas.aspx`;
       }
 
       // Log request on backend
@@ -284,10 +288,10 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
             </div>
             <div>
               <h3 className={`text-sm sm:text-base font-extrabold ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                CAMS & MF Central Auto-Sync
+                Demat & Mutual Fund Auto-Sync
               </h3>
               <p className={`text-[11px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                1-Click CAMS Request & AI Portfolio Extractor
+                1-Click CAS Request & AI Portfolio Extractor
               </p>
             </div>
           </div>
@@ -856,3 +860,5 @@ export const PanPortfolioSyncModal: React.FC<PanPortfolioSyncModalProps> = ({
     document.body
   );
 };
+
+
