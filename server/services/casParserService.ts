@@ -1,5 +1,6 @@
 import db from '../db/database.js';
 import { logActivity } from './auditService.js';
+import { syncRecordToAzurePostgres } from '../db/azurePostgres.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -333,10 +334,12 @@ export async function commitCasToFamilyWealth(
 ): Promise<{ success: boolean; addedCount: number; totalValue: number; items: any[] }> {
   const inserted: any[] = [];
   let totalValue = 0;
+  let azureSyncErrors = 0;
 
-  for (const s of schemes) {
+  for (let idx = 0; idx < schemes.length; idx++) {
+    const s = schemes[idx];
     const newInv = {
-      id: `inv_cas_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      id: `inv_cas_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
       family_id: familyId,
       title: s.schemeName,
       type: s.assetType || 'MUTUAL_FUND',
@@ -350,13 +353,31 @@ export async function commitCasToFamilyWealth(
       owner_name: ownerName || 'Rambabu',
       user_id: userId,
       gain_loss: s.currentValue - s.investedAmount,
-      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
+    // Insert into local in-memory DB (also persists to store.json)
     db.insert('investments', newInv);
     inserted.push(newInv);
     totalValue += s.currentValue;
+
+    // Directly await Azure PostgreSQL sync (don't rely on db.insert's fire-and-forget)
+    try {
+      const synced = await syncRecordToAzurePostgres('investments', newInv, 'insert');
+      if (!synced) {
+        console.warn(`[CAS Sync] Azure sync returned false for ${newInv.id} (${newInv.title})`);
+        azureSyncErrors++;
+      }
+    } catch (err: any) {
+      console.error(`[CAS Sync] Azure sync FAILED for ${newInv.id}:`, err.message);
+      azureSyncErrors++;
+    }
+  }
+
+  if (azureSyncErrors > 0) {
+    console.warn(`[CAS Sync] ${azureSyncErrors}/${schemes.length} records failed Azure sync`);
+  } else {
+    console.log(`[CAS Sync] All ${schemes.length} records synced to Azure PostgreSQL successfully`);
   }
 
   // Audit Log
