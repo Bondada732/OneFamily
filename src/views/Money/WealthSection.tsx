@@ -503,13 +503,13 @@ export const WealthSection: React.FC<WealthSectionProps> = ({
           </button>
 
           <div className="flex items-center gap-2">
-            {selectedCategory === 'MUTUAL_FUNDS' && (
+            {(selectedCategory === 'MUTUAL_FUNDS' || selectedCategory === 'EQUITY') && (
               <button
                 onClick={onOpenPanSync}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 shadow-md cursor-pointer transition-all"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>1-Click CAMS Auto-Sync</span>
+                <span>{selectedCategory === 'EQUITY' ? '1-Click Demat Sync' : '1-Click CAMS Sync'}</span>
               </button>
             )}
 
