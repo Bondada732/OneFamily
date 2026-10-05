@@ -453,41 +453,77 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
                     : 'bg-slate-800/90 border-slate-700/80 hover:border-slate-600'
                 }`}
               >
-                {/* 1. Top Section: Icon, Title, Subtitle, Timeline, Beneficiary */}
-                <div className="flex items-start gap-3">
-                  <div className={`w-11 h-11 rounded-2xl ${meta.iconBg} flex items-center justify-center shrink-0 border shadow-xs`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className={`text-sm sm:text-base font-extrabold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-                        {goal.title}
-                      </h3>
-                      <span className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold uppercase border ${meta.badgeBg}`}>
-                        {meta.name}
-                      </span>
+                {/* 1. Top Section: Icon, Title, Subtitle, Timeline, Beneficiary + Edit/Delete Actions */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className={`w-11 h-11 rounded-2xl ${meta.iconBg} flex items-center justify-center shrink-0 border shadow-xs`}>
+                      <Icon className="w-5 h-5" />
                     </div>
 
-                    <p className={`text-xs mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                      {(goal as any).subtitle || `${goal.category} goal`}
-                    </p>
-
-                    <div className={`flex items-center gap-3 text-[10.5px] mt-1.5 flex-wrap ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 opacity-70 shrink-0" />
-                        <span>{goal.target_date ? formatDate(goal.target_date) : '31 Dec 2028'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`text-sm sm:text-base font-extrabold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                          {goal.title}
+                        </h3>
+                        <span className={`text-[9.5px] px-2 py-0.5 rounded-md font-bold uppercase border ${meta.badgeBg}`}>
+                          {meta.name}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        {beneficiaryLabel.includes('Family') ? (
-                          <Users className="w-3.5 h-3.5 opacity-70 shrink-0" />
-                        ) : (
-                          <User className="w-3.5 h-3.5 opacity-70 shrink-0" />
-                        )}
-                        <span className="font-semibold">{beneficiaryLabel}</span>
+
+                      <p className={`text-xs mt-0.5 truncate ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                        {(goal as any).subtitle || `${goal.category} goal`}
+                      </p>
+
+                      <div className={`flex items-center gap-3 text-[10.5px] mt-1.5 flex-wrap ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                          <span>{goal.target_date ? formatDate(goal.target_date) : '31 Dec 2028'}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {beneficiaryLabel.includes('Family') ? (
+                            <Users className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                          ) : (
+                            <User className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                          )}
+                          <span className="font-semibold">{beneficiaryLabel}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Top-Right Quick Action Buttons: Edit & Delete */}
+                  {canEditFinance && (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => onEditGoal(goal)}
+                        className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                          isLight
+                            ? 'bg-[#FFF8F1] border-[#DEC8B2] text-[#4A3B32] hover:bg-amber-100 hover:text-amber-700'
+                            : 'bg-slate-700/60 border-slate-600 text-slate-300 hover:bg-slate-600 hover:text-white'
+                        }`}
+                        title="Edit Goal"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-amber-500" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete "${goal.title}"?`)) {
+                            onDeleteGoal(goal.id);
+                          }
+                        }}
+                        className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                          isLight
+                            ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
+                            : 'bg-rose-950/40 border-rose-800/60 text-rose-400 hover:bg-rose-900/60'
+                        }`}
+                        title="Delete Goal"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. Progress Bar with Percentage */}
