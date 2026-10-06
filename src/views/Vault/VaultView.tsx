@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../context/AuthContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
@@ -9,11 +9,12 @@ import {
   FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, 
   AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, ChevronLeft, Eye, Upload, Image as ImageIcon, 
   X, FileCheck, Edit3, Trash2, Folder, User, Calendar, Hash, Bell, CreditCard, 
-  MoreHorizontal, BookOpen, Save, Shield 
+  MoreHorizontal, BookOpen, Save, Shield, Phone, MessageSquare, MapPin 
 } from 'lucide-react';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { uploadFileToCloud } from '../../utils/storage.js';
+import { AddVisitingCardModal } from '../../components/common/AddVisitingCardModal.js';
 
 interface VaultViewProps {
   initialCategory?: string;
@@ -34,14 +35,19 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals & Upload State
-  const [showUploadModal, setShowUploadModal] = useState(!!autoOpenUpload);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showAddVisitingCardModal, setShowAddVisitingCardModal] = useState(false);
 
   useEffect(() => {
     if (initialCategory) {
       setSelectedCategory(initialCategory);
     }
     if (autoOpenUpload) {
-      setShowUploadModal(true);
+      if (initialCategory === 'CARDS' || selectedCategory === 'CARDS') {
+        setShowAddVisitingCardModal(true);
+      } else {
+        setShowUploadModal(true);
+      }
     }
   }, [initialCategory, autoOpenUpload]);
   const [selectedDocType, setSelectedDocType] = useState<string>('Passport');
@@ -254,6 +260,85 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
     }
   };
 
+  const handleSaveVisitingCard = async (cardData: {
+    title: string;
+    profession: string;
+    phone: string;
+    email?: string;
+    date: string;
+    location: string;
+    notes?: string;
+    photo_url?: string;
+  }) => {
+    if (!family?.id) return;
+    try {
+      const created = await apiRequest(`/documents/${family.id}/documents`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: cardData.title,
+          category_id: 'doc_visiting_cards',
+          owner_name: currentUser?.name || 'Self',
+          document_number: cardData.phone,
+          issue_date: cardData.date,
+          issuer: cardData.location,
+          tags: cardData.profession,
+          notes: `${cardData.email ? `Email: ${cardData.email}. ` : ''}${cardData.notes || ''}`,
+          file_url: cardData.photo_url || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600',
+          file_type: 'IMAGE',
+        }),
+      });
+      setDocuments((prev) => [created, ...prev]);
+      setShowAddVisitingCardModal(false);
+    } catch (err) {
+      console.error('Failed to save visiting card:', err);
+    }
+  };
+
+  const visitingCardsList = useMemo(() => {
+    const rawCards = documents.filter(
+      (d) => d.category_id === 'doc_visiting_cards' || d.category_id === 'CARDS'
+    );
+    if (rawCards.length > 0) return rawCards;
+    return [
+      {
+        id: 'card_demo_1',
+        family_id: family?.id || 'fam_1',
+        uploaded_by_id: currentUser?.id || 'u1',
+        owner_name: currentUser?.name || 'Self',
+        title: 'Dr. Rajesh Sharma',
+        category_id: 'doc_visiting_cards',
+        document_number: '+91 98765 43210',
+        issue_date: '2026-10-05',
+        expiry_date: '',
+        issuer: 'HSR Layout, Bengaluru',
+        file_url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600',
+        file_type: 'IMAGE',
+        tags: 'Cardiologist & Heart Specialist',
+        notes: 'City Hospital HSR Layout. Recommended by Dr. Varma.',
+        is_verified: true,
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'card_demo_2',
+        family_id: family?.id || 'fam_1',
+        uploaded_by_id: currentUser?.id || 'u1',
+        owner_name: currentUser?.name || 'Self',
+        title: 'Bhavani Interiors & Modular Works',
+        category_id: 'doc_visiting_cards',
+        document_number: '+91 94401 22334',
+        issue_date: '2026-10-02',
+        expiry_date: '',
+        issuer: 'Indiranagar, Bengaluru',
+        file_url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600',
+        file_type: 'IMAGE',
+        tags: 'Interior Design & Carpentry',
+        notes: 'Contact person: Ramesh. Speaks Telugu & English.',
+        is_verified: true,
+        created_at: new Date().toISOString(),
+      },
+    ];
+  }, [documents, family?.id, currentUser?.id, currentUser?.name]);
+
   const filteredDocs = documents.filter((doc) => {
     const matchesCategory = selectedCategory === 'ALL' || doc.category_id === selectedCategory;
     const q = searchQuery.toLowerCase();
@@ -299,8 +384,12 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
         {canUploadDocs && (
           <button
             onClick={() => {
-              setSelectedDocType('Passport');
-              setShowUploadModal(true);
+              if (selectedCategory === 'CARDS') {
+                setShowAddVisitingCardModal(true);
+              } else {
+                setSelectedDocType('Passport');
+                setShowUploadModal(true);
+              }
             }}
             className={`px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
               isLight
@@ -309,7 +398,7 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
             }`}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Upload</span>
+            <span>{selectedCategory === 'CARDS' ? 'Add Card' : 'Upload'}</span>
           </button>
         )}
       </div>
@@ -386,107 +475,226 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
         )}
       </div>
 
-      {/* Documents Grid */}
-      <div className="space-y-2.5">
-        {filteredDocs.map((doc) => (
-          <div
-            key={doc.id}
-            onClick={() => setPreviewDoc(doc)}
-            className={`p-3.5 rounded-2xl border transition-all shadow-sm cursor-pointer group ${
-              isLight
-                ? 'bg-[#FFF8F1] border-[#DEC8B2] hover:border-[#C25425]/60 hover:shadow-[0_4px_12px_rgba(180,120,80,0.12)]'
-                : 'bg-slate-800/90 border-slate-700/80 hover:border-slate-600'
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
-                  isLight
-                    ? 'bg-[#F3E3D3] text-[#E05318] border border-[#DEC8B2]'
-                    : 'bg-indigo-500/20 text-indigo-300'
-                }`}>
-                  <FileText className="w-5 h-5" />
+      {/* Documents Grid / Visiting Cards Grid */}
+      {selectedCategory === 'CARDS' ? (
+        <div className="space-y-4">
+          {visitingCardsList.map((card) => (
+            <div
+              key={card.id}
+              onClick={() => setPreviewDoc(card)}
+              className={`p-4 rounded-3xl border transition-all shadow-md cursor-pointer group ${
+                isLight
+                  ? 'bg-gradient-to-br from-[#FFF9F3] to-[#F7EBE1] border-[#DEC8B2] hover:border-[#E05318]/60 hover:shadow-lg'
+                  : 'bg-gradient-to-br from-[#0B172E] to-[#071120] border-[#168BFF]/30 hover:border-[#16C7F2]/60'
+              }`}
+            >
+              <div className="space-y-3">
+                {/* Photo Preview & Title */}
+                <div className="flex gap-3">
+                  {card.file_url ? (
+                    <img
+                      src={card.file_url}
+                      alt={card.title}
+                      className="w-20 h-20 rounded-2xl object-cover border border-amber-500/20 shrink-0 shadow-inner"
+                    />
+                  ) : (
+                    <div className={`w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 border ${
+                      isLight ? 'bg-[#F3E3D3] text-[#E05318] border-[#DEC8B2]' : 'bg-slate-800 text-amber-400 border-slate-700'
+                    }`}>
+                      <CreditCard className="w-8 h-8" />
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-start justify-between">
+                      <h3 className={`text-sm font-bold truncate ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                        {card.title}
+                      </h3>
+                      {canDeleteDocs && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteDoc(card.id, e)}
+                          className={`p-1 rounded-lg transition-colors ${
+                            isLight
+                              ? 'text-[#8A6D5E] hover:text-rose-600 hover:bg-rose-100'
+                              : 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/20'
+                          }`}
+                          title="Delete Card"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {card.tags && (
+                      <span className={`inline-block px-2 py-0.5 rounded-lg text-[10px] font-bold ${
+                        isLight
+                          ? 'bg-[#E05318]/10 text-[#E05318] border border-[#E05318]/20'
+                          : 'bg-[#168BFF]/20 text-[#16C7F2] border border-[#168BFF]/30'
+                      }`}>
+                        {card.tags}
+                      </span>
+                    )}
+
+                    {card.issuer && (
+                      <div className={`flex items-center gap-1 text-[11px] truncate ${
+                        isLight ? 'text-[#634B3F]' : 'text-slate-300'
+                      }`}>
+                        <MapPin className="w-3 h-3 shrink-0 text-amber-500" />
+                        <span className="truncate">{card.issuer}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <div className={`text-xs font-bold transition-colors ${
-                    isLight
-                      ? 'text-[#1F1F1F] group-hover:text-[#E05318]'
-                      : 'text-white group-hover:text-amber-300'
-                  }`}>
-                    {doc.title}
+
+                {/* Contact & Date row */}
+                <div className={`pt-2.5 border-t flex items-center justify-between gap-2 text-xs ${
+                  isLight ? 'border-[#DEC8B2]/60' : 'border-slate-800'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {card.document_number && (
+                      <a
+                        href={`tel:${card.document_number.replace(/\s+/g, '')}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold text-[11px] transition-all ${
+                          isLight
+                            ? 'bg-[#E05318] text-white hover:bg-[#C2410C]'
+                            : 'bg-[#168BFF] text-white hover:bg-[#0A56C2]'
+                        }`}
+                      >
+                        <Phone className="w-3 h-3" />
+                        <span>Call</span>
+                      </a>
+                    )}
+                    {card.document_number && (
+                      <a
+                        href={`https://wa.me/${card.document_number.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-xl font-bold text-[11px] bg-emerald-600 text-white hover:bg-emerald-700 transition-all"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        <span>WhatsApp</span>
+                      </a>
+                    )}
                   </div>
-                  <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                    Owner: {doc.owner_name} • {doc.issuer}
-                  </div>
-                  {doc.document_number && (
-                    <div className={`text-[10px] font-mono mt-0.5 ${isLight ? 'text-[#8A6D5E]' : 'text-slate-500'}`}>
-                      No: {doc.document_number}
+
+                  {card.issue_date && (
+                    <div className={`flex items-center gap-1 text-[10px] ${
+                      isLight ? 'text-[#8A6D5E]' : 'text-slate-400'
+                    }`}>
+                      <Calendar className="w-3 h-3" />
+                      <span>{card.issue_date}</span>
                     </div>
                   )}
                 </div>
               </div>
-
-              {/* Status Badge & Actions */}
-              <div className="flex items-center gap-2 shrink-0">
-                {doc.expiry_date ? (
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      doc.expiryStatus === 'EXPIRING_SOON'
-                        ? isLight
-                          ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse'
-                        : isLight
-                        ? 'bg-[#F3E3D3] text-[#634B3F] border border-[#DEC8B2]'
-                        : 'bg-slate-700 text-slate-300'
-                    }`}
-                  >
-                    Exp: {doc.expiry_date}
-                  </span>
-                ) : (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {filteredDocs.map((doc) => (
+            <div
+              key={doc.id}
+              onClick={() => setPreviewDoc(doc)}
+              className={`p-3.5 rounded-2xl border transition-all shadow-sm cursor-pointer group ${
+                isLight
+                  ? 'bg-[#FFF8F1] border-[#DEC8B2] hover:border-[#C25425]/60 hover:shadow-[0_4px_12px_rgba(180,120,80,0.12)]'
+                  : 'bg-slate-800/90 border-slate-700/80 hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
                     isLight
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : 'bg-emerald-500/20 text-emerald-400'
+                      ? 'bg-[#F3E3D3] text-[#E05318] border border-[#DEC8B2]'
+                      : 'bg-indigo-500/20 text-indigo-300'
                   }`}>
-                    Permanent
-                  </span>
-                )}
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className={`text-xs font-bold transition-colors ${
+                      isLight
+                        ? 'text-[#1F1F1F] group-hover:text-[#E05318]'
+                        : 'text-white group-hover:text-amber-300'
+                    }`}>
+                      {doc.title}
+                    </div>
+                    <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                      Owner: {doc.owner_name} • {doc.issuer}
+                    </div>
+                    {doc.document_number && (
+                      <div className={`text-[10px] font-mono mt-0.5 ${isLight ? 'text-[#8A6D5E]' : 'text-slate-500'}`}>
+                        No: {doc.document_number}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                  {canEditDocs && (
-                    <button
-                      type="button"
-                      onClick={() => setEditingDoc(doc)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isLight
-                          ? 'bg-[#F3E3D3] hover:bg-[#EAD6C4] text-[#634B3F] hover:text-[#E05318] border border-[#DEC8B2]'
-                          : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
+                {/* Status Badge & Actions */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {doc.expiry_date ? (
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        doc.expiryStatus === 'EXPIRING_SOON'
+                          ? isLight
+                            ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse'
+                          : isLight
+                          ? 'bg-[#F3E3D3] text-[#634B3F] border border-[#DEC8B2]'
+                          : 'bg-slate-700 text-slate-300'
                       }`}
-                      title="Edit Document"
                     >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
+                      Exp: {doc.expiry_date}
+                    </span>
+                  ) : (
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                      isLight
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-emerald-500/20 text-emerald-400'
+                    }`}>
+                      Permanent
+                    </span>
                   )}
-                  {canDeleteDocs && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleDeleteDoc(doc.id, e)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isLight
-                          ? 'bg-[#F3E3D3] hover:bg-rose-100 text-[#634B3F] hover:text-rose-600 border border-[#DEC8B2]'
-                          : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
-                      }`}
-                      title="Delete Document"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    {canEditDocs && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingDoc(doc)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isLight
+                            ? 'bg-[#F3E3D3] hover:bg-[#EAD6C4] text-[#634B3F] hover:text-[#E05318] border border-[#DEC8B2]'
+                            : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400'
+                        }`}
+                        title="Edit Document"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {canDeleteDocs && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteDoc(doc.id, e)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isLight
+                            ? 'bg-[#F3E3D3] hover:bg-rose-100 text-[#634B3F] hover:text-rose-600 border border-[#DEC8B2]'
+                            : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400'
+                        }`}
+                        title="Delete Document"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Document Preview / Details Modal */}
       {previewDoc && createPortal(
@@ -1136,6 +1344,13 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
         </div>,
         document.body
       )}
+
+      {/* Add Visiting Card Dedicated Modal */}
+      <AddVisitingCardModal
+        isOpen={showAddVisitingCardModal}
+        onClose={() => setShowAddVisitingCardModal(false)}
+        onSubmit={handleSaveVisitingCard}
+      />
     </div>
   );
 };

@@ -4937,6 +4937,26 @@
       "category": "EMERGENCY",
       "details": "Viewed family emergency profiles and contacts",
       "created_at": "2026-10-06T16:47:19.565Z"
+    },
+    {
+      "id": "aud_1791305615584_x3pfl",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-10-06T16:53:35.584Z"
+    },
+    {
+      "id": "aud_1791305615820_f0mr4",
+      "family_id": "fam_1789381570680",
+      "user_id": "usr_head_1789381570680",
+      "user_name": "Rambabu",
+      "action": "Accessed Emergency Vault",
+      "category": "EMERGENCY",
+      "details": "Viewed family emergency profiles and contacts",
+      "created_at": "2026-10-06T16:53:35.820Z"
     }
   ],
   "expense_categories": [
