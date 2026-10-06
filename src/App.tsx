@@ -11,6 +11,7 @@ import { UniversalSearchModal } from './components/common/UniversalSearchModal.j
 import { NotificationModal } from './components/common/NotificationModal.js';
 import { PinLockModal } from './components/common/PinLockModal.js';
 import { ErrorBoundary } from './components/common/ErrorBoundary.js';
+import { AccessDeniedView } from './components/common/AccessDeniedView.js';
 
 import { OnboardingView } from './views/Onboarding/OnboardingView.js';
 import { HomeView } from './views/Home/HomeView.js';
@@ -24,7 +25,7 @@ import { SettingsView } from './views/Settings/SettingsView.js';
 import { FamilyFriendsView } from './views/FamilyFriends/FamilyFriendsView.js';
 
 const MainAppContent: React.FC = () => {
-  const { currentUser, family, familyMembers, isLoading, refreshUser, logout } = useAuth();
+  const { currentUser, family, familyMembers, isLoading, refreshUser, logout, hasPermission } = useAuth();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(
     () => localStorage.getItem('onefamily_onboarded') === 'true'
   );
@@ -231,6 +232,20 @@ const MainAppContent: React.FC = () => {
           </ErrorBoundary>
         );
       case 'money':
+        if (
+          !hasPermission('FINANCE_VIEW') &&
+          !hasPermission('FINANCE_EDIT') &&
+          !hasPermission('INVESTMENT_VIEW') &&
+          !hasPermission('INVESTMENT_EDIT')
+        ) {
+          return (
+            <AccessDeniedView
+              moduleName="Money, Wealth & Budget"
+              requiredPermission="FINANCE_VIEW / INVESTMENT_VIEW"
+              onBackToHome={() => setActiveTab('home')}
+            />
+          );
+        }
         return (
           <ErrorBoundary fallbackTitle="Family Wealth & Budget Error">
             <MoneyView initialSubTab={moneySubTab} onBack={() => setActiveTab('home')} />
@@ -243,30 +258,80 @@ const MainAppContent: React.FC = () => {
           </ErrorBoundary>
         );
       case 'friends':
+        if (!hasPermission('CALENDAR_VIEW') && !hasPermission('FAMILY_MANAGE')) {
+          return (
+            <AccessDeniedView
+              moduleName="Family & Friends Dates"
+              requiredPermission="CALENDAR_VIEW"
+              onBackToHome={() => setActiveTab('home')}
+            />
+          );
+        }
         return (
           <ErrorBoundary fallbackTitle="Family & Friends Reminders Error">
             <FamilyFriendsView />
           </ErrorBoundary>
         );
       case 'vault':
+        if (
+          !hasPermission('DOCUMENT_VIEW') &&
+          !hasPermission('DOCUMENT_UPLOAD') &&
+          !hasPermission('EMERGENCY_VIEW') &&
+          !hasPermission('EMERGENCY_EDIT')
+        ) {
+          return (
+            <AccessDeniedView
+              moduleName="Document & Medical Vault"
+              requiredPermission="DOCUMENT_VIEW / EMERGENCY_VIEW"
+              onBackToHome={() => setActiveTab('home')}
+            />
+          );
+        }
         return (
           <ErrorBoundary fallbackTitle="Document Vault Error">
             <VaultView initialCategory={vaultCategory} autoOpenUpload={vaultAutoUpload} onBack={() => setActiveTab('home')} />
           </ErrorBoundary>
         );
       case 'ai':
+        if (!hasPermission('AI_USE')) {
+          return (
+            <AccessDeniedView
+              moduleName="Ask Family AI"
+              requiredPermission="AI_USE"
+              onBackToHome={() => setActiveTab('home')}
+            />
+          );
+        }
         return (
           <ErrorBoundary fallbackTitle="FamilyAI Assistant Error">
             <AIView />
           </ErrorBoundary>
         );
       case 'calendar':
+        if (!hasPermission('CALENDAR_VIEW') && !hasPermission('CALENDAR_EDIT')) {
+          return (
+            <AccessDeniedView
+              moduleName="Family Calendar"
+              requiredPermission="CALENDAR_VIEW"
+              onBackToHome={() => setActiveTab('home')}
+            />
+          );
+        }
         return (
           <ErrorBoundary fallbackTitle="Calendar Error">
             <CalendarView />
           </ErrorBoundary>
         );
       case 'memories':
+        if (!hasPermission('MEMORY_VIEW') && !hasPermission('MEMORY_UPLOAD')) {
+          return (
+            <AccessDeniedView
+              moduleName="Family Memories & Photos"
+              requiredPermission="MEMORY_VIEW"
+              onBackToHome={() => setActiveTab('home')}
+            />
+          );
+        }
         return (
           <ErrorBoundary fallbackTitle="Memories Error">
             <MemoriesView />

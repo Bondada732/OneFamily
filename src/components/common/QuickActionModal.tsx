@@ -69,7 +69,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Finance',
       icon: Receipt,
       color: isLight ? 'bg-[#F7D4BC] text-[#B84A1E] border-[#E8BC9E]' : 'bg-[rgba(255,138,36,0.18)] text-[#FFD21F] border-[#FF8A24]/40',
-      allowed: hasPermission('FINANCE_EDIT'),
+      allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
       id: 'ADD_INCOME',
@@ -79,7 +79,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Finance',
       icon: ArrowDownLeft,
       color: isLight ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-      allowed: hasPermission('FINANCE_EDIT'),
+      allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
       id: 'ADD_BUDGET',
@@ -89,7 +89,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Finance',
       icon: PiggyBank,
       color: isLight ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-      allowed: hasPermission('FINANCE_EDIT'),
+      allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
       id: 'ADD_FIXED_EXPENSES',
@@ -98,8 +98,8 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       category: 'FINANCE',
       categoryName: 'Finance',
       icon: CalendarDays,
-      color: isLight ? 'bg-purple-100 text-purple-900 border-purple-300' : 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-      allowed: hasPermission('FINANCE_EDIT'),
+      color: isLight ? 'bg-purple-100 text-[#2A1B14] border-purple-300' : 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+      allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
       id: 'CREATE_GOAL',
@@ -109,7 +109,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Goals',
       icon: Target,
       color: isLight ? 'bg-[#E4D7C7] text-[#2E7D32] border-[#DECFC0]' : 'bg-[rgba(25,201,167,0.18)] text-[#55D98A] border-[#19C9A7]/40',
-      allowed: hasPermission('FINANCE_EDIT'),
+      allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
       id: 'ADD_WEALTH',
@@ -119,7 +119,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Wealth',
       icon: TrendingUp,
       color: isLight ? 'bg-blue-100 text-blue-900 border-blue-300' : 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-      allowed: hasPermission('FINANCE_EDIT') || hasPermission('INVESTMENT_EDIT'),
+      allowed: hasPermission('FINANCE_EDIT') || hasPermission('INVESTMENT_EDIT') || hasPermission('FINANCE_VIEW') || hasPermission('INVESTMENT_VIEW'),
     },
     {
       id: 'ADD_FRIEND',
@@ -129,7 +129,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Reminders',
       icon: Heart,
       color: isLight ? 'bg-[#F7D4BC] text-[#B84A1E] border-[#E8BC9E]' : 'bg-pink-500/20 text-[#FF4D8D] border-pink-500/40',
-      allowed: true,
+      allowed: hasPermission('CALENDAR_VIEW') || hasPermission('CALENDAR_EDIT'),
     },
     {
       id: 'ADD_TASK',
@@ -139,7 +139,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Tasks',
       icon: CheckSquare,
       color: isLight ? 'bg-[#E4D7C7] text-[#C25425] border-[#DECFC0]' : 'bg-[rgba(22,199,242,0.18)] text-[#7EDCFF] border-[#16C7F2]/40',
-      allowed: hasPermission('TASK_EDIT'),
+      allowed: hasPermission('TASK_EDIT') || hasPermission('TASK_VIEW'),
     },
     {
       id: 'ADD_WISHLIST',
@@ -149,7 +149,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Wishlist',
       icon: Gift,
       color: isLight ? 'bg-teal-100 text-teal-900 border-teal-300' : 'bg-teal-500/20 text-teal-300 border-teal-500/40',
-      allowed: true,
+      allowed: hasPermission('TASK_EDIT') || hasPermission('TASK_VIEW'),
     },
     {
       id: 'ADD_MAINTENANCE',
@@ -159,7 +159,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Home',
       icon: Wrench,
       color: isLight ? 'bg-slate-200 text-slate-800 border-slate-300' : 'bg-slate-700/60 text-slate-200 border-slate-600',
-      allowed: hasPermission('TASK_EDIT'),
+      allowed: hasPermission('TASK_EDIT') || hasPermission('TASK_VIEW'),
     },
     {
       id: 'UPLOAD_DOC',
@@ -169,7 +169,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Vault',
       icon: FileUp,
       color: isLight ? 'bg-[#E4D7C7] text-[#B87333] border-[#DECFC0]' : 'bg-[rgba(22,139,255,0.18)] text-[#16C7F2] border-[#168BFF]/40',
-      allowed: hasPermission('DOCUMENT_UPLOAD'),
+      allowed: hasPermission('DOCUMENT_UPLOAD') || hasPermission('DOCUMENT_VIEW'),
     },
     {
       id: 'ADD_EMERGENCY',
@@ -189,7 +189,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Memories',
       icon: Camera,
       color: isLight ? 'bg-[#F7D4BC] text-[#B84A1E] border-[#E8BC9E]' : 'bg-[rgba(255,185,31,0.18)] text-[#FFD21F] border-[#FFB91F]/40',
-      allowed: hasPermission('MEMORY_UPLOAD'),
+      allowed: hasPermission('MEMORY_UPLOAD') || hasPermission('MEMORY_VIEW'),
     },
     {
       id: 'ADD_VISITING_CARD',
@@ -199,7 +199,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'Cards',
       icon: CreditCard,
       color: isLight ? 'bg-cyan-100 text-cyan-900 border-cyan-300' : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
-      allowed: hasPermission('DOCUMENT_UPLOAD'),
+      allowed: hasPermission('DOCUMENT_UPLOAD') || hasPermission('DOCUMENT_VIEW'),
     },
     {
       id: 'ASK_AI',
@@ -209,7 +209,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       categoryName: 'AI',
       icon: Sparkles,
       color: isLight ? 'bg-[#F7D4BC] text-[#B84A1E] border-[#E8BC9E]' : 'bg-[rgba(22,139,255,0.18)] text-[#B9F36B] border-[#16C7F2]/40',
-      allowed: true,
+      allowed: hasPermission('AI_USE'),
     },
   ];
 

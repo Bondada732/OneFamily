@@ -969,151 +969,157 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       {/* 2.1. Upcoming Family & Friends Celebrations & Reminders (KinoraOne Module) */}
       <FamilyRemindersHomeWidget onNavigateTab={onNavigateTab} />
 
-      {/* 2.2. Spending Financial Analytics Dashboard (Matching Attached Image) */}
-      <MoneyAnalyticsDashboard
-        expenses={expenses}
-        monthlyBudget={dashboard?.snapshot?.monthlyBudget || 100000}
-        onNavigateTab={onNavigateTab}
-        isPrivacyMode={isPrivacyMode}
-      />
+      {/* 2.2. Spending Financial Analytics Dashboard & Smart Expenses (Only if permitted) */}
+      {(hasPermission('FINANCE_VIEW') || hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD') && (
+        <>
+          <MoneyAnalyticsDashboard
+            expenses={expenses}
+            monthlyBudget={dashboard?.snapshot?.monthlyBudget || 100000}
+            onNavigateTab={onNavigateTab}
+            isPrivacyMode={isPrivacyMode}
+          />
 
-      {/* 2.3. Smart Expenses Quick Review Card */}
-      <SmartExpensesHomeCard
-        pendingTransactions={pendingSmartTx}
-        settings={smartSettings}
-        onOpenReview={() => setShowSmartReviewModal(true)}
-        onOpenEnable={() => setShowSmartPermissionModal(true)}
-        onOpenSettings={() => setShowSmartSettingsModal(true)}
-        isPrivacyMode={isPrivacyMode}
-      />
+          <SmartExpensesHomeCard
+            pendingTransactions={pendingSmartTx}
+            settings={smartSettings}
+            onOpenReview={() => setShowSmartReviewModal(true)}
+            onOpenEnable={() => setShowSmartPermissionModal(true)}
+            onOpenSettings={() => setShowSmartSettingsModal(true)}
+            isPrivacyMode={isPrivacyMode}
+          />
+        </>
+      )}
 
       {/* 2.4. Recent Expenses Section (Matching Reference Model Image) */}
-      <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
-        isLight
-          ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
-          : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
-      }`}>
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <h3 className={`text-sm sm:text-base font-bold tracking-tight flex items-center gap-2 ${
-              isLight ? 'text-[#1F1F1F]' : 'text-white'
-            }`}>
-              <span className={isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'}>✦</span>
-              <span>Recent Expenses</span>
-              {recentExpenses.length > 0 && (
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
-                  isLight
-                    ? 'text-[#D3542F] bg-[#D3542F]/12 border-[#D3542F]/30'
-                    : 'text-[#FF4D6D] bg-[#FF4D6D]/15 border-[#FF4D6D]/30'
-                }`}>
-                  {recentExpenses.length}
-                </span>
-              )}
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowAddExpenseModal(true)}
-              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
-                isLight
-                  ? 'text-white bg-[#F05A28] hover:bg-[#E76F3C] border-[#F05A28] shadow-sm'
-                  : 'text-[#FF4D6D] hover:text-[#FF758F] bg-[#FF4D6D]/10 hover:bg-[#FF4D6D]/20 border-[#FF4D6D]/25'
-              }`}
-            >
-              <Plus className="w-3 h-3" />
-              <span>Add</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigateTab('money')}
-              className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all flex items-center gap-0.5 ${
-                isLight
-                  ? 'text-[#6B6B6B] hover:text-[#1F1F1F] bg-[#FFF8F1] hover:bg-[#F8EDE0] border-[#EAD6C4]'
-                  : 'text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border-slate-700/40'
-              }`}
-            >
-              <span>View All</span>
-              <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        {/* Expenses List with Self-Color Light Boxes */}
-        {recentExpenses && recentExpenses.length > 0 ? (
-          <div className={`divide-y ${isLight ? 'divide-[#EAD6C4]' : 'divide-slate-800/60'}`}>
-            {recentExpenses.map((exp) => {
-              const amountDisplay = isPrivacyMode
-                ? '••••'
-                : `₹${Number(exp.amount || 0).toLocaleString('en-IN')}`;
-              const merchantDisplay = exp.merchant || exp.description || exp.title || 'Expense';
-              const categoryDisplay = exp.category_name || exp.category || 'General';
-              const dateDisplay = exp.date || exp.expense_date
-                ? new Date(exp.date || exp.expense_date).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                  })
-                : '';
-
-              const visual = getExpenseCategoryVisual(categoryDisplay, merchantDisplay);
-              const VisualIcon = visual.Icon;
-
-              return (
-                <div
-                  key={exp.id || Math.random()}
-                  className={`flex items-center justify-between py-2.5 px-2 rounded-xl transition-all group ${
-                    isLight ? 'hover:bg-[#FFF8F1]/60' : 'hover:bg-white/[0.03]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {/* Self Color Light Box with Category Picture/Icon */}
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 kinora-3d-icon-box ${visual.boxClass}`}>
-                      <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className={`text-xs sm:text-sm font-semibold truncate ${
-                        isLight ? 'text-[#1F1F1F]' : 'text-white'
-                      }`}>
-                        {merchantDisplay}
-                      </div>
-                      <div className={`text-[11px] mt-0.5 truncate flex items-center gap-1.5 ${
-                        isLight ? 'text-[#6B6B6B]' : 'text-slate-400'
-                      }`}>
-                        <span>{categoryDisplay}</span>
-                        {dateDisplay && <span>•</span>}
-                        {dateDisplay && <span>{dateDisplay}</span>}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`text-xs sm:text-sm font-bold text-right tracking-tight shrink-0 pl-3 ${
-                    isLight ? 'text-[#D3542F]' : 'text-white'
+      {(hasPermission('FINANCE_VIEW') || hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD') && (
+        <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
+          isLight
+            ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+            : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
+        }`}>
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <h3 className={`text-sm sm:text-base font-bold tracking-tight flex items-center gap-2 ${
+                isLight ? 'text-[#1F1F1F]' : 'text-white'
+              }`}>
+                <span className={isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'}>✦</span>
+                <span>Recent Expenses</span>
+                {recentExpenses.length > 0 && (
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                    isLight
+                      ? 'text-[#D3542F] bg-[#D3542F]/12 border-[#D3542F]/30'
+                      : 'text-[#FF4D6D] bg-[#FF4D6D]/15 border-[#FF4D6D]/30'
                   }`}>
-                    {amountDisplay}
+                    {recentExpenses.length}
+                  </span>
+                )}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAddExpenseModal(true)}
+                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+                  isLight
+                    ? 'text-white bg-[#F05A28] hover:bg-[#E76F3C] border-[#F05A28] shadow-sm'
+                    : 'text-[#FF4D6D] hover:text-[#FF758F] bg-[#FF4D6D]/10 hover:bg-[#FF4D6D]/20 border-[#FF4D6D]/25'
+                }`}
+              >
+                <Plus className="w-3 h-3" />
+                <span>Add</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigateTab('money')}
+                className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all flex items-center gap-0.5 ${
+                  isLight
+                    ? 'text-[#6B6B6B] hover:text-[#1F1F1F] bg-[#FFF8F1] hover:bg-[#F8EDE0] border-[#EAD6C4]'
+                    : 'text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border-slate-700/40'
+                }`}
+              >
+                <span>View All</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          {/* Expenses List with Self-Color Light Boxes */}
+          {recentExpenses && recentExpenses.length > 0 ? (
+            <div className={`divide-y ${isLight ? 'divide-[#EAD6C4]' : 'divide-slate-800/60'}`}>
+              {recentExpenses.map((exp) => {
+                const amountDisplay = isPrivacyMode
+                  ? '••••'
+                  : `₹${Number(exp.amount || 0).toLocaleString('en-IN')}`;
+                const merchantDisplay = exp.merchant || exp.description || exp.title || 'Expense';
+                const categoryDisplay = exp.category_name || exp.category || 'General';
+                const dateDisplay = exp.date || exp.expense_date
+                  ? new Date(exp.date || exp.expense_date).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                    })
+                  : '';
+
+                const visual = getExpenseCategoryVisual(categoryDisplay, merchantDisplay);
+                const VisualIcon = visual.Icon;
+
+                return (
+                  <div
+                    key={exp.id || Math.random()}
+                    className={`flex items-center justify-between py-2.5 px-2 rounded-xl transition-all group ${
+                      isLight ? 'hover:bg-[#FFF8F1]/60' : 'hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Self Color Light Box with Category Picture/Icon */}
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 kinora-3d-icon-box ${visual.boxClass}`}>
+                        <VisualIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className={`text-xs sm:text-sm font-semibold truncate ${
+                          isLight ? 'text-[#1F1F1F]' : 'text-white'
+                        }`}>
+                          {merchantDisplay}
+                        </div>
+                        <div className={`text-[11px] mt-0.5 truncate flex items-center gap-1.5 ${
+                          isLight ? 'text-[#6B6B6B]' : 'text-slate-400'
+                        }`}>
+                          <span>{categoryDisplay}</span>
+                          {dateDisplay && <span>•</span>}
+                          {dateDisplay && <span>{dateDisplay}</span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={`text-xs sm:text-sm font-bold text-right tracking-tight shrink-0 pl-3 ${
+                      isLight ? 'text-[#D3542F]' : 'text-white'
+                    }`}>
+                      {amountDisplay}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="py-4 text-center">
-            <p className={`text-xs ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>No expenses recorded yet.</p>
-            <button
-              onClick={() => setShowAddExpenseModal(true)}
-              className={`mt-2 text-xs font-semibold hover:underline ${
-                isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'
-              }`}
-            >
-              + Record your first expense
-            </button>
-          </div>
-        )}
-      </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="py-4 text-center">
+              <p className={`text-xs ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>No expenses recorded yet.</p>
+              <button
+                onClick={() => setShowAddExpenseModal(true)}
+                className={`mt-2 text-xs font-semibold hover:underline ${
+                  isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'
+                }`}
+              >
+                + Record your first expense
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 2.5. Family Tasks Section (Matching Reference Model Image) */}
-      <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
+      {(hasPermission('TASK_VIEW') || hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD') && (
+        <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
         isLight
           ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
           : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
@@ -1252,6 +1258,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
         )}
       </div>
+      )}
 
       {/* 2.6. Family Wishlist Section (Matching Reference Model Image) */}
       <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${

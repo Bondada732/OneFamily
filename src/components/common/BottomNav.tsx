@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Users, Sparkles, KeyRound, Plus } from 'lucide-react';
+import { Home, Users, Sparkles, KeyRound, Plus, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
 import { translations } from '../../i18n/index.js';
@@ -13,19 +13,19 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, onOpenQuickAction }) => {
-  const { activeLanguage } = useAuth();
+  const { activeLanguage, hasPermission } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
   const leftNavItems = [
-    { id: 'home' as TabType, label: t.home || 'Home', icon: Home },
-    { id: 'ai' as TabType, label: 'Ask Family AI', icon: Sparkles },
+    { id: 'home' as TabType, label: t.home || 'Home', icon: Home, allowed: true },
+    { id: 'ai' as TabType, label: 'Ask Family AI', icon: Sparkles, allowed: hasPermission('AI_USE') },
   ];
 
   const rightNavItems = [
-    { id: 'settings' as TabType, label: 'Security & Settings', icon: KeyRound },
-    { id: 'family' as TabType, label: 'Family Members', icon: Users },
+    { id: 'settings' as TabType, label: 'Security & Settings', icon: KeyRound, allowed: true },
+    { id: 'family' as TabType, label: 'Family Members', icon: Users, allowed: true },
   ];
 
   return (
@@ -44,7 +44,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className={`flex flex-col items-center justify-center min-w-[56px] py-1 transition-all nav-item-btn ${
+                className={`relative flex flex-col items-center justify-center min-w-[56px] py-1 transition-all nav-item-btn ${
+                  !item.allowed ? 'opacity-40' : ''
+                } ${
                   isActive
                     ? isLight
                       ? 'text-[#D3542F] font-black scale-105 filter drop-shadow-[0_0_6px_rgba(211,84,47,0.35)]'
@@ -56,6 +58,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
                     : 'text-slate-400 hover:text-slate-200 nav-inactive'
                 }`}
               >
+                {!item.allowed && (
+                  <div className="absolute -top-1 right-2 text-rose-500">
+                    <Lock className="w-2.5 h-2.5" />
+                  </div>
+                )}
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 <span className="text-[10px] mt-1 font-semibold tracking-tight text-center leading-none">{item.label}</span>
               </button>
@@ -87,7 +94,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab, on
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className={`flex flex-col items-center justify-center min-w-[56px] py-1 transition-all ${
+                className={`relative flex flex-col items-center justify-center min-w-[56px] py-1 transition-all ${
                   isActive
                     ? isLight
                       ? 'text-[#D3542F] font-black scale-105 filter drop-shadow-[0_0_6px_rgba(211,84,47,0.35)]'
