@@ -156,13 +156,18 @@ const MainAppContent: React.FC = () => {
   const handleQuickAction = (actionType: string) => {
     switch (actionType) {
       case 'ADD_EXPENSE':
+      case 'ADD_INCOME':
+      case 'ADD_BUDGET':
+      case 'ADD_WEALTH':
       case 'CREATE_GOAL':
         setActiveTab('money');
         break;
       case 'UPLOAD_DOC':
+      case 'ADD_EMERGENCY':
         setActiveTab('vault');
         break;
       case 'ADD_TASK':
+      case 'ADD_MAINTENANCE':
         setActiveTab('family');
         break;
       case 'ADD_MEMORY':
