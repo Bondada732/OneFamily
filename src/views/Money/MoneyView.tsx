@@ -14,7 +14,7 @@ import { CsvExpenseModal, exportExpensesToCsv, downloadSampleTemplate } from '..
 import { PanPortfolioSyncModal } from '../../components/common/PanPortfolioSyncModal.js';
 import { WealthSection } from './WealthSection.js';
 import { GoalsSection } from './GoalsSection.js';
-import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3, FileSpreadsheet, Download, Upload } from 'lucide-react';
+import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, ChevronLeft, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3, FileSpreadsheet, Download, Upload } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
 const DEFAULT_EXPENSE_CATEGORIES = [
@@ -36,9 +36,10 @@ const DEFAULT_EXPENSE_CATEGORIES = [
 
 interface MoneyViewProps {
   initialSubTab?: 'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS';
+  onBack?: () => void;
 }
 
-export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab }) => {
+export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
   const { refreshDashboard } = useFamily();
   const { isPrivacyMode } = useSecurity();
@@ -655,13 +656,42 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab }) => {
     }`}>
       {/* Title & Actions */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
-            {activeSubTab === 'GOALS' ? 'Family Goals' : 'Family Wealth & Budget'}
-          </h2>
-          <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-            {activeSubTab === 'GOALS' ? 'Plan today for a brighter tomorrow' : 'Total control over Indian family finances'}
-          </p>
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className={`p-1.5 rounded-xl border transition-all ${
+                isLight ? 'bg-[#FFF8F1] text-[#6B6B6B] hover:text-[#1F1F1F] border-[#EAD6C4]' : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'
+              }`}
+              title="Back to Home"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div>
+            <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+              {activeSubTab === 'EXPENSES'
+                ? 'Record Expenses'
+                : activeSubTab === 'BUDGET'
+                ? 'Category Budget'
+                : activeSubTab === 'WEALTH'
+                ? 'Wealth & Assets'
+                : activeSubTab === 'GOALS'
+                ? 'Set Family Goals'
+                : 'Family Wealth & Budget'}
+            </h2>
+            <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              {activeSubTab === 'EXPENSES'
+                ? 'Track, record and analyze daily family spending'
+                : activeSubTab === 'BUDGET'
+                ? 'Set & monitor monthly spending limits by category'
+                : activeSubTab === 'WEALTH'
+                ? 'Manage stocks, mutual funds, FDs & liabilities'
+                : activeSubTab === 'GOALS'
+                ? 'Plan target funds for vacation, education & emergency'
+                : 'Total control over Indian family finances'}
+            </p>
+          </div>
         </div>
         {canEditFinance && (
           <div className="flex items-center gap-1.5">
@@ -733,30 +763,32 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab }) => {
         )}
       </div>
 
-      {/* Sub Tab Navigation */}
-      <div className={`flex items-center gap-1 p-1 rounded-2xl overflow-x-auto scrollbar-none border ${
-        isLight
-          ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
-          : 'bg-slate-800/80 border border-slate-700/80'
-      }`}>
-        {(['OVERVIEW', 'BUDGET', 'EXPENSES', 'WEALTH', 'GOALS'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveSubTab(tab)}
-            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
-              activeSubTab === tab
-                ? isLight
-                  ? 'bg-[#F05A28] text-white shadow-md'
-                  : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
-                : isLight
-                  ? 'text-[#634B3F] hover:text-[#1F1F1F]'
-                  : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      {/* Sub Tab Navigation (Hidden when launched directly via module option) */}
+      {!initialSubTab && (
+        <div className={`flex items-center gap-1 p-1 rounded-2xl overflow-x-auto scrollbar-none border ${
+          isLight
+            ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
+            : 'bg-slate-800/80 border border-slate-700/80'
+        }`}>
+          {(['OVERVIEW', 'BUDGET', 'EXPENSES', 'WEALTH', 'GOALS'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveSubTab(tab)}
+              className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                activeSubTab === tab
+                  ? isLight
+                    ? 'bg-[#F05A28] text-white shadow-md'
+                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+                  : isLight
+                    ? 'text-[#634B3F] hover:text-[#1F1F1F]'
+                    : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* 1. OVERVIEW SUBTAB */}
       {activeSubTab === 'OVERVIEW' && (

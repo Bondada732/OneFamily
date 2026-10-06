@@ -7,14 +7,15 @@ import { formatDate, getLocalDateString } from '../../utils/formatters.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { FamilyMember, TaskItem, GroceryItem, MaintenanceItem, EmergencyContact, EmergencyProfile } from '../../types/index.js';
-import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
+import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
 import { FamilyFriendsView } from '../FamilyFriends/FamilyFriendsView.js';
 
 interface FamilyViewProps {
   initialSubTab?: 'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY';
+  onBack?: () => void;
 }
 
-export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab }) => {
+export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack }) => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers, refreshUser, regenerateFamilyKey, approveMember, rejectMember, updateMemberPermissions } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -672,9 +673,50 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab }) => {
     }`}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Family</h2>
-          <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Together Always • {family?.name || 'One Family'}</p>
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className={`p-1.5 rounded-xl border transition-all ${
+                isLight ? 'bg-[#FFF8F1] text-[#6B6B6B] hover:text-[#1F1F1F] border-[#EAD6C4]' : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'
+              }`}
+              title="Back to Home"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div>
+            <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+              {activeSubTab === 'TASKS'
+                ? 'Add Family Task'
+                : activeSubTab === 'WISHLIST'
+                ? 'Family Wish List'
+                : activeSubTab === 'MAINTENANCE'
+                ? 'Home Maintenance'
+                : activeSubTab === 'EMERGENCY'
+                ? 'Emergency Vault'
+                : activeSubTab === 'FRIENDS'
+                ? 'Family & Friends Celebrations'
+                : activeSubTab === 'TREE'
+                ? 'Family Tree'
+                : 'Family Members'}
+            </h2>
+            <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              {activeSubTab === 'TASKS'
+                ? 'Household chores, bills, and assignees'
+                : activeSubTab === 'WISHLIST'
+                ? 'Dream items, gifts & family wishes'
+                : activeSubTab === 'MAINTENANCE'
+                ? 'Repairs, servicing & appliance care'
+                : activeSubTab === 'EMERGENCY'
+                ? '24/7 SOS, medical IDs & emergency contacts'
+                : activeSubTab === 'FRIENDS'
+                ? 'Birthdays, anniversaries & occasions'
+                : activeSubTab === 'TREE'
+                ? 'Interactive family hierarchy & relations'
+                : `Together Always • ${family?.name || 'One Family'}`}
+            </p>
+          </div>
         </div>
         {canManageFamily && (
           <button
@@ -691,66 +733,70 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab }) => {
         )}
       </div>
 
-      {/* Horizontal Story-style Member Avatars */}
-      <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none pt-1">
-        {familyMembers.map((member) => (
-          <div
-            key={member.id}
-            onClick={() => openEditMember(member)}
-            className="flex flex-col items-center min-w-[64px] cursor-pointer group active:scale-95 transition-transform"
-          >
-            <div className="relative mb-1">
-              <img
-                src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
-                alt={member.name}
-                className={`w-12 h-12 rounded-full object-cover p-0.5 border-2 transition-all ${
-                  member.role === 'FAMILY_HEAD'
-                    ? isLight ? 'border-[#C25425] ring-2 ring-[#C25425]/30' : 'border-amber-400 ring-2 ring-amber-400/30'
-                    : isLight ? 'border-[#EAD6C4] group-hover:border-[#C25425]' : 'border-indigo-500/80 group-hover:border-amber-400'
-                }`}
-              />
-              {member.role === 'FAMILY_HEAD' && (
-                <span className={`absolute -bottom-1 -right-1 text-[8px] font-black px-1 rounded-full shadow-sm ${
-                  isLight ? 'bg-[#F05A28] text-white' : 'bg-amber-500 text-slate-950'
-                }`}>
-                  👑
-                </span>
-              )}
+      {/* Horizontal Story-style Member Avatars (Visible in MEMBERS mode or general overview) */}
+      {(!initialSubTab || activeSubTab === 'MEMBERS') && (
+        <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none pt-1">
+          {familyMembers.map((member) => (
+            <div
+              key={member.id}
+              onClick={() => openEditMember(member)}
+              className="flex flex-col items-center min-w-[64px] cursor-pointer group active:scale-95 transition-transform"
+            >
+              <div className="relative mb-1">
+                <img
+                  src={member.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
+                  alt={member.name}
+                  className={`w-12 h-12 rounded-full object-cover p-0.5 border-2 transition-all ${
+                    member.role === 'FAMILY_HEAD'
+                      ? isLight ? 'border-[#C25425] ring-2 ring-[#C25425]/30' : 'border-amber-400 ring-2 ring-amber-400/30'
+                      : isLight ? 'border-[#EAD6C4] group-hover:border-[#C25425]' : 'border-indigo-500/80 group-hover:border-amber-400'
+                  }`}
+                />
+                {member.role === 'FAMILY_HEAD' && (
+                  <span className={`absolute -bottom-1 -right-1 text-[8px] font-black px-1 rounded-full shadow-sm ${
+                    isLight ? 'bg-[#F05A28] text-white' : 'bg-amber-500 text-slate-950'
+                  }`}>
+                    👑
+                  </span>
+                )}
+              </div>
+              <span className={`text-xs font-bold truncate max-w-[64px] ${isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-amber-300'}`}>
+                {member.name.split(' ')[0]}
+              </span>
+              <span className={`text-[10px] truncate max-w-[64px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                {member.role === 'FAMILY_HEAD' ? 'Family Head' : member.relationship || 'Member'}
+              </span>
             </div>
-            <span className={`text-xs font-bold truncate max-w-[64px] ${isLight ? 'text-[#1F1F1F] group-hover:text-[#D3542F]' : 'text-white group-hover:text-amber-300'}`}>
-              {member.name.split(' ')[0]}
-            </span>
-            <span className={`text-[10px] truncate max-w-[64px] ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-              {member.role === 'FAMILY_HEAD' ? 'Family Head' : member.relationship || 'Member'}
-            </span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* Sub Tabs */}
-      <div className={`flex items-center gap-1 p-1 rounded-2xl overflow-x-auto scrollbar-none border ${
-        isLight
-          ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
-          : 'bg-slate-800/80 border border-slate-700/80'
-      }`}>
-        {(['MEMBERS', 'FRIENDS', 'TREE', 'TASKS', 'WISHLIST', 'MAINTENANCE', 'EMERGENCY'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveSubTab(tab)}
-            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
-              activeSubTab === tab
-                ? isLight
-                  ? 'bg-[#F05A28] text-white shadow-md'
-                  : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
-                : isLight
-                  ? 'text-[#634B3F] hover:text-[#1F1F1F]'
-                  : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {tab === 'WISHLIST' ? 'WISH LIST' : tab === 'FRIENDS' ? 'FRIENDS & DATES 🎂' : tab}
-          </button>
-        ))}
-      </div>
+      {/* Sub Tabs (Hidden when launched directly via module option) */}
+      {!initialSubTab && (
+        <div className={`flex items-center gap-1 p-1 rounded-2xl overflow-x-auto scrollbar-none border ${
+          isLight
+            ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
+            : 'bg-slate-800/80 border border-slate-700/80'
+        }`}>
+          {(['MEMBERS', 'FRIENDS', 'TREE', 'TASKS', 'WISHLIST', 'MAINTENANCE', 'EMERGENCY'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveSubTab(tab)}
+              className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                activeSubTab === tab
+                  ? isLight
+                    ? 'bg-[#F05A28] text-white shadow-md'
+                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+                  : isLight
+                    ? 'text-[#634B3F] hover:text-[#1F1F1F]'
+                    : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {tab === 'WISHLIST' ? 'WISH LIST' : tab === 'FRIENDS' ? 'FRIENDS & DATES 🎂' : tab}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* 1. MEMBERS SUBTAB */}
       {activeSubTab === 'MEMBERS' && (

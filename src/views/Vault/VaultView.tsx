@@ -7,7 +7,7 @@ import { apiRequest } from '../../utils/api.js';
 import { DocumentRecord } from '../../types/index.js';
 import { 
   FolderLock, FileText, ShieldAlert, Sparkles, Plus, Camera, Search, Download, 
-  AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, Eye, Upload, Image as ImageIcon, 
+  AlertTriangle, ShieldCheck, CheckCircle2, ChevronRight, ChevronLeft, Eye, Upload, Image as ImageIcon, 
   X, FileCheck, Edit3, Trash2, Folder, User, Calendar, Hash, Bell, CreditCard, 
   MoreHorizontal, BookOpen, Save, Shield 
 } from 'lucide-react';
@@ -18,9 +18,10 @@ import { uploadFileToCloud } from '../../utils/storage.js';
 interface VaultViewProps {
   initialCategory?: string;
   autoOpenUpload?: boolean;
+  onBack?: () => void;
 }
 
-export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenUpload }) => {
+export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenUpload, onBack }) => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -270,9 +271,30 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
     <div className={`p-4 space-y-5 animate-fade-in pb-12 ${isLight ? 'text-[#1F1F1F]' : 'text-slate-100'}`}>
       {/* Title & Upload Action */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Family Document Vault</h2>
-          <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Encrypted records, OCR scanner & expiry alerts</p>
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className={`p-1.5 rounded-xl border transition-all ${
+                isLight ? 'bg-[#FFF8F1] text-[#6B6B6B] hover:text-[#1F1F1F] border-[#EAD6C4]' : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'
+              }`}
+              title="Back to Home"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div>
+            <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+              {selectedCategory === 'CARDS'
+                ? 'Store Visiting Cards'
+                : 'Store Document'}
+            </h2>
+            <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+              {selectedCategory === 'CARDS'
+                ? 'Business cards & contacts scanner'
+                : 'Encrypted records, OCR scanner & expiry alerts'}
+            </p>
+          </div>
         </div>
         {canUploadDocs && (
           <button
@@ -326,28 +348,13 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
           />
         </div>
 
-        {/* Category Pills */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          <button
-            onClick={() => setSelectedCategory('ALL')}
-            className={`px-3 py-1 rounded-xl text-[11px] font-semibold transition-all shrink-0 ${
-              selectedCategory === 'ALL'
-                ? isLight
-                  ? 'bg-[#E05318] text-white font-bold shadow-sm'
-                  : 'bg-amber-400 text-slate-900 font-bold'
-                : isLight
-                ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#EAD6C4] border border-[#DEC8B2]'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-            }`}
-          >
-            All Docs ({documents.length})
-          </button>
-          {categories.map((cat) => (
+        {/* Category Pills (Hidden when launched directly via module option) */}
+        {!initialCategory && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => setSelectedCategory('ALL')}
               className={`px-3 py-1 rounded-xl text-[11px] font-semibold transition-all shrink-0 ${
-                selectedCategory === cat.id
+                selectedCategory === 'ALL'
                   ? isLight
                     ? 'bg-[#E05318] text-white font-bold shadow-sm'
                     : 'bg-amber-400 text-slate-900 font-bold'
@@ -356,10 +363,27 @@ export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenU
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              {cat.name}
+              All Docs ({documents.length})
             </button>
-          ))}
-        </div>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-1 rounded-xl text-[11px] font-semibold transition-all shrink-0 ${
+                  selectedCategory === cat.id
+                    ? isLight
+                      ? 'bg-[#E05318] text-white font-bold shadow-sm'
+                      : 'bg-amber-400 text-slate-900 font-bold'
+                    : isLight
+                    ? 'bg-[#F3E3D3] text-[#634B3F] hover:bg-[#EAD6C4] border border-[#DEC8B2]'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Documents Grid */}

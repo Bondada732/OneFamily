@@ -230,13 +230,13 @@ const MainAppContent: React.FC = () => {
       case 'money':
         return (
           <ErrorBoundary fallbackTitle="Family Wealth & Budget Error">
-            <MoneyView initialSubTab={moneySubTab} />
+            <MoneyView initialSubTab={moneySubTab} onBack={() => setActiveTab('home')} />
           </ErrorBoundary>
         );
       case 'family':
         return (
           <ErrorBoundary fallbackTitle="Family Hub Error">
-            <FamilyView initialSubTab={familySubTab} />
+            <FamilyView initialSubTab={familySubTab} onBack={() => setActiveTab('home')} />
           </ErrorBoundary>
         );
       case 'friends':
@@ -248,7 +248,7 @@ const MainAppContent: React.FC = () => {
       case 'vault':
         return (
           <ErrorBoundary fallbackTitle="Document Vault Error">
-            <VaultView initialCategory={vaultCategory} autoOpenUpload={vaultAutoUpload} />
+            <VaultView initialCategory={vaultCategory} autoOpenUpload={vaultAutoUpload} onBack={() => setActiveTab('home')} />
           </ErrorBoundary>
         );
       case 'ai':
