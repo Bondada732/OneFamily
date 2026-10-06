@@ -643,6 +643,7 @@ export const FamilyView: React.FC = () => {
     { code: 'FINANCE_VIEW', name: 'View Finances & Spending', category: 'Finance' },
     { code: 'FINANCE_EDIT', name: 'Record & Manage Expenses', category: 'Finance' },
     { code: 'INVESTMENT_VIEW', name: 'View Wealth & Net Worth', category: 'Finance' },
+    { code: 'INVESTMENT_EDIT', name: 'Manage & Add Wealth, Investments, Loans & CAS Sync', category: 'Finance' },
     { code: 'DOCUMENT_VIEW', name: 'View Vault Documents', category: 'Vault' },
     { code: 'DOCUMENT_UPLOAD', name: 'Upload & Scan Documents', category: 'Vault' },
     { code: 'EMERGENCY_VIEW', name: 'View Emergency Vault & Medical', category: 'Emergency' },

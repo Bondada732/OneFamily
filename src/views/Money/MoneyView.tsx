@@ -174,8 +174,8 @@ export const MoneyView: React.FC = () => {
     date: getLocalDateString(),
   });
 
-  const canViewFinance = hasPermission('FINANCE_VIEW');
-  const canEditFinance = hasPermission('FINANCE_EDIT');
+  const canViewFinance = hasPermission('FINANCE_VIEW') || hasPermission('INVESTMENT_VIEW') || currentUser?.role === 'FAMILY_HEAD';
+  const canEditFinance = hasPermission('FINANCE_EDIT') || hasPermission('INVESTMENT_EDIT') || currentUser?.role === 'FAMILY_HEAD';
 
   useEffect(() => {
     if (!canViewFinance || !family?.id) {

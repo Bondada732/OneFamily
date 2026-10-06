@@ -104,6 +104,21 @@ async function startServer() {
     seedDatabase();
   }
 
+  // Ensure all existing SPOUSE & ADULT members have default Finance & Investment permissions granted
+  const allUsers = db.getTable('users');
+  const targetRoles = ['SPOUSE', 'ADULT'];
+  const financeCodes = ['FINANCE_VIEW', 'FINANCE_EDIT', 'INVESTMENT_VIEW', 'INVESTMENT_EDIT'];
+  for (const u of allUsers) {
+    if (targetRoles.includes(u.role)) {
+      for (const code of financeCodes) {
+        const existing = db.findOne('member_permissions', (mp) => mp.user_id === u.id && mp.permission_code === code);
+        if (!existing) {
+          db.insert('member_permissions', { user_id: u.id, permission_code: code });
+        }
+      }
+    }
+  }
+
   app.listen(PORT, () => {
     console.log(`✨ ${APP_NAME} Backend running on http://localhost:${PORT}`);
     console.log(`🏡 "${TAGLINE}"`);
