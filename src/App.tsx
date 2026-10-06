@@ -35,6 +35,12 @@ const MainAppContent: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Subtab navigation states for quick actions
+  const [moneySubTab, setMoneySubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS'>('OVERVIEW');
+  const [familySubTab, setFamilySubTab] = useState<'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY'>('MEMBERS');
+  const [vaultCategory, setVaultCategory] = useState<string>('ALL');
+  const [vaultAutoUpload, setVaultAutoUpload] = useState<boolean>(false);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#020919] flex flex-col items-center justify-center p-6 pt-safe-mobile text-center space-y-4 animate-fade-in">
@@ -157,18 +163,37 @@ const MainAppContent: React.FC = () => {
     switch (actionType) {
       case 'ADD_EXPENSE':
       case 'ADD_INCOME':
-      case 'ADD_BUDGET':
-      case 'ADD_WEALTH':
-      case 'CREATE_GOAL':
+        setMoneySubTab('EXPENSES');
         setActiveTab('money');
         break;
-      case 'UPLOAD_DOC':
-      case 'ADD_EMERGENCY':
-        setActiveTab('vault');
+      case 'ADD_BUDGET':
+        setMoneySubTab('BUDGET');
+        setActiveTab('money');
+        break;
+      case 'ADD_WEALTH':
+        setMoneySubTab('WEALTH');
+        setActiveTab('money');
+        break;
+      case 'CREATE_GOAL':
+        setMoneySubTab('GOALS');
+        setActiveTab('money');
         break;
       case 'ADD_TASK':
-      case 'ADD_MAINTENANCE':
+        setFamilySubTab('TASKS');
         setActiveTab('family');
+        break;
+      case 'ADD_MAINTENANCE':
+        setFamilySubTab('MAINTENANCE');
+        setActiveTab('family');
+        break;
+      case 'ADD_EMERGENCY':
+        setFamilySubTab('EMERGENCY');
+        setActiveTab('family');
+        break;
+      case 'UPLOAD_DOC':
+        setVaultCategory('ALL');
+        setVaultAutoUpload(true);
+        setActiveTab('vault');
         break;
       case 'ADD_MEMORY':
         setActiveTab('memories');
@@ -195,13 +220,13 @@ const MainAppContent: React.FC = () => {
       case 'money':
         return (
           <ErrorBoundary fallbackTitle="Family Wealth & Budget Error">
-            <MoneyView />
+            <MoneyView initialSubTab={moneySubTab} />
           </ErrorBoundary>
         );
       case 'family':
         return (
           <ErrorBoundary fallbackTitle="Family Hub Error">
-            <FamilyView />
+            <FamilyView initialSubTab={familySubTab} />
           </ErrorBoundary>
         );
       case 'friends':
@@ -213,7 +238,7 @@ const MainAppContent: React.FC = () => {
       case 'vault':
         return (
           <ErrorBoundary fallbackTitle="Document Vault Error">
-            <VaultView />
+            <VaultView initialCategory={vaultCategory} autoOpenUpload={vaultAutoUpload} />
           </ErrorBoundary>
         );
       case 'ai':

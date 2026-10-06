@@ -10,13 +10,23 @@ import { FamilyMember, TaskItem, GroceryItem, MaintenanceItem, EmergencyContact,
 import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
 import { FamilyFriendsView } from '../FamilyFriends/FamilyFriendsView.js';
 
-export const FamilyView: React.FC = () => {
+interface FamilyViewProps {
+  initialSubTab?: 'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY';
+}
+
+export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab }) => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers, refreshUser, regenerateFamilyKey, approveMember, rejectMember, updateMemberPermissions } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
-  const [activeSubTab, setActiveSubTab] = useState<'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY'>('MEMBERS');
+  const [activeSubTab, setActiveSubTab] = useState<'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY'>(initialSubTab || 'MEMBERS');
+
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);
   const [maintenanceItems, setMaintenanceItems] = useState<MaintenanceItem[]>([]);

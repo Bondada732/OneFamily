@@ -15,7 +15,12 @@ import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { uploadFileToCloud } from '../../utils/storage.js';
 
-export const VaultView: React.FC = () => {
+interface VaultViewProps {
+  initialCategory?: string;
+  autoOpenUpload?: boolean;
+}
+
+export const VaultView: React.FC<VaultViewProps> = ({ initialCategory, autoOpenUpload }) => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -23,12 +28,21 @@ export const VaultView: React.FC = () => {
 
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals & Upload State
-  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(!!autoOpenUpload);
+
+  useEffect(() => {
+    if (initialCategory) {
+      setSelectedCategory(initialCategory);
+    }
+    if (autoOpenUpload) {
+      setShowUploadModal(true);
+    }
+  }, [initialCategory, autoOpenUpload]);
   const [selectedDocType, setSelectedDocType] = useState<string>('Passport');
   const [showOCRResult, setShowOCRResult] = useState<any>(null);
   const [previewDoc, setPreviewDoc] = useState<DocumentRecord | null>(null);

@@ -34,7 +34,11 @@ const DEFAULT_EXPENSE_CATEGORIES = [
   { id: 'cat_misc', name: 'Miscellaneous & Pooja' },
 ];
 
-export const MoneyView: React.FC = () => {
+interface MoneyViewProps {
+  initialSubTab?: 'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS';
+}
+
+export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab }) => {
   const { currentUser, family, activeLanguage, hasPermission, familyMembers } = useAuth();
   const { refreshDashboard } = useFamily();
   const { isPrivacyMode } = useSecurity();
@@ -42,8 +46,13 @@ export const MoneyView: React.FC = () => {
   const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
+  const [activeSubTab, setActiveSubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS'>(initialSubTab || 'OVERVIEW');
 
-  const [activeSubTab, setActiveSubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS'>('OVERVIEW');
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
   const [expenses, setExpenses] = useState<Expense[]>(() => {
     if (family?.id) {
       const cached = getCachedApiResponse<any>(`/expenses/${family.id}/expenses`);
