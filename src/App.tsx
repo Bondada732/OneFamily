@@ -36,7 +36,7 @@ const MainAppContent: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Subtab navigation states for quick actions
-  const [moneySubTab, setMoneySubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS'>('OVERVIEW');
+  const [moneySubTab, setMoneySubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'INCOME' | 'WEALTH' | 'GOALS'>('OVERVIEW');
   const [familySubTab, setFamilySubTab] = useState<'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY'>('MEMBERS');
   const [vaultCategory, setVaultCategory] = useState<string>('ALL');
   const [vaultAutoUpload, setVaultAutoUpload] = useState<boolean>(false);
@@ -162,9 +162,12 @@ const MainAppContent: React.FC = () => {
   const handleQuickAction = (actionType: string) => {
     switch (actionType) {
       case 'ADD_EXPENSE':
-      case 'ADD_INCOME':
       case 'ADD_FIXED_EXPENSES':
         setMoneySubTab('EXPENSES');
+        setActiveTab('money');
+        break;
+      case 'ADD_INCOME':
+        setMoneySubTab('INCOME');
         setActiveTab('money');
         break;
       case 'ADD_BUDGET':

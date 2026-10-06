@@ -234,5 +234,53 @@ router.delete('/:id/expenses/:expenseId', requirePermission('FINANCE_EDIT'), (re
   res.json({ success: deleted });
 });
 
+// Get All Incomes
+router.get('/:id/incomes', requirePermission('FINANCE_VIEW'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const incomes = db.find('incomes', (i) => i.family_id === familyId);
+  res.json({
+    incomes: incomes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    totalIncome: incomes.reduce((sum, i) => sum + (Number(i.amount) || 0), 0),
+  });
+});
+
+// Add New Income
+router.post('/:id/incomes', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const familyId = req.params.id || req.familyId!;
+  const { source, amount, type, date, notes } = req.body;
+
+  const newIncome = {
+    id: `inc_${Date.now()}`,
+    family_id: familyId,
+    user_id: req.user!.id,
+    added_by_name: req.user!.name.split(' ')[0],
+    source: source || 'Monthly Income',
+    type: type || 'SALARY',
+    amount: Number(amount) || 0,
+    currency: 'INR',
+    date: date || new Date().toISOString().split('T')[0],
+    notes: notes || '',
+    created_at: new Date().toISOString(),
+  };
+
+  db.insert('incomes', newIncome);
+  logActivity(familyId, req.user!.id, req.user!.name, 'Recorded Income', 'FINANCE', `Added ₹${newIncome.amount} from ${newIncome.source}`);
+
+  res.status(201).json(newIncome);
+});
+
+// Delete Income
+router.delete('/:id/incomes/:incomeId', requirePermission('FINANCE_EDIT'), (req: AuthRequest, res) => {
+  const { incomeId } = req.params;
+  const familyId = req.params.id || req.familyId!;
+
+  const deleted = db.delete('incomes', (i) => i.id === incomeId && i.family_id === familyId);
+  if (deleted) {
+    logActivity(familyId, req.user!.id, req.user!.name, 'Deleted Income', 'FINANCE', `Deleted income record ${incomeId}`);
+  }
+
+  res.json({ success: deleted });
+});
+
 export default router;
 

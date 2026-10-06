@@ -8,6 +8,7 @@ import { formatCurrency, formatDate, getLocalDateString } from '../../utils/form
 import { apiRequest, getCachedApiResponse } from '../../utils/api.js';
 import { Expense, BudgetReport, Investment, Liability, Goal } from '../../types/index.js';
 import { AddExpenseModal } from '../../components/common/AddExpenseModal.js';
+import { AddIncomeModal } from '../../components/common/AddIncomeModal.js';
 import { CustomDatePicker } from '../../components/common/CustomDatePicker.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { CsvExpenseModal, exportExpensesToCsv, downloadSampleTemplate } from '../../components/common/CsvExpenseModal.js';
@@ -35,7 +36,7 @@ const DEFAULT_EXPENSE_CATEGORIES = [
 ];
 
 interface MoneyViewProps {
-  initialSubTab?: 'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS';
+  initialSubTab?: 'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'INCOME' | 'WEALTH' | 'GOALS';
   onBack?: () => void;
 }
 
@@ -47,7 +48,7 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
   const isLight = theme === 'light';
   const t = translations[activeLanguage];
 
-  const [activeSubTab, setActiveSubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'WEALTH' | 'GOALS'>(initialSubTab || 'OVERVIEW');
+  const [activeSubTab, setActiveSubTab] = useState<'OVERVIEW' | 'BUDGET' | 'EXPENSES' | 'INCOME' | 'WEALTH' | 'GOALS'>(initialSubTab || 'OVERVIEW');
 
   useEffect(() => {
     if (initialSubTab) {
@@ -101,6 +102,72 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
     }
     return [];
   });
+  const [incomes, setIncomes] = useState<any[]>(() => {
+    if (family?.id) {
+      const cached = getCachedApiResponse<any>(`/expenses/${family.id}/incomes`);
+      return cached?.incomes || [
+        { id: 'inc_1', source: 'Monthly Salary', amount: 150000, type: 'SALARY', date: getLocalDateString(), added_by_name: currentUser?.name?.split(' ')[0] || 'Self', notes: 'Monthly salary payout' },
+        { id: 'inc_2', source: 'House Rent Credit', amount: 25000, type: 'RENTAL', date: getLocalDateString(), added_by_name: 'Spouse', notes: '2BHK Apartment rent' },
+        { id: 'inc_3', source: 'Stock Portfolio Dividend', amount: 12500, type: 'DIVIDEND', date: getLocalDateString(), added_by_name: currentUser?.name?.split(' ')[0] || 'Self', notes: 'Quarterly dividend' },
+      ];
+    }
+    return [
+      { id: 'inc_1', source: 'Monthly Salary', amount: 150000, type: 'SALARY', date: getLocalDateString(), added_by_name: currentUser?.name?.split(' ')[0] || 'Self', notes: 'Monthly salary payout' },
+      { id: 'inc_2', source: 'House Rent Credit', amount: 25000, type: 'RENTAL', date: getLocalDateString(), added_by_name: 'Spouse', notes: '2BHK Apartment rent' },
+      { id: 'inc_3', source: 'Stock Portfolio Dividend', amount: 12500, type: 'DIVIDEND', date: getLocalDateString(), added_by_name: currentUser?.name?.split(' ')[0] || 'Self', notes: 'Quarterly dividend' },
+    ];
+  });
+  const [showAddIncome, setShowAddIncome] = useState(false);
+
+  useEffect(() => {
+    if (!family?.id) return;
+    const loadIncomes = async () => {
+      try {
+        const data = await apiRequest(`/expenses/${family.id}/incomes`);
+        if (data.incomes && data.incomes.length > 0) {
+          setIncomes(data.incomes);
+        }
+      } catch (err) {
+        console.error('Failed to fetch incomes:', err);
+      }
+    };
+    loadIncomes();
+  }, [family?.id]);
+
+  const handleCreateIncome = async (incomeData: {
+    source: string;
+    amount: string;
+    type: string;
+    date: string;
+    notes: string;
+  }) => {
+    if (!family?.id) return;
+    try {
+      const created = await apiRequest(`/expenses/${family.id}/incomes`, {
+        method: 'POST',
+        body: JSON.stringify(incomeData),
+      });
+      setIncomes((prev) => [created, ...prev]);
+      setShowAddIncome(false);
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to create income:', err);
+    }
+  };
+
+  const handleDeleteIncome = async (incomeId: string) => {
+    if (!family?.id) return;
+    try {
+      await apiRequest(`/expenses/${family.id}/incomes/${incomeId}`, {
+        method: 'DELETE',
+      });
+      setIncomes((prev) => prev.filter((i) => i.id !== incomeId));
+      refreshDashboard();
+    } catch (err) {
+      console.error('Failed to delete income:', err);
+    }
+  };
+
   const [isLoading, setIsLoading] = useState(() => {
     if (family?.id) {
       const cached = getCachedApiResponse<any>(`/expenses/${family.id}/expenses`);
@@ -672,6 +739,8 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
             <h2 className={`text-xl font-extrabold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
               {activeSubTab === 'EXPENSES'
                 ? 'Record Expenses'
+                : activeSubTab === 'INCOME'
+                ? 'Record Income'
                 : activeSubTab === 'BUDGET'
                 ? 'Category Budget'
                 : activeSubTab === 'WEALTH'
@@ -683,6 +752,8 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
             <p className={`text-xs ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
               {activeSubTab === 'EXPENSES'
                 ? 'Track, record and analyze daily family spending'
+                : activeSubTab === 'INCOME'
+                ? 'Log salary, dividends, rental income & business credits'
                 : activeSubTab === 'BUDGET'
                 ? 'Set & monitor monthly spending limits by category'
                 : activeSubTab === 'WEALTH'
@@ -731,6 +802,18 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Goal</span>
+              </button>
+            ) : activeSubTab === 'INCOME' ? (
+              <button
+                onClick={() => setShowAddIncome(true)}
+                className={`p-2 rounded-xl text-xs flex items-center gap-1 font-bold border transition-all ${
+                  isLight
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow-sm'
+                    : 'bg-emerald-500 hover:bg-emerald-400 text-slate-900 shadow-md shadow-emerald-500/20'
+                }`}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Income</span>
               </button>
             ) : (
               <>
@@ -1290,11 +1373,164 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
         />
       )}
 
+      {/* 6. INCOME SUBTAB */}
+      {activeSubTab === 'INCOME' && (
+        <div className="space-y-4">
+          {/* Income Header Banner */}
+          <div className={`p-4 rounded-3xl space-y-3 border kinora-3d-card ${
+            isLight
+              ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+              : 'bg-[#0D152D] border-slate-800/80 shadow-xl'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? 'text-emerald-800' : 'text-emerald-400'}`}>
+                  Total Family Income
+                </span>
+                <div className={`text-2xl sm:text-3xl font-black tracking-tight mt-0.5 ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
+                  {isPrivacyMode
+                    ? '••••'
+                    : formatCurrency(incomes.reduce((sum, i) => sum + (Number(i.amount) || 0), 0), true)}
+                </div>
+              </div>
+
+              {canEditFinance && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddIncome(true)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    isLight
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md'
+                      : 'bg-emerald-500 hover:bg-emerald-400 text-slate-900 shadow-md'
+                  }`}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Income</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Logged Incomes Section */}
+          <div className={`rounded-3xl p-4 shadow-xl space-y-3 kinora-3d-card ${
+            isLight
+              ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
+              : 'bg-[#0D152D] border border-slate-800/80 shadow-xl'
+          }`}>
+            <div className="flex items-center justify-between px-1">
+              <h3 className={`text-sm sm:text-base font-bold tracking-tight flex items-center gap-2 ${
+                isLight ? 'text-[#1F1F1F]' : 'text-white'
+              }`}>
+                <span>LOGGED INCOMES ({incomes.length})</span>
+              </h3>
+
+              {canEditFinance && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddIncome(true)}
+                  className={`text-[11px] font-bold px-3 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+                    isLight
+                      ? 'text-white bg-emerald-600 hover:bg-emerald-500 border-emerald-600 shadow-sm'
+                      : 'text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/25'
+                  }`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Income</span>
+                </button>
+              )}
+            </div>
+
+            {incomes && incomes.length > 0 ? (
+              <div className={`divide-y ${isLight ? 'divide-[#EAD6C4]' : 'divide-slate-800/60'}`}>
+                {incomes.map((inc) => {
+                  const amountDisplay = isPrivacyMode
+                    ? '••••'
+                    : `+₹${Number(inc.amount || 0).toLocaleString('en-IN')}`;
+                  const sourceDisplay = inc.source || 'Income Credit';
+                  const typeDisplay = inc.type || 'SALARY';
+                  const dateDisplay = inc.date
+                    ? new Date(inc.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                    : '';
+
+                  return (
+                    <div
+                      key={inc.id || Math.random()}
+                      className={`flex items-center justify-between py-3 px-2 rounded-xl transition-all group ${
+                        isLight ? 'hover:bg-[#FFF8F1]/60' : 'hover:bg-white/[0.03]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                          <TrendingUp className="w-5 h-5" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className={`text-xs sm:text-sm font-semibold truncate ${
+                            isLight ? 'text-[#1F1F1F]' : 'text-white'
+                          }`}>
+                            {sourceDisplay}
+                          </div>
+                          <div className={`text-[11px] mt-0.5 truncate flex items-center gap-1.5 ${
+                            isLight ? 'text-[#6B6B6B]' : 'text-slate-400'
+                          }`}>
+                            <span className="font-bold text-emerald-600 uppercase">{typeDisplay}</span>
+                            {inc.added_by_name && <span>• {inc.added_by_name}</span>}
+                            {dateDisplay && <span>• {dateDisplay}</span>}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0 pl-2">
+                        <span className="text-xs sm:text-sm font-black text-emerald-500 tracking-tight">
+                          {amountDisplay}
+                        </span>
+
+                        {canEditFinance && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteIncome(inc.id)}
+                            className={`p-1.5 rounded-lg border transition-all ${
+                              isLight
+                                ? 'text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100'
+                                : 'text-rose-400 bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/20'
+                            }`}
+                            title="Delete Income"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-6 text-center space-y-2">
+                <p className={`text-xs ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>No incomes recorded yet.</p>
+                <button
+                  onClick={() => setShowAddIncome(true)}
+                  className="text-xs font-bold text-emerald-600 hover:underline"
+                >
+                  + Record your first income
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Add Expense Modal (Interactive Category Cards & Quick Preset Pills) */}
       <AddExpenseModal
         isOpen={showAddExpense}
         onClose={() => setShowAddExpense(false)}
         onSubmit={handleCreateExpense}
+      />
+
+      {/* Add Income Modal */}
+      <AddIncomeModal
+        isOpen={showAddIncome}
+        onClose={() => setShowAddIncome(false)}
+        onSubmit={handleCreateIncome}
       />
 
       {/* Manage Categories Modal */}
