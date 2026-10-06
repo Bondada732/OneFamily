@@ -65,6 +65,7 @@ interface AuthContextType {
     userId: string,
     permissions: string[]
   ) => Promise<{ success: boolean; error?: string }>;
+  updateFamilyPhoto: (photoUrl: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -357,6 +358,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
+  const updateFamilyPhoto = async (photoUrl: string): Promise<boolean> => {
+    localStorage.setItem('onefamily_custom_hero_photo', photoUrl);
+    if (family?.id) {
+      try {
+        const updated = await apiRequest(`/families/${family.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ photo_url: photoUrl }),
+        });
+        if (updated) {
+          setFamily((prev) => (prev ? { ...prev, photo_url: photoUrl } : prev));
+        }
+      } catch (err) {
+        console.error('Failed to update family photo in backend:', err);
+      }
+    } else {
+      setFamily((prev) => (prev ? { ...prev, photo_url: photoUrl } : prev));
+    }
+    return true;
+  };
+
   const setLanguage = (lang: 'en' | 'te' | 'hi') => {
     setActiveLanguage(lang);
     localStorage.setItem('onefamily_lang', lang);
@@ -384,6 +405,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         approveMember,
         rejectMember,
         updateMemberPermissions,
+        updateFamilyPhoto,
       }}
     >
       {children}

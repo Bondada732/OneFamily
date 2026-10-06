@@ -24,6 +24,7 @@ import { SmartExpenseSettingsModal } from '../../components/smartExpense/SmartEx
 import { SmartExpenseService } from '../../services/smartExpense/SmartExpenseService.js';
 import { DetectedTransaction, SmartCaptureSettings } from '../../services/smartExpense/types.js';
 import { useTheme } from '../../context/ThemeContext.js';
+import { ChangeFamilyPhotoModal } from '../../components/common/ChangeFamilyPhotoModal.js';
 import {
   Receipt,
   Gift,
@@ -48,6 +49,7 @@ import {
   ShoppingCart,
   ShoppingBag,
   Tag,
+  Camera,
   Utensils,
   Home as HomeIcon,
   Zap,
@@ -420,7 +422,7 @@ interface HomeViewProps {
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const { dashboard, isLoading, refreshDashboard } = useFamily();
-  const { activeLanguage, currentUser, family, hasPermission, familyMembers } = useAuth();
+  const { activeLanguage, currentUser, family, hasPermission, familyMembers, updateFamilyPhoto } = useAuth();
   const { isPrivacyMode, togglePrivacyMode } = useSecurity();
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -435,6 +437,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [showChangePhotoModal, setShowChangePhotoModal] = useState(false);
 
   // Shared Wishlist & Tasks items state with instant cache hydration
   const [wishlistItems, setWishlistItems] = useState<any[]>(() => {
@@ -902,7 +905,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
 
           {/* Right: 3D Pixar Indian Family Photo (Present in both Light and Dark mode) */}
-          <div className="relative shrink-0 w-[44%] h-full flex flex-col items-end justify-center">
+          <div className="relative shrink-0 w-[44%] h-full flex flex-col items-end justify-center group">
             {/* Better Together cursive tag at top-right of family */}
             <div className={`absolute -top-2 right-1 z-10 flex items-center gap-0.5 px-2 py-0.5 rounded-full border shadow-xs ${
               isLight
@@ -916,15 +919,35 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
               </span>
               <span className={`text-[10px] font-bold ${isLight ? 'text-[#D3542F]' : 'text-[#FF4D6D]'}`}>♡</span>
             </div>
-            <img
-              src="/family-hero.jpg"
-              alt="Family Together"
-              className={`w-full max-w-[175px] h-[125px] sm:h-[140px] object-cover object-top rounded-2xl ring-2 shadow-md transition-transform duration-300 hover:scale-[1.02] ${
-                isLight
-                  ? 'ring-[#EAD6C4]'
-                  : 'ring-[#168BFF]/40 ring-offset-2 ring-offset-[#080D1A] shadow-lg shadow-black/60'
-              }`}
-            />
+
+            <div className="relative w-full max-w-[175px] h-[125px] sm:h-[140px] rounded-2xl overflow-hidden shadow-md">
+              <img
+                src={family?.photo_url || localStorage.getItem('onefamily_custom_hero_photo') || '/family-hero.jpg'}
+                alt="Family Together"
+                className={`w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02] ${
+                  isLight
+                    ? 'ring-2 ring-[#EAD6C4]'
+                    : 'ring-2 ring-[#168BFF]/40 ring-offset-2 ring-offset-[#080D1A] shadow-lg shadow-black/60'
+                }`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/family-hero.jpg';
+                }}
+              />
+
+              {/* Change Family Picture Floating Overlay Button */}
+              <button
+                type="button"
+                onClick={() => setShowChangePhotoModal(true)}
+                className={`absolute bottom-1 right-1 z-20 p-1.5 rounded-xl border shadow-md transition-all active:scale-95 cursor-pointer ${
+                  isLight
+                    ? 'bg-[#FFF8F1]/95 hover:bg-white text-[#D3542F] border-[#EAD6C4]'
+                    : 'bg-[#080D1A]/95 hover:bg-slate-900 text-cyan-300 border-[#168BFF]/40'
+                }`}
+                title="Change Family Picture"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1669,6 +1692,16 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
         onRequestPermission={() => {
           setShowSmartSettingsModal(false);
           setShowSmartPermissionModal(true);
+        }}
+      />
+
+      {/* Change Family Picture Modal */}
+      <ChangeFamilyPhotoModal
+        isOpen={showChangePhotoModal}
+        onClose={() => setShowChangePhotoModal(false)}
+        currentPhotoUrl={family?.photo_url || localStorage.getItem('onefamily_custom_hero_photo') || '/family-hero.jpg'}
+        onSave={async (newUrl) => {
+          await updateFamilyPhoto(newUrl);
         }}
       />
     </div>

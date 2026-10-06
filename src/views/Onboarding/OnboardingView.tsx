@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Users, ArrowRight, Check, KeyRound, Copy, Share2, CheckCircle2, AlertCircle, Mail, RotateCcw, ArrowLeft, Lock, Eye, EyeOff, Shield, Server, Settings, RefreshCw, X } from 'lucide-react';
+import { ShieldCheck, Users, ArrowRight, Check, KeyRound, Copy, Share2, CheckCircle2, AlertCircle, Mail, RotateCcw, ArrowLeft, Lock, Eye, EyeOff, Shield, Server, Settings, RefreshCw, X, Camera } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { getApiHost, setCustomApiHost, testServerConnection, DEFAULT_SERVER_URL } from '../../utils/api.js';
 import { CustomSelect } from '../../components/common/CustomSelect.js';
+import { ChangeFamilyPhotoModal } from '../../components/common/ChangeFamilyPhotoModal.js';
 
 interface OnboardingViewProps {
   onComplete: () => void;
 }
 
 export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) => {
-  const { registerHead, joinFamily, login, sendRegistrationOtp, verifyRegistrationOtp } = useAuth();
+  const { registerHead, joinFamily, login, sendRegistrationOtp, verifyRegistrationOtp, updateFamilyPhoto, family } = useAuth();
   const [mode, setMode] = useState<'SIGN_IN' | 'REGISTER_HEAD' | 'VERIFY_HEAD_OTP' | 'JOIN_FAMILY' | 'SUCCESS_KEY'>('SIGN_IN');
+  const [showChangePhotoModal, setShowChangePhotoModal] = useState(false);
+  const [loginFamilyPhoto, setLoginFamilyPhoto] = useState<string>(
+    () => family?.photo_url || localStorage.getItem('onefamily_custom_hero_photo') || '/assets/images/login-family-hero.png'
+  );
   
   // Sign In state
   const [signInEmail, setSignInEmail] = useState('');
@@ -339,12 +344,25 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
 
         {/* 1. HERO IMAGE SECTION (Full Edge-to-Edge with Integrated KinoraOne Logo & Family Art) */}
         {mode === 'SIGN_IN' && (
-          <div className="relative w-full shrink-0 overflow-hidden">
+          <div className="relative w-full shrink-0 overflow-hidden group">
             <img
-              src="/assets/images/login-family-hero.png"
+              src={loginFamilyPhoto}
               alt="KinoraOne - One Home. One Family. One Future."
-              className="w-full h-auto max-h-[38vh] block object-contain object-top"
+              className="w-full h-auto max-h-[38vh] block object-contain object-top transition-all duration-300"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/assets/images/login-family-hero.png';
+              }}
             />
+            {/* Change Family Picture Floating Overlay Button */}
+            <button
+              type="button"
+              onClick={() => setShowChangePhotoModal(true)}
+              className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/85 backdrop-blur-md border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-slate-950 hover:text-white transition-all shadow-lg active:scale-95 cursor-pointer"
+              title="Change Family Picture"
+            >
+              <Camera className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Change Photo</span>
+            </button>
             {/* Subtle bottom gradient fade to seamlessly merge with the card */}
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#020919] via-[#020919]/60 to-transparent pointer-events-none" />
           </div>
@@ -925,6 +943,19 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) =>
           </div>
         </div>
       )}
+      {/* Change Family Picture Modal */}
+      <ChangeFamilyPhotoModal
+        isOpen={showChangePhotoModal}
+        onClose={() => setShowChangePhotoModal(false)}
+        currentPhotoUrl={loginFamilyPhoto}
+        onSave={async (newUrl) => {
+          setLoginFamilyPhoto(newUrl);
+          localStorage.setItem('onefamily_custom_hero_photo', newUrl);
+          if (updateFamilyPhoto) {
+            await updateFamilyPhoto(newUrl);
+          }
+        }}
+      />
     </div>
   );
 };
