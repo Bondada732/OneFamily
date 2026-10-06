@@ -163,6 +163,7 @@ const MainAppContent: React.FC = () => {
     switch (actionType) {
       case 'ADD_EXPENSE':
       case 'ADD_INCOME':
+      case 'ADD_FIXED_EXPENSES':
         setMoneySubTab('EXPENSES');
         setActiveTab('money');
         break;
@@ -182,6 +183,10 @@ const MainAppContent: React.FC = () => {
         setFamilySubTab('TASKS');
         setActiveTab('family');
         break;
+      case 'ADD_WISHLIST':
+        setFamilySubTab('WISHLIST');
+        setActiveTab('family');
+        break;
       case 'ADD_MAINTENANCE':
         setFamilySubTab('MAINTENANCE');
         setActiveTab('family');
@@ -192,6 +197,11 @@ const MainAppContent: React.FC = () => {
         break;
       case 'UPLOAD_DOC':
         setVaultCategory('ALL');
+        setVaultAutoUpload(true);
+        setActiveTab('vault');
+        break;
+      case 'ADD_VISITING_CARD':
+        setVaultCategory('CARDS');
         setVaultAutoUpload(true);
         setActiveTab('vault');
         break;

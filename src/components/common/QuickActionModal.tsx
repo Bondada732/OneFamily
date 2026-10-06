@@ -13,6 +13,9 @@ import {
   Wrench,
   ShieldAlert,
   ArrowDownLeft,
+  CalendarDays,
+  Gift,
+  CreditCard,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.js';
 import { useTheme } from '../../context/ThemeContext.js';
@@ -21,14 +24,17 @@ export type QuickActionType =
   | 'ADD_EXPENSE'
   | 'ADD_INCOME'
   | 'ADD_BUDGET'
-  | 'ADD_WEALTH'
+  | 'ADD_FIXED_EXPENSES'
   | 'CREATE_GOAL'
+  | 'ADD_WEALTH'
   | 'ADD_FRIEND'
   | 'ADD_TASK'
+  | 'ADD_WISHLIST'
   | 'ADD_MAINTENANCE'
   | 'UPLOAD_DOC'
   | 'ADD_EMERGENCY'
   | 'ADD_MEMORY'
+  | 'ADD_VISITING_CARD'
   | 'ASK_AI';
 
 interface QuickActionModalProps {
@@ -86,14 +92,14 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       allowed: hasPermission('FINANCE_EDIT'),
     },
     {
-      id: 'ADD_WEALTH',
-      label: 'Wealth & Assets',
-      description: 'Stocks, MFs, FDs, Demat sync',
+      id: 'ADD_FIXED_EXPENSES',
+      label: 'Monthly Fixed Expenses',
+      description: 'EMIs, rent, subscriptions, bills',
       category: 'FINANCE',
-      categoryName: 'Wealth',
-      icon: TrendingUp,
-      color: isLight ? 'bg-blue-100 text-blue-900 border-blue-300' : 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-      allowed: hasPermission('FINANCE_EDIT') || hasPermission('INVESTMENT_EDIT'),
+      categoryName: 'Finance',
+      icon: CalendarDays,
+      color: isLight ? 'bg-purple-100 text-purple-900 border-purple-300' : 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+      allowed: hasPermission('FINANCE_EDIT'),
     },
     {
       id: 'CREATE_GOAL',
@@ -104,6 +110,16 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       icon: Target,
       color: isLight ? 'bg-[#E4D7C7] text-[#2E7D32] border-[#DECFC0]' : 'bg-[rgba(25,201,167,0.18)] text-[#55D98A] border-[#19C9A7]/40',
       allowed: hasPermission('FINANCE_EDIT'),
+    },
+    {
+      id: 'ADD_WEALTH',
+      label: 'Wealth & Assets',
+      description: 'Stocks, MFs, FDs, Demat sync',
+      category: 'FINANCE',
+      categoryName: 'Wealth',
+      icon: TrendingUp,
+      color: isLight ? 'bg-blue-100 text-blue-900 border-blue-300' : 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+      allowed: hasPermission('FINANCE_EDIT') || hasPermission('INVESTMENT_EDIT'),
     },
     {
       id: 'ADD_FRIEND',
@@ -124,6 +140,16 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       icon: CheckSquare,
       color: isLight ? 'bg-[#E4D7C7] text-[#C25425] border-[#DECFC0]' : 'bg-[rgba(22,199,242,0.18)] text-[#7EDCFF] border-[#16C7F2]/40',
       allowed: hasPermission('TASK_EDIT'),
+    },
+    {
+      id: 'ADD_WISHLIST',
+      label: 'Add Wish List',
+      description: 'Family wish items & dream list',
+      category: 'FAMILY',
+      categoryName: 'Wishlist',
+      icon: Gift,
+      color: isLight ? 'bg-teal-100 text-teal-900 border-teal-300' : 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+      allowed: true,
     },
     {
       id: 'ADD_MAINTENANCE',
@@ -166,8 +192,18 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       allowed: hasPermission('MEMORY_UPLOAD'),
     },
     {
+      id: 'ADD_VISITING_CARD',
+      label: 'Store Visiting Cards',
+      description: 'Business cards & contacts scanner',
+      category: 'VAULT',
+      categoryName: 'Cards',
+      icon: CreditCard,
+      color: isLight ? 'bg-cyan-100 text-cyan-900 border-cyan-300' : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+      allowed: hasPermission('DOCUMENT_UPLOAD'),
+    },
+    {
       id: 'ASK_AI',
-      label: 'Ask FamilyAI',
+      label: 'Ask Family AI',
       description: 'Insights, checklists, wealth advice',
       category: 'AI',
       categoryName: 'AI',
