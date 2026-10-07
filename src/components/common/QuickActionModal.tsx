@@ -341,31 +341,31 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
   return (
     <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 ${isLight ? 'bg-black/60' : 'bg-black/85'} backdrop-blur-md animate-fade-in`}>
       <div
-        className={`w-full max-w-lg rounded-t-[36px] sm:rounded-[36px] p-5 pb-[max(env(safe-area-inset-bottom,0px),24px)] sm:pb-5 space-y-4 shadow-[0_30px_70px_-15px_rgba(25,18,12,0.45)] ${
+        className={`w-full max-w-lg rounded-t-[32px] sm:rounded-[32px] p-4 sm:p-5 pb-[max(env(safe-area-inset-bottom,0px),24px)] sm:pb-5 space-y-3.5 shadow-[0_25px_65px_-10px_rgba(180,150,130,0.4)] ${
           isLight
-            ? 'bg-[#F7F2EB] border-t sm:border-2 border-[#E9DFC3] text-[#362A24]'
-            : 'bg-[#121829] border-t sm:border border-slate-700/80 text-[#F4F8FF]'
+            ? 'bg-[#F8EDE0] border-t sm:border border-[#EAD6C4] text-[#1F1F1F]'
+            : 'bg-[#0B1226] border-t sm:border border-slate-700/80 text-[#F4F8FF]'
         }`}
       >
         {/* Mobile Drag Handle */}
-        <div className={`w-12 h-1.5 rounded-full mx-auto -mt-1 mb-2 opacity-80 sm:hidden ${isLight ? 'bg-[#D7CAB9]' : 'bg-slate-600'}`} />
+        <div className={`w-12 h-1.5 rounded-full mx-auto -mt-1 mb-2 opacity-80 sm:hidden ${isLight ? 'bg-[#EAD6C4]' : 'bg-slate-600'}`} />
 
         {/* Header Section */}
-        <div className={`flex items-start justify-between pb-3 border-b ${isLight ? 'border-[#E6DCCB]' : 'border-slate-800'}`}>
+        <div className={`flex items-start justify-between pb-3 border-b ${isLight ? 'border-[#EAD6C4]' : 'border-slate-800'}`}>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className={`text-xl font-black tracking-tight ${isLight ? 'text-[#362A24]' : 'text-white'}`}>
+              <h3 className={`text-xl font-black tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>
                 Create & Record
               </h3>
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                 isLight
-                  ? 'bg-[#F37D63]/15 text-[#D44D31] border-[#F37D63]/30'
+                  ? 'bg-[#F05A28]/15 text-[#D3542F] border-[#F05A28]/30'
                   : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
               }`}>
                 Famora 3D
               </span>
             </div>
-            <p className={`text-xs mt-0.5 font-semibold ${isLight ? 'text-[#7A665A]' : 'text-slate-400'}`}>
+            <p className={`text-xs mt-0.5 font-semibold ${isLight ? 'text-[#6B6B6B]' : 'text-slate-400'}`}>
               Tap any 3D action card to record or schedule
             </p>
           </div>
@@ -373,9 +373,9 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
           {/* Close Button Clay Squircle */}
           <button
             onClick={onClose}
-            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
               isLight
-                ? 'bg-[#EFE8DF] border border-[#DFD3C4] text-[#6B5B52] hover:text-[#362A24] shadow-[0_4px_10px_rgba(0,0,0,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)]'
+                ? 'bg-[#FFF8F1] border border-[#EAD6C4] text-[#1F1F1F] shadow-sm'
                 : 'bg-slate-800 border border-slate-700 text-slate-300 hover:text-white'
             }`}
           >
@@ -387,26 +387,26 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 select-none">
           {[
             { key: 'ALL', label: 'All Actions', count: categoryCounts.ALL },
-            { key: 'FINANCE', label: '💰 Money & Wealth', count: categoryCounts.FINANCE },
-            { key: 'FAMILY', label: '🏡 Family & Chores', count: categoryCounts.FAMILY },
-            { key: 'VAULT', label: '🔒 Vault & Medical', count: categoryCounts.VAULT },
+            { key: 'FINANCE', label: '💰 Money', count: categoryCounts.FINANCE },
+            { key: 'FAMILY', label: '🏡 Family', count: categoryCounts.FAMILY },
+            { key: 'VAULT', label: '🔒 Vault', count: categoryCounts.VAULT },
           ].map((pill) => {
             const isActive = selectedCategoryFilter === pill.key;
             return (
               <button
                 key={pill.key}
                 onClick={() => setSelectedCategoryFilter(pill.key as any)}
-                className={`px-4 py-2 rounded-2xl text-[11px] font-extrabold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#F37D63] to-[#E06145] text-white shadow-[0_6px_14px_-2px_rgba(200,80,55,0.45),inset_0_2px_2px_rgba(255,255,255,0.5)]'
+                    ? 'bg-gradient-to-r from-[#F05A28] to-[#D34C17] text-white shadow-[0_4px_12px_-1px_rgba(240,90,40,0.4),inset_0_1.5px_1.5px_rgba(255,255,255,0.5)]'
                     : isLight
-                    ? 'bg-[#EFE8DF] text-[#6B5B52] hover:bg-[#E7DFC5] border border-[#E2D6C7] shadow-[0_3px_8px_rgba(0,0,0,0.05),inset_0_1.5px_2px_rgba(255,255,255,0.8)]'
+                    ? 'bg-[#FFF8F1] text-[#6B6B6B] hover:bg-[#F3E3D3] border border-[#EAD6C4] shadow-[0_2px_6px_rgba(180,150,130,0.1),inset_0_1px_1.5px_rgba(255,255,255,0.9)]'
                     : 'bg-slate-800/80 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
                 }`}
               >
                 <span>{pill.label}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                  isActive ? 'bg-white/30 text-white' : isLight ? 'bg-black/5 text-[#6B5B52]' : 'bg-white/10 text-slate-300'
+                  isActive ? 'bg-white/30 text-white' : isLight ? 'bg-black/5 text-[#6B6B6B]' : 'bg-white/10 text-slate-300'
                 }`}>
                   {pill.count}
                 </span>
@@ -415,8 +415,8 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
           })}
         </div>
 
-        {/* 2-Column Claymorphism Action Cards Grid */}
-        <div className="grid grid-cols-2 gap-3.5 max-h-[58vh] sm:max-h-[62vh] overflow-y-auto pr-1 scrollbar-thin">
+        {/* 3-Column Claymorphism Action Cards Grid (3 Buttons Per Row) */}
+        <div className="grid grid-cols-3 gap-2.5 max-h-[60vh] sm:max-h-[65vh] overflow-y-auto pr-1 scrollbar-thin">
           {filteredActions.map((act) => {
             const Icon = act.icon;
             return (
@@ -427,33 +427,33 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
                   onActionSelect(act.id);
                   onClose();
                 }}
-                className={`group flex flex-col justify-between text-left p-4 rounded-[28px] transition-all ${act.cardBg} ${
+                className={`group flex flex-col justify-between items-center text-center p-2.5 sm:p-3 rounded-[22px] transition-all ${act.cardBg} ${
                   act.allowed
-                    ? 'hover:-translate-y-1 hover:scale-[1.015] active:translate-y-0.5 active:scale-[0.975] cursor-pointer'
+                    ? 'hover:-translate-y-1 hover:scale-[1.02] active:translate-y-0.5 active:scale-[0.97] cursor-pointer'
                     : 'opacity-40 cursor-not-allowed filter grayscale-[0.4]'
                 }`}
               >
-                <div>
+                <div className="flex flex-col items-center w-full">
                   {/* 3D Extruded Clay Icon Squircle */}
-                  <div className={`w-11 h-11 rounded-[20px] flex items-center justify-center mb-3 transition-transform group-hover:scale-105 ${act.iconBg}`}>
-                    <Icon className="w-6 h-6 stroke-[2.2] drop-shadow-[0_2px_1px_rgba(0,0,0,0.2)]" />
+                  <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-[16px] flex items-center justify-center mb-2 transition-transform group-hover:scale-105 ${act.iconBg}`}>
+                    <Icon className="w-5 h-5 stroke-[2.2] drop-shadow-[0_1.5px_1px_rgba(0,0,0,0.2)]" />
                   </div>
 
                   {/* Title & Subtext */}
-                  <div className={`font-extrabold text-sm sm:text-base leading-snug line-clamp-1 ${act.titleColor}`}>
+                  <div className={`font-extrabold text-[11px] sm:text-xs leading-tight line-clamp-1 w-full text-center ${act.titleColor}`}>
                     {act.label}
                   </div>
-                  <div className={`text-[11px] font-semibold line-clamp-1 mt-0.5 ${act.subColor}`}>
+                  <div className={`text-[9px] sm:text-[10px] font-semibold line-clamp-1 mt-0.5 w-full text-center ${act.subColor}`}>
                     {act.description}
                   </div>
                 </div>
 
                 {/* Footer Action Tag */}
-                <div className={`mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[11px] font-black ${act.ctaColor}`}>
+                <div className={`mt-2 pt-1 border-t border-black/5 w-full text-[9px] sm:text-[10px] font-black flex items-center justify-center gap-0.5 ${act.ctaColor}`}>
                   {act.allowed ? (
                     <>
                       <span>{act.ctaText}</span>
-                      <span className="transition-transform group-hover:translate-x-1">→</span>
+                      <span className="transition-transform group-hover:translate-x-0.5">→</span>
                     </>
                   ) : (
                     <span className="text-rose-600">No Access</span>
@@ -466,10 +466,10 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
 
         {/* Bottom Hint Note */}
         <div className={`pt-2.5 border-t flex items-center justify-between text-xs font-semibold ${
-          isLight ? 'border-[#E6DCCB] text-[#7A665A]' : 'border-slate-800 text-slate-400'
+          isLight ? 'border-[#EAD6C4] text-[#6B6B6B]' : 'border-slate-800 text-slate-400'
         }`}>
           <span>⚡ Instant sync across all family devices</span>
-          <span className={`font-black ${isLight ? 'text-[#362A24]' : 'text-slate-200'}`}>Famora 3D</span>
+          <span className={`font-black ${isLight ? 'text-[#1F1F1F]' : 'text-slate-200'}`}>Famora 3D</span>
         </div>
       </div>
     </div>
