@@ -29,7 +29,7 @@ const OCCASION_ICONS: Record<string, string> = {
 export const FamilyRemindersHomeWidget: React.FC<FamilyRemindersHomeWidgetProps> = ({
   onNavigateTab,
 }) => {
-  const { family } = useAuth();
+  const { family, hasPermission, currentUser } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
@@ -95,6 +95,10 @@ export const FamilyRemindersHomeWidget: React.FC<FamilyRemindersHomeWidgetProps>
     });
     setShowWhatsAppModal(true);
   };
+
+  if (currentUser?.role !== 'FAMILY_HEAD' && !hasPermission('CALENDAR_VIEW')) {
+    return null;
+  }
 
   if (todayOccasions.length === 0 && upcomingOccasions.length === 0) {
     return null;

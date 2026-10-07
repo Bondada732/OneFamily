@@ -295,6 +295,11 @@ class DatabaseService {
     this.save();
   }
 
+  public resetTable<K extends keyof DBStore>(tableName: K, records: DBStore[K]) {
+    this.data[tableName] = records;
+    this.save();
+  }
+
   public find<K extends keyof DBStore>(tableName: K, predicate: (item: any) => boolean): any[] {
     return this.getTable(tableName).filter(predicate);
   }
@@ -328,15 +333,15 @@ class DatabaseService {
 
   public delete<K extends keyof DBStore>(tableName: K, predicate: (item: any) => boolean): boolean {
     const table = this.getTable(tableName);
-    const itemToDelete = table.find(predicate);
+    const itemsToDelete = table.filter(predicate);
     const initialLen = table.length;
     this.data[tableName] = table.filter((item) => !predicate(item)) as any;
     const removed = this.data[tableName].length < initialLen;
     if (removed) {
       this.save();
-      if (itemToDelete) {
-        syncRecordToAzurePostgres(tableName as string, itemToDelete, 'delete').catch(() => {});
-        syncRecordToSupabase(tableName as string, itemToDelete, 'delete').catch(() => {});
+      for (const item of itemsToDelete) {
+        syncRecordToAzurePostgres(tableName as string, item, 'delete').catch(() => {});
+        syncRecordToSupabase(tableName as string, item, 'delete').catch(() => {});
       }
     }
     return removed;

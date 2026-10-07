@@ -188,5 +188,21 @@ export async function fetchAllFromSupabase(tableName: string): Promise<any[]> {
   }
 }
 
+export async function deleteMemberPermissionsFromSupabase(userId: string): Promise<boolean> {
+  if (!supabase || !userId) return false;
+  try {
+    const { error } = await supabase.from('member_permissions').delete().eq('user_id', userId);
+    if (error) {
+      console.warn(`[Supabase] Error deleting member_permissions for ${userId}:`, error.message);
+      return false;
+    }
+    return true;
+  } catch (err: any) {
+    console.warn(`[Supabase] Exception deleting member_permissions for ${userId}:`, err?.message);
+    return false;
+  }
+}
+
 export { supabase };
 export default supabase;
+

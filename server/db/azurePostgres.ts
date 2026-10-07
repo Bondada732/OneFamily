@@ -143,3 +143,19 @@ export async function syncRecordToAzurePostgres(
     return false;
   }
 }
+
+export async function deleteMemberPermissionsFromAzurePostgres(userId: string): Promise<boolean> {
+  if (!pool || !userId) return false;
+  try {
+    const res = await pool.query(
+      `DELETE FROM "member_permissions" WHERE "user_id" = $1`,
+      [userId]
+    );
+    console.log(`✓ [Azure Postgres] Deleted ${res.rowCount} permissions for user ${userId}`);
+    return true;
+  } catch (err: any) {
+    console.warn(`[Azure Postgres] Error deleting member_permissions for ${userId}:`, err.message);
+    return false;
+  }
+}
+

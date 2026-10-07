@@ -15,6 +15,7 @@ import { CsvExpenseModal, exportExpensesToCsv, downloadSampleTemplate } from '..
 import { PanPortfolioSyncModal } from '../../components/common/PanPortfolioSyncModal.js';
 import { WealthSection } from './WealthSection.js';
 import { GoalsSection } from './GoalsSection.js';
+import { AccessDeniedView } from '../../components/common/AccessDeniedView.js';
 import { Plus, Receipt, TrendingUp, ShieldAlert, Sparkles, AlertTriangle, CheckCircle2, ChevronRight, ChevronLeft, Camera, ArrowDownLeft, ArrowUpRight, DollarSign, Wallet, Target, PiggyBank, Landmark, Building, CreditCard, Coins, X, Check, Trash2, Edit3, FileSpreadsheet, Download, Upload } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -251,8 +252,12 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
     date: getLocalDateString(),
   });
 
-  const canViewFinance = hasPermission('FINANCE_VIEW') || hasPermission('INVESTMENT_VIEW') || currentUser?.role === 'FAMILY_HEAD';
-  const canEditFinance = hasPermission('FINANCE_EDIT') || hasPermission('INVESTMENT_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canViewExpensesAndBudget = hasPermission('FINANCE_VIEW') || hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canEditExpensesAndBudget = hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canViewWealth = hasPermission('INVESTMENT_VIEW') || hasPermission('INVESTMENT_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canEditWealth = hasPermission('INVESTMENT_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canViewFinance = canViewExpensesAndBudget || canViewWealth;
+  const canEditFinance = canEditExpensesAndBudget || canEditWealth;
 
   useEffect(() => {
     if (!canViewFinance || !family?.id) {
@@ -853,29 +858,48 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
             ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
             : 'bg-slate-800/80 border border-slate-700/80'
         }`}>
-          {(['OVERVIEW', 'BUDGET', 'EXPENSES', 'WEALTH', 'GOALS'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveSubTab(tab)}
-              className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                activeSubTab === tab
-                  ? isLight
-                    ? 'bg-[#F05A28] text-white shadow-md'
-                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
-                  : isLight
-                    ? 'text-[#634B3F] hover:text-[#1F1F1F]'
-                    : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+          {(['OVERVIEW', 'BUDGET', 'EXPENSES', 'INCOME', 'WEALTH', 'GOALS'] as const).map((tab) => {
+            const isTabPermitted =
+              tab === 'OVERVIEW'
+                ? canViewFinance
+                : tab === 'WEALTH'
+                ? canViewWealth
+                : canViewExpensesAndBudget;
+
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveSubTab(tab)}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1 ${
+                  !isTabPermitted ? 'opacity-50' : ''
+                } ${
+                  activeSubTab === tab
+                    ? isLight
+                      ? 'bg-[#F05A28] text-white shadow-md'
+                      : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+                    : isLight
+                      ? 'text-[#634B3F] hover:text-[#1F1F1F]'
+                      : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {!isTabPermitted && <Lock className="w-3 h-3 text-rose-500 inline" />}
+                <span>{tab}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* 1. OVERVIEW SUBTAB */}
       {activeSubTab === 'OVERVIEW' && (
-        <div className="space-y-4">
+        !canViewFinance ? (
+          <AccessDeniedView
+            moduleName="Family Wealth & Budget"
+            requiredPermission="FINANCE_VIEW / INVESTMENT_VIEW"
+            onBackToHome={onBack}
+          />
+        ) : (
+          <div className="space-y-4">
           {/* Net Worth Hero Card */}
           <div className={`p-4 sm:p-5 rounded-3xl relative overflow-hidden kinora-3d-card ${
             isLight
@@ -1027,11 +1051,19 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
             </div>
           </div>
         </div>
+        )
       )}
 
       {/* 2. BUDGET SUBTAB */}
       {activeSubTab === 'BUDGET' && (
-        <div className="space-y-3">
+        !canViewExpensesAndBudget ? (
+          <AccessDeniedView
+            moduleName="Category Budget"
+            requiredPermission="FINANCE_VIEW"
+            onBackToHome={onBack}
+          />
+        ) : (
+          <div className="space-y-3">
           <div className={`p-4 rounded-2xl border kinora-3d-card ${
             isLight
               ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-md'
@@ -1139,11 +1171,19 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
             ))}
           </div>
         </div>
+        )
       )}
 
       {/* 3. EXPENSES SUBTAB */}
       {activeSubTab === 'EXPENSES' && (
-        <div className="space-y-3">
+        !canViewExpensesAndBudget ? (
+          <AccessDeniedView
+            moduleName="Record Expenses"
+            requiredPermission="FINANCE_VIEW"
+            onBackToHome={onBack}
+          />
+        ) : (
+          <div className="space-y-3">
           {/* Header & Actions Toolbar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2 flex-wrap">
@@ -1313,69 +1353,94 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
               ))}
             </div>
           )}
-        </div>
+          </div>
+        )
       )}
 
       {/* 4. WEALTH SUBTAB (Redesigned with Interactive Category Sub-screens matching Figma / Mockup) */}
+      {/* 4. WEALTH SUBTAB (Redesigned with Interactive Category Sub-screens matching Figma / Mockup) */}
       {activeSubTab === 'WEALTH' && (
-        <WealthSection
-          investments={investments}
-          liabilities={liabilities}
-          goals={goals}
-          members={familyMembers || []}
-          currentUser={currentUser}
-          isLight={isLight}
-          isPrivacyMode={isPrivacyMode}
-          canEditFinance={canEditFinance}
-          onAddInvestment={(catType) => {
-            if (catType) {
-              let defaultType = 'MUTUAL_FUND';
-              if (catType === 'EQUITY') defaultType = 'STOCK';
-              else if (catType === 'PF') defaultType = 'PF';
-              else if (catType === 'PPF') defaultType = 'PPF';
-              else if (catType === 'NPS') defaultType = 'NPS';
-              else if (catType === 'FD') defaultType = 'FIXED_DEPOSIT';
-              else if (catType === 'RD') defaultType = 'RD';
-              else if (catType === 'SMALL_SAVINGS') defaultType = 'SMALL_SAVINGS';
-              else if (catType === 'BONDS') defaultType = 'BONDS';
-              else if (catType === 'GOLD') defaultType = 'GOLD';
-              setNewInvestment((prev) => ({ ...prev, type: defaultType }));
-            }
-            setShowAddInvestment(true);
-          }}
-          onEditInvestment={(inv) => setEditingInvestment(inv)}
-          onDeleteInvestment={(id) => handleDeleteInvestment(id)}
-          onOpenPanSync={() => setShowPanSyncModal(true)}
-          onAddLiability={() => setShowAddLiability(true)}
-          onEditLiability={(lia) => setEditingLiability(lia)}
-          onDeleteLiability={(id) => handleDeleteLiability(id)}
-          onOpenAddGoal={() => setShowAddGoal(true)}
-          onSelectGoalTab={() => setActiveSubTab('GOALS')}
-        />
+        !canViewWealth ? (
+          <AccessDeniedView
+            moduleName="Wealth & Assets"
+            requiredPermission="INVESTMENT_VIEW"
+            onBackToHome={onBack}
+          />
+        ) : (
+          <WealthSection
+            investments={investments}
+            liabilities={liabilities}
+            goals={goals}
+            members={familyMembers || []}
+            currentUser={currentUser}
+            isLight={isLight}
+            isPrivacyMode={isPrivacyMode}
+            canEditFinance={canEditFinance}
+            onAddInvestment={(catType) => {
+              if (catType) {
+                let defaultType = 'MUTUAL_FUND';
+                if (catType === 'EQUITY') defaultType = 'STOCK';
+                else if (catType === 'PF') defaultType = 'PF';
+                else if (catType === 'PPF') defaultType = 'PPF';
+                else if (catType === 'NPS') defaultType = 'NPS';
+                else if (catType === 'FD') defaultType = 'FIXED_DEPOSIT';
+                else if (catType === 'RD') defaultType = 'RD';
+                else if (catType === 'SMALL_SAVINGS') defaultType = 'SMALL_SAVINGS';
+                else if (catType === 'BONDS') defaultType = 'BONDS';
+                else if (catType === 'GOLD') defaultType = 'GOLD';
+                setNewInvestment((prev) => ({ ...prev, type: defaultType }));
+              }
+              setShowAddInvestment(true);
+            }}
+            onEditInvestment={(inv) => setEditingInvestment(inv)}
+            onDeleteInvestment={(id) => handleDeleteInvestment(id)}
+            onOpenPanSync={() => setShowPanSyncModal(true)}
+            onAddLiability={() => setShowAddLiability(true)}
+            onEditLiability={(lia) => setEditingLiability(lia)}
+            onDeleteLiability={(id) => handleDeleteLiability(id)}
+            onOpenAddGoal={() => setShowAddGoal(true)}
+            onSelectGoalTab={() => setActiveSubTab('GOALS')}
+          />
+        )
       )}
 
       {/* 5. GOALS SUBTAB */}
       {activeSubTab === 'GOALS' && (
-        <GoalsSection
-          goals={goals}
-          members={familyMembers}
-          currentUser={currentUser}
-          isLight={isLight}
-          isPrivacyMode={isPrivacyMode}
-          canEditFinance={canEditFinance}
-          onOpenAddGoal={() => setShowAddGoal(true)}
-          onEditGoal={(goal) => setEditingGoal(goal)}
-          onDeleteGoal={(id) => handleDeleteGoal(id)}
-          onContributeGoal={(goal) => {
-            setContributingGoal(goal);
-            setContributionAmount(String(goal.monthly_contribution || '10000'));
-          }}
-        />
+        !canViewExpensesAndBudget ? (
+          <AccessDeniedView
+            moduleName="Family Goals"
+            requiredPermission="FINANCE_VIEW"
+            onBackToHome={onBack}
+          />
+        ) : (
+          <GoalsSection
+            goals={goals}
+            members={familyMembers}
+            currentUser={currentUser}
+            isLight={isLight}
+            isPrivacyMode={isPrivacyMode}
+            canEditFinance={canEditFinance}
+            onOpenAddGoal={() => setShowAddGoal(true)}
+            onEditGoal={(goal) => setEditingGoal(goal)}
+            onDeleteGoal={(id) => handleDeleteGoal(id)}
+            onContributeGoal={(goal) => {
+              setContributingGoal(goal);
+              setContributionAmount(String(goal.monthly_contribution || '10000'));
+            }}
+          />
+        )
       )}
 
       {/* 6. INCOME SUBTAB */}
       {activeSubTab === 'INCOME' && (
-        <div className="space-y-4">
+        !canViewExpensesAndBudget ? (
+          <AccessDeniedView
+            moduleName="Record Income"
+            requiredPermission="FINANCE_VIEW"
+            onBackToHome={onBack}
+          />
+        ) : (
+          <div className="space-y-4">
           {/* Income Header Banner */}
           <div className={`p-4 rounded-3xl space-y-3 border kinora-3d-card ${
             isLight
@@ -1517,6 +1582,7 @@ export const MoneyView: React.FC<MoneyViewProps> = ({ initialSubTab, onBack }) =
             )}
           </div>
         </div>
+        )
       )}
 
       {/* Add Expense Modal (Interactive Category Cards & Quick Preset Pills) */}

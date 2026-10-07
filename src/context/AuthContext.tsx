@@ -77,9 +77,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [activeLanguage, setActiveLanguage] = useState<'en' | 'te' | 'hi'>('en');
 
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = async (isInitial = false) => {
     try {
-      setIsLoading(true);
+      if (isInitial && !currentUser) {
+        setIsLoading(true);
+      }
       const data = await apiRequest('/auth/me');
       setCurrentUser(data.user);
       setFamily(data.family);
@@ -90,12 +92,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Failed to load auth me:', err);
     } finally {
-      setIsLoading(false);
+      if (isInitial) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchCurrentUser();
+    fetchCurrentUser(true);
+
+    const handleFocus = () => {
+      fetchCurrentUser(false);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchCurrentUser(false);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Periodic sync every 20 seconds so permission updates from Family Head take effect live
+    const interval = setInterval(() => {
+      fetchCurrentUser(false);
+    }, 20000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+    };
   }, []);
 
   const switchActiveMember = async (userId: string) => {

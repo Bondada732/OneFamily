@@ -9,6 +9,7 @@ import { CustomSelect } from '../../components/common/CustomSelect.js';
 import { FamilyMember, TaskItem, GroceryItem, MaintenanceItem, EmergencyContact, EmergencyProfile } from '../../types/index.js';
 import { Users, CheckSquare, ShoppingCart, Wrench, ShieldAlert, Phone, Plus, Check, ShieldCheck, Heart, UserPlus, GitFork, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, Lock, Camera, Edit3, User, Upload, Image as ImageIcon, Gift, Trash2, Tag, Copy, Share2, KeyRound, RotateCw, X, AlertTriangle, Loader2, UserMinus } from 'lucide-react';
 import { FamilyFriendsView } from '../FamilyFriends/FamilyFriendsView.js';
+import { AccessDeniedView } from '../../components/common/AccessDeniedView.js';
 
 interface FamilyViewProps {
   initialSubTab?: 'MEMBERS' | 'FRIENDS' | 'TREE' | 'TASKS' | 'WISHLIST' | 'MAINTENANCE' | 'EMERGENCY';
@@ -164,9 +165,12 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack })
     avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
   });
 
-  const canManageFamily = hasPermission('FAMILY_MANAGE');
-  const canEditTasks = hasPermission('TASK_EDIT');
-  const canViewEmergency = hasPermission('EMERGENCY_VIEW');
+  const canManageFamily = hasPermission('FAMILY_MANAGE') || currentUser?.role === 'FAMILY_HEAD';
+  const canEditTasks = hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canViewTasks = hasPermission('TASK_VIEW') || hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canViewEmergency = hasPermission('EMERGENCY_VIEW') || hasPermission('EMERGENCY_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canEditEmergency = hasPermission('EMERGENCY_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+  const canViewFriends = hasPermission('CALENDAR_VIEW') || hasPermission('CALENDAR_EDIT') || hasPermission('FAMILY_MANAGE') || currentUser?.role === 'FAMILY_HEAD';
 
   useEffect(() => {
     if (!family?.id) return;
@@ -778,23 +782,37 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack })
             ? 'bg-[#EAD8C7] border-[#DEC8B2] shadow-inner'
             : 'bg-slate-800/80 border border-slate-700/80'
         }`}>
-          {(['MEMBERS', 'FRIENDS', 'TREE', 'TASKS', 'WISHLIST', 'MAINTENANCE', 'EMERGENCY'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveSubTab(tab)}
-              className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                activeSubTab === tab
-                  ? isLight
-                    ? 'bg-[#F05A28] text-white shadow-md'
-                    : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
-                  : isLight
-                    ? 'text-[#634B3F] hover:text-[#1F1F1F]'
-                    : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {tab === 'WISHLIST' ? 'WISH LIST' : tab === 'FRIENDS' ? 'FRIENDS & DATES 🎂' : tab}
-            </button>
-          ))}
+          {(['MEMBERS', 'FRIENDS', 'TREE', 'TASKS', 'WISHLIST', 'MAINTENANCE', 'EMERGENCY'] as const).map((tab) => {
+            const isTabPermitted =
+              tab === 'MEMBERS' || tab === 'TREE'
+                ? true
+                : tab === 'FRIENDS'
+                ? canViewFriends
+                : tab === 'EMERGENCY'
+                ? canViewEmergency
+                : canViewTasks;
+
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveSubTab(tab)}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center justify-center gap-1 ${
+                  !isTabPermitted ? 'opacity-50' : ''
+                } ${
+                  activeSubTab === tab
+                    ? isLight
+                      ? 'bg-[#F05A28] text-white shadow-md'
+                      : 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-md'
+                    : isLight
+                      ? 'text-[#634B3F] hover:text-[#1F1F1F]'
+                      : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {!isTabPermitted && <Lock className="w-3 h-3 text-rose-500 inline" />}
+                <span>{tab === 'WISHLIST' ? 'WISH LIST' : tab === 'FRIENDS' ? 'FRIENDS & DATES 🎂' : tab}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -1200,9 +1218,17 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack })
 
       {/* 2. FAMILY & FRIENDS DATES & REMINDERS SUBTAB */}
       {activeSubTab === 'FRIENDS' && (
-        <div className="animate-fade-in -mx-4 -mt-2">
-          <FamilyFriendsView />
-        </div>
+        !canViewFriends ? (
+          <AccessDeniedView
+            moduleName="Family & Friends Celebrations"
+            requiredPermission="CALENDAR_VIEW"
+            onBackToHome={() => setActiveSubTab('MEMBERS')}
+          />
+        ) : (
+          <div className="animate-fade-in -mx-4 -mt-2">
+            <FamilyFriendsView />
+          </div>
+        )
       )}
 
       {/* 3. FAMILY TREE SUBTAB */}
@@ -1253,113 +1279,128 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack })
 
       {/* 4. TASKS SUBTAB */}
       {activeSubTab === 'TASKS' && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Family Tasks & Chores</span>
-            {canEditTasks && (
-              <button
-                onClick={() => setShowAddTask(true)}
-                className={`flex items-center gap-1 font-bold ${isLight ? 'text-[#D3542F] hover:underline' : 'text-amber-400 hover:underline'}`}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Task</span>
-              </button>
-            )}
-          </div>
+        !canViewTasks ? (
+          <AccessDeniedView
+            moduleName="Family Tasks & Chores"
+            requiredPermission="TASK_VIEW"
+            onBackToHome={() => setActiveSubTab('MEMBERS')}
+          />
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>Family Tasks & Chores</span>
+              {canEditTasks && (
+                <button
+                  onClick={() => setShowAddTask(true)}
+                  className={`flex items-center gap-1 font-bold ${isLight ? 'text-[#D3542F] hover:underline' : 'text-amber-400 hover:underline'}`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Task</span>
+                </button>
+              )}
+            </div>
 
-          <div className="space-y-2">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                onClick={() => canEditTasks && toggleTask(task.id)}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
-                  task.status === 'COMPLETED'
-                    ? isLight
-                      ? 'bg-[#F3E3D3]/50 border-[#EAD6C4]/60 opacity-60'
-                      : 'bg-slate-800/40 border-slate-800/60 opacity-60'
-                    : isLight
-                    ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-sm'
-                    : 'bg-slate-800/90 border-slate-700/80 shadow-sm'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-5 h-5 rounded-lg border flex items-center justify-center ${
-                      task.status === 'COMPLETED'
-                        ? 'bg-emerald-500 border-emerald-500 text-white'
-                        : isLight
-                        ? 'border-[#DEC8B2] bg-[#FFF8F1]'
-                        : 'border-slate-600'
-                    }`}
-                  >
-                    {task.status === 'COMPLETED' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+            <div className="space-y-2">
+              {tasks.map((task) => (
+                <div
+                  key={task.id}
+                  onClick={() => canEditTasks && toggleTask(task.id)}
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
+                    task.status === 'COMPLETED'
+                      ? isLight
+                        ? 'bg-[#F3E3D3]/50 border-[#EAD6C4]/60 opacity-60'
+                        : 'bg-slate-800/40 border-slate-800/60 opacity-60'
+                      : isLight
+                      ? 'bg-[#F3E3D3] border-[#EAD6C4] border-t-white/95 border-b-[2.5px] border-b-[#DEC8B2] shadow-sm'
+                      : 'bg-slate-800/90 border-slate-700/80 shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-5 h-5 rounded-lg border flex items-center justify-center ${
+                        task.status === 'COMPLETED'
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : isLight
+                          ? 'border-[#DEC8B2] bg-[#FFF8F1]'
+                          : 'border-slate-600'
+                      }`}
+                    >
+                      {task.status === 'COMPLETED' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                    </div>
+                    <div>
+                      <div className={`text-xs font-bold ${
+                        task.status === 'COMPLETED'
+                          ? isLight ? 'line-through text-[#8C7A6B]' : 'line-through text-slate-500'
+                          : isLight ? 'text-[#1F1F1F]' : 'text-white'
+                      }`}>
+                        {task.title}
+                      </div>
+                      <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
+                        Assigned: <span className={isLight ? 'text-[#1F1F1F] font-bold' : 'text-slate-200'}>{task.assigned_to_name}</span> • Due: {task.due_date}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className={`text-xs font-bold ${
-                      task.status === 'COMPLETED'
-                        ? isLight ? 'line-through text-[#8C7A6B]' : 'line-through text-slate-500'
-                        : isLight ? 'text-[#1F1F1F]' : 'text-white'
-                    }`}>
-                      {task.title}
-                    </div>
-                    <div className={`text-[11px] mt-0.5 ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
-                      Assigned: <span className={isLight ? 'text-[#1F1F1F] font-bold' : 'text-slate-200'}>{task.assigned_to_name}</span> • Due: {task.due_date}
-                    </div>
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        task.priority === 'HIGH'
+                          ? isLight
+                            ? 'bg-rose-100 text-rose-700 border border-rose-300'
+                            : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          : isLight
+                          ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
+                          : 'bg-indigo-500/20 text-indigo-300'
+                      }`}
+                    >
+                      {task.priority}
+                    </span>
+                    {canEditTasks && (
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => setEditingTask(task)}
+                          className={`p-1.5 rounded-lg transition-colors border ${
+                            isLight
+                              ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
+                              : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 border-transparent'
+                          }`}
+                          title="Edit Task"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteTask(task.id, e)}
+                          className={`p-1.5 rounded-lg transition-colors border ${
+                            isLight
+                              ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
+                              : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-transparent'
+                          }`}
+                          title="Delete Task"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      task.priority === 'HIGH'
-                        ? isLight
-                          ? 'bg-rose-100 text-rose-700 border border-rose-300'
-                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                        : isLight
-                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-300'
-                        : 'bg-indigo-500/20 text-indigo-300'
-                    }`}
-                  >
-                    {task.priority}
-                  </span>
-                  {canEditTasks && (
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => setEditingTask(task)}
-                        className={`p-1.5 rounded-lg transition-colors border ${
-                          isLight
-                            ? 'bg-[#FFF8F1] hover:bg-amber-100 text-[#634B3F] hover:text-[#1F1F1F] border-[#EAD6C4]'
-                            : 'bg-slate-700/60 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 border-transparent'
-                        }`}
-                        title="Edit Task"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => handleDeleteTask(task.id, e)}
-                        className={`p-1.5 rounded-lg transition-colors border ${
-                          isLight
-                            ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 border-rose-300'
-                            : 'bg-slate-700/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-transparent'
-                        }`}
-                        title="Delete Task"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {/* 5. WISH LIST SUBTAB */}
       {activeSubTab === 'WISHLIST' && (
-        <div className="space-y-3">
+        !canViewTasks ? (
+          <AccessDeniedView
+            moduleName="Family Wish List"
+            requiredPermission="TASK_VIEW"
+            onBackToHome={() => setActiveSubTab('MEMBERS')}
+          />
+        ) : (
+          <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
               Shared Family Wish List ({groceryItems.length})
@@ -1493,11 +1534,19 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack })
             )}
           </div>
         </div>
+        )
       )}
 
       {/* 6. MAINTENANCE SUBTAB */}
       {activeSubTab === 'MAINTENANCE' && (
-        <div className="space-y-3">
+        !canViewTasks ? (
+          <AccessDeniedView
+            moduleName="Household Equipment Maintenance"
+            requiredPermission="TASK_VIEW"
+            onBackToHome={() => setActiveSubTab('MEMBERS')}
+          />
+        ) : (
+          <div className="space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className={`font-bold uppercase ${isLight ? 'text-[#634B3F]' : 'text-slate-400'}`}>
               Household Equipment Maintenance ({maintenanceItems.length})
@@ -1643,11 +1692,19 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack })
             )}
           </div>
         </div>
+        )
       )}
 
       {/* 7. EMERGENCY VAULT SUBTAB */}
       {activeSubTab === 'EMERGENCY' && (
-        <div className="space-y-4">
+        !canViewEmergency ? (
+          <AccessDeniedView
+            moduleName="Emergency Mode & Critical Cards"
+            requiredPermission="EMERGENCY_VIEW"
+            onBackToHome={() => setActiveSubTab('MEMBERS')}
+          />
+        ) : (
+          <div className="space-y-4">
           <div className={`p-4 rounded-3xl border space-y-3 ${
             isLight
               ? 'bg-rose-50 border-rose-200 text-rose-900 shadow-sm'
@@ -2013,6 +2070,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({ initialSubTab, onBack })
             )}
           </div>
         </div>
+        )
       )}
 
       {/* Permissions Management Modal (Family Head Only) */}

@@ -5,6 +5,8 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { logActivity } from '../services/auditService.js';
 import { DEFAULT_PERMISSIONS } from '../config.js';
+import { deleteMemberPermissionsFromAzurePostgres } from '../db/azurePostgres.js';
+import { deleteMemberPermissionsFromSupabase } from '../db/supabaseClient.js';
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -96,7 +98,7 @@ router.post('/:id/members', requirePermission('FAMILY_MANAGE'), async (req: Auth
 });
 
 // Update Member Permissions
-router.put('/:id/members/:userId/permissions', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
+router.put('/:id/members/:userId/permissions', requirePermission('FAMILY_MANAGE'), async (req: AuthRequest, res) => {
   const { userId } = req.params;
   const { permissions } = req.body; // array of permission codes
 
@@ -104,13 +106,18 @@ router.put('/:id/members/:userId/permissions', requirePermission('FAMILY_MANAGE'
     return res.status(400).json({ error: 'Permissions must be an array of string codes' });
   }
 
-  // Remove existing permissions
-  db.delete('member_permissions', (mp) => mp.user_id === userId);
+  // 1. Remove existing permissions from in-memory array & local store.json
+  const remainingPerms = db.getTable('member_permissions').filter((mp: any) => mp.user_id !== userId);
+  db.resetTable('member_permissions', remainingPerms);
 
-  // Insert new permissions
-  permissions.forEach((code) => {
+  // 2. Remove existing permissions from Azure PostgreSQL & Supabase Cloud
+  await deleteMemberPermissionsFromAzurePostgres(userId);
+  await deleteMemberPermissionsFromSupabase(userId);
+
+  // 3. Insert newly granted permissions
+  for (const code of permissions) {
     db.insert('member_permissions', { user_id: userId, permission_code: code });
-  });
+  }
 
   const member = db.findOne('users', (u) => u.id === userId);
   logActivity(
@@ -159,7 +166,7 @@ router.patch('/:id/members/:userId', requirePermission('FAMILY_MANAGE'), async (
 });
 
 // Approve Pending Family Member & Assign Permissions (Family Head only)
-router.post('/:id/members/:userId/approve', requirePermission('FAMILY_MANAGE'), (req: AuthRequest, res) => {
+router.post('/:id/members/:userId/approve', requirePermission('FAMILY_MANAGE'), async (req: AuthRequest, res) => {
   const { userId } = req.params;
   const { permissions, role, relationship } = req.body;
 
@@ -177,11 +184,15 @@ router.post('/:id/members/:userId/approve', requirePermission('FAMILY_MANAGE'), 
   });
 
   // Assign permissions
-  db.delete('member_permissions', (mp) => mp.user_id === userId);
+  const remainingPerms = db.getTable('member_permissions').filter((mp: any) => mp.user_id !== userId);
+  db.resetTable('member_permissions', remainingPerms);
+  await deleteMemberPermissionsFromAzurePostgres(userId);
+  await deleteMemberPermissionsFromSupabase(userId);
+
   const grantedPerms: string[] = Array.isArray(permissions) ? permissions : [];
-  grantedPerms.forEach((code) => {
+  for (const code of grantedPerms) {
     db.insert('member_permissions', { user_id: userId, permission_code: code });
-  });
+  }
 
   logActivity(
     req.familyId!,
@@ -246,7 +257,9 @@ router.delete('/:id/members/:userId', (req: AuthRequest, res) => {
   }
 
   // 1. Delete member permissions
-  db.delete('member_permissions', (mp) => mp.user_id === userId);
+  db.resetTable('member_permissions', db.getTable('member_permissions').filter((mp: any) => mp.user_id !== userId));
+  await deleteMemberPermissionsFromAzurePostgres(userId);
+  await deleteMemberPermissionsFromSupabase(userId);
   // 2. Delete devices
   db.delete('devices', (d) => d.user_id === userId);
   // 3. Delete emergency profiles

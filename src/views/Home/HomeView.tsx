@@ -498,15 +498,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
   const loadHomeData = async () => {
     if (!family?.id) return;
     try {
+      const canSeeTasks = hasPermission('TASK_VIEW') || hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+      const canSeeFinance = hasPermission('FINANCE_VIEW') || hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD';
+
       const [tasksRes, expRes, smartData, smartSettingsData] = await Promise.all([
-        apiRequest(`/tasks/${family.id}/tasks`).catch(() => ({ groceryItems: [], tasks: [] })),
-        apiRequest(`/expenses/${family.id}/expenses`).catch(() => ({ expenses: [] })),
-        SmartExpenseService.fetchAllTransactions(family.id).catch(() => ({ pending: [], confirmed: [], ignored: [] })),
-        SmartExpenseService.getSettings(family.id).catch(() => null),
+        canSeeTasks ? apiRequest(`/tasks/${family.id}/tasks`).catch(() => ({ groceryItems: [], tasks: [] })) : Promise.resolve({ groceryItems: [], tasks: [] }),
+        canSeeFinance ? apiRequest(`/expenses/${family.id}/expenses`).catch(() => ({ expenses: [] })) : Promise.resolve({ expenses: [] }),
+        canSeeFinance ? SmartExpenseService.fetchAllTransactions(family.id).catch(() => ({ pending: [], confirmed: [], ignored: [] })) : Promise.resolve(null),
+        canSeeFinance ? SmartExpenseService.getSettings(family.id).catch(() => null) : Promise.resolve(null),
       ]);
-      setWishlistItems(tasksRes.groceryItems || []);
-      setFamilyTasks(tasksRes.tasks || []);
-      setExpenses(expRes.expenses || []);
+      setWishlistItems(tasksRes?.groceryItems || []);
+      setFamilyTasks(tasksRes?.tasks || []);
+      setExpenses(expRes?.expenses || []);
       if (smartData) {
         setPendingSmartTx(smartData.pending || []);
         setConfirmedSmartTx(smartData.confirmed || []);
@@ -956,14 +959,14 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       <CircularQuickActions
         onSecurity={() => onNavigateTab('settings')}
         onFriends={() => onNavigateTab('friends')}
-        onAddExpense={() => setShowAddExpenseModal(true)}
-        onWishList={() => setShowWishListModal(true)}
-        onSetGoal={() => setShowSetGoalModal(true)}
-        onAddIncome={() => setShowAddIncomeModal(true)}
-        onVault={() => setShowVaultModal(true)}
-        onTasks={() => setShowTaskModal(true)}
-        onMaintenance={() => setShowMaintenanceModal(true)}
-        onEmergency={() => setShowEmergencyModal(true)}
+        onAddExpense={() => (hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD') ? setShowAddExpenseModal(true) : alert('Access Restricted: You do not have permission to record expenses.')}
+        onWishList={() => (hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD') ? setShowWishListModal(true) : alert('Access Restricted: You do not have permission to add wishes.')}
+        onSetGoal={() => (hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD') ? setShowSetGoalModal(true) : alert('Access Restricted: You do not have permission to set goals.')}
+        onAddIncome={() => (hasPermission('FINANCE_EDIT') || currentUser?.role === 'FAMILY_HEAD') ? setShowAddIncomeModal(true) : alert('Access Restricted: You do not have permission to record income.')}
+        onVault={() => (hasPermission('DOCUMENT_UPLOAD') || currentUser?.role === 'FAMILY_HEAD') ? setShowVaultModal(true) : alert('Access Restricted: You do not have permission to upload documents.')}
+        onTasks={() => (hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD') ? setShowTaskModal(true) : alert('Access Restricted: You do not have permission to add tasks.')}
+        onMaintenance={() => (hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD') ? setShowMaintenanceModal(true) : alert('Access Restricted: You do not have permission to add maintenance.')}
+        onEmergency={() => (hasPermission('EMERGENCY_EDIT') || currentUser?.role === 'FAMILY_HEAD') ? setShowEmergencyModal(true) : alert('Access Restricted: You do not have permission to edit emergency contacts.')}
       />
 
       {/* 2.1. Upcoming Family & Friends Celebrations & Reminders (KinoraOne Module) */}
@@ -1261,6 +1264,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
       )}
 
       {/* 2.6. Family Wishlist Section (Matching Reference Model Image) */}
+      {(hasPermission('TASK_VIEW') || hasPermission('TASK_EDIT') || currentUser?.role === 'FAMILY_HEAD') && (
       <div className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl space-y-2.5 kinora-3d-card ${
         isLight
           ? 'bg-[#F3E3D3] border border-[#EAD6C4] border-t-white/95 border-b-[3px] border-b-[#DEC8B2] shadow-[0_12px_28px_-4px_rgba(130,80,45,0.14)]'
@@ -1404,8 +1408,10 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
         )}
       </div>
+      )}
 
       {/* 4. Quick Overview (3 Cards) */}
+      {(hasPermission('FINANCE_VIEW') || hasPermission('INVESTMENT_VIEW') || currentUser?.role === 'FAMILY_HEAD') && (
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
           <h3 className={`text-sm font-bold tracking-tight ${isLight ? 'text-[#1F1F1F]' : 'text-white'}`}>Quick Overview</h3>
@@ -1503,10 +1509,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
         </div>
       </div>
+      )}
 
 
 
       {/* 6. Family Moments (Horizontal Carousel) */}
+      {(hasPermission('MEMORY_VIEW') || hasPermission('MEMORY_UPLOAD') || currentUser?.role === 'FAMILY_HEAD') && (
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between">
           <h3 className={`text-sm font-black tracking-tight ${isLight ? 'text-[#2A1B14]' : 'text-white'}`}>Family Moments</h3>
@@ -1580,6 +1588,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigateTab }) => {
           </div>
         )}
       </div>
+      )}
 
       {/* ================= MODALS (WITH KINORAONE THEME SYSTEM) ================= */}
 

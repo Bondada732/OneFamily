@@ -196,66 +196,6 @@
   ],
   "member_permissions": [
     {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "FINANCE_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "INVESTMENT_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "DOCUMENT_UPLOAD"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "TASK_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "EMERGENCY_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "TASK_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "CALENDAR_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "FINANCE_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "DOCUMENT_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "EMERGENCY_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "TASK_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "TASK_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "FINANCE_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "DOCUMENT_UPLOAD"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "TASK_EDIT"
-    },
-    {
       "user_id": "usr_head_1789381570680",
       "permission_code": "MEMORY_UPLOAD"
     },
@@ -282,82 +222,6 @@
     {
       "user_id": "usr_head_1789381570680",
       "permission_code": "FAMILY_MANAGE"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "FAMILY_MANAGE"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "CALENDAR_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "EMERGENCY_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "MEMORY_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "AI_USE"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "FINANCE_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "EMERGENCY_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "INVESTMENT_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "DOCUMENT_UPLOAD"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "INVESTMENT_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "AI_USE"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "DOCUMENT_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "TASK_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "AI_USE"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "DOCUMENT_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "FINANCE_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "EMERGENCY_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "EMERGENCY_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "MEMORY_VIEW"
     },
     {
       "user_id": "usr_head_1789381570680",
@@ -398,22 +262,6 @@
     {
       "user_id": "usr_head_1789381570680",
       "permission_code": "MEMORY_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789399595414",
-      "permission_code": "CALENDAR_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "FINANCE_VIEW"
-    },
-    {
-      "user_id": "usr_m_1789388703735",
-      "permission_code": "INVESTMENT_EDIT"
-    },
-    {
-      "user_id": "usr_m_1789431893236",
-      "permission_code": "INVESTMENT_EDIT"
     }
   ],
   "devices": [
