@@ -58,31 +58,46 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
     category: 'FINANCE' | 'FAMILY' | 'VAULT' | 'AI';
     categoryName: string;
     icon: React.ComponentType<{ className?: string }>;
-    color: string;
+    cardBg: string;
+    iconBg: string;
+    titleColor: string;
+    subColor: string;
+    ctaColor: string;
+    ctaText: string;
     allowed: boolean;
   }> = [
     {
       id: 'ADD_EXPENSE',
       label: 'Record Expense',
-      description: 'UPI, receipt scan or manual entry',
+      description: 'UPI, receipt scan or manual',
       category: 'FINANCE',
       categoryName: 'Finance',
       icon: Receipt,
-      color: isLight ? 'bg-[#FFE6DE] border-[#FFD0C2] text-[#E85A24]' : 'bg-orange-500/20 border-orange-500/40 text-orange-400',
-      ctaText: 'Add Now',
-      ctaColor: isLight ? 'text-[#E85A24]' : 'text-orange-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#EDF4E7] to-[#DCE7D4] border border-[#D1DFC7] shadow-[0_10px_22px_-4px_rgba(110,135,95,0.28),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(100,120,85,0.15)]'
+        : 'bg-gradient-to-br from-[#1C281F] to-[#121B14] border border-emerald-800/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#6BB7A3] to-[#54A08C] shadow-[0_6px_14px_-2px_rgba(65,130,110,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(30,70,60,0.25)] text-white',
+      titleColor: isLight ? 'text-[#2C3B27]' : 'text-emerald-100',
+      subColor: isLight ? 'text-[#55694F]' : 'text-emerald-400/80',
+      ctaColor: isLight ? 'text-[#3B7061]' : 'text-emerald-300',
+      ctaText: '+ Record',
       allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
       id: 'ADD_INCOME',
       label: 'Record Income',
-      description: 'Salary, dividends, rental income',
+      description: 'Salary, dividends, rental',
       category: 'FINANCE',
       categoryName: 'Finance',
       icon: ArrowDownLeft,
-      color: isLight ? 'bg-[#DCFCE7] border-[#BBF7D0] text-[#16A34A]' : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#FDECE5] to-[#F8D9CC] border border-[#F3C7B6] shadow-[0_10px_22px_-4px_rgba(200,110,90,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(180,90,70,0.15)]'
+        : 'bg-gradient-to-br from-[#2B1B17] to-[#1D110E] border border-orange-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#F37D63] to-[#E06145] shadow-[0_6px_14px_-2px_rgba(200,80,55,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(110,30,15,0.25)] text-white',
+      titleColor: isLight ? 'text-[#4A261D]' : 'text-orange-100',
+      subColor: isLight ? 'text-[#7E4C40]' : 'text-orange-300/80',
+      ctaColor: isLight ? 'text-[#D44D31]' : 'text-orange-400',
       ctaText: 'Credit',
-      ctaColor: isLight ? 'text-[#16A34A]' : 'text-emerald-400',
       allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
@@ -92,9 +107,14 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       category: 'FINANCE',
       categoryName: 'Budget',
       icon: PiggyBank,
-      color: isLight ? 'bg-[#FEF3C7] border-[#FDE68A] text-[#D97706]' : 'bg-amber-500/20 border-amber-500/40 text-amber-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#FFF5E2] to-[#FCE8C5] border border-[#F7D8A2] shadow-[0_10px_22px_-4px_rgba(190,145,60,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(170,125,40,0.15)]'
+        : 'bg-gradient-to-br from-[#2B2314] to-[#1C160B] border border-amber-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#F7BA43] to-[#E5A224] shadow-[0_6px_14px_-2px_rgba(195,130,20,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(110,70,0,0.25)] text-white',
+      titleColor: isLight ? 'text-[#473418]' : 'text-amber-100',
+      subColor: isLight ? 'text-[#7A5B2D]' : 'text-amber-300/80',
+      ctaColor: isLight ? 'text-[#B87A14]' : 'text-amber-400',
       ctaText: 'Limits',
-      ctaColor: isLight ? 'text-[#D97706]' : 'text-amber-400',
       allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
@@ -104,9 +124,14 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       category: 'FINANCE',
       categoryName: 'Bills',
       icon: CalendarDays,
-      color: isLight ? 'bg-[#EDE9FE] border-[#DDD6FE] text-[#7C3AED]' : 'bg-purple-500/20 border-purple-500/40 text-purple-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#F3ECF9] to-[#E2D4F0] border border-[#D4C1E6] shadow-[0_10px_22px_-4px_rgba(140,110,170,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(110,80,140,0.15)]'
+        : 'bg-gradient-to-br from-[#231A2E] to-[#150F1E] border border-purple-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#9F75C8] to-[#8655B2] shadow-[0_6px_14px_-2px_rgba(125,80,165,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(60,25,95,0.25)] text-white',
+      titleColor: isLight ? 'text-[#38224C]' : 'text-purple-100',
+      subColor: isLight ? 'text-[#694887]' : 'text-purple-300/80',
+      ctaColor: isLight ? 'text-[#7A4BA6]' : 'text-purple-400',
       ctaText: 'Schedule',
-      ctaColor: isLight ? 'text-[#7C3AED]' : 'text-purple-400',
       allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
@@ -116,9 +141,14 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       category: 'FINANCE',
       categoryName: 'Goals',
       icon: Target,
-      color: isLight ? 'bg-[#CCFBF1] border-[#99F6E4] text-[#0D9488]' : 'bg-teal-500/20 border-teal-500/40 text-teal-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#EDF4E7] to-[#DCE7D4] border border-[#D1DFC7] shadow-[0_10px_22px_-4px_rgba(110,135,95,0.28),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(100,120,85,0.15)]'
+        : 'bg-gradient-to-br from-[#1C281F] to-[#121B14] border border-emerald-800/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#6BB7A3] to-[#54A08C] shadow-[0_6px_14px_-2px_rgba(65,130,110,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(30,70,60,0.25)] text-white',
+      titleColor: isLight ? 'text-[#2C3B27]' : 'text-teal-100',
+      subColor: isLight ? 'text-[#55694F]' : 'text-teal-300/80',
+      ctaColor: isLight ? 'text-[#3B7061]' : 'text-teal-400',
       ctaText: 'Target',
-      ctaColor: isLight ? 'text-[#0D9488]' : 'text-teal-400',
       allowed: hasPermission('FINANCE_EDIT') || hasPermission('FINANCE_VIEW'),
     },
     {
@@ -128,69 +158,99 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       category: 'FINANCE',
       categoryName: 'Wealth',
       icon: TrendingUp,
-      color: isLight ? 'bg-[#E0F2FE] border-[#BAE6FD] text-[#0284C7]' : 'bg-blue-500/20 border-blue-500/40 text-blue-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#E8F0F7] to-[#D5E3EE] border border-[#C4D7E5] shadow-[0_10px_22px_-4px_rgba(100,140,175,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(80,115,145,0.15)]'
+        : 'bg-gradient-to-br from-[#182430] to-[#0E1720] border border-sky-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#7FA6CD] to-[#638CB6] shadow-[0_6px_14px_-2px_rgba(75,115,155,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(35,65,95,0.25)] text-white',
+      titleColor: isLight ? 'text-[#233748]' : 'text-sky-100',
+      subColor: isLight ? 'text-[#47647B]' : 'text-sky-300/80',
+      ctaColor: isLight ? 'text-[#4B77A5]' : 'text-sky-400',
       ctaText: 'Portfolio',
-      ctaColor: isLight ? 'text-[#0284C7]' : 'text-blue-400',
       allowed: hasPermission('FINANCE_EDIT') || hasPermission('INVESTMENT_EDIT') || hasPermission('FINANCE_VIEW') || hasPermission('INVESTMENT_VIEW'),
     },
     {
       id: 'ADD_FRIEND',
-      label: 'Birthday & Event',
-      description: 'Anniversaries & reminders',
+      label: 'Family Date',
+      description: 'Birthdays & anniversaries',
       category: 'FAMILY',
       categoryName: 'Dates',
       icon: Heart,
-      color: isLight ? 'bg-[#FFE4E6] border-[#FECDD3] text-[#E11D48]' : 'bg-pink-500/20 border-pink-500/40 text-pink-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#FDECE5] to-[#F8D9CC] border border-[#F3C7B6] shadow-[0_10px_22px_-4px_rgba(200,110,90,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(180,90,70,0.15)]'
+        : 'bg-gradient-to-br from-[#2B1B17] to-[#1D110E] border border-rose-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#F37D63] to-[#E06145] shadow-[0_6px_14px_-2px_rgba(200,80,55,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(110,30,15,0.25)] text-white',
+      titleColor: isLight ? 'text-[#4A261D]' : 'text-rose-100',
+      subColor: isLight ? 'text-[#7E4C40]' : 'text-rose-300/80',
+      ctaColor: isLight ? 'text-[#D44D31]' : 'text-rose-400',
       ctaText: 'Celebrate',
-      ctaColor: isLight ? 'text-[#E11D48]' : 'text-pink-400',
       allowed: hasPermission('CALENDAR_VIEW') || hasPermission('CALENDAR_EDIT'),
     },
     {
       id: 'ADD_TASK',
       label: 'Family Task',
-      description: 'Chores, bills, grocery items',
+      description: 'Chores, bills, groceries',
       category: 'FAMILY',
       categoryName: 'Tasks',
       icon: CheckSquare,
-      color: isLight ? 'bg-[#E0F2FE] border-[#BAE6FD] text-[#0284C7]' : 'bg-cyan-500/20 border-cyan-500/40 text-cyan-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#E8F0F7] to-[#D5E3EE] border border-[#C4D7E5] shadow-[0_10px_22px_-4px_rgba(100,140,175,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(80,115,145,0.15)]'
+        : 'bg-gradient-to-br from-[#182430] to-[#0E1720] border border-cyan-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#7FA6CD] to-[#638CB6] shadow-[0_6px_14px_-2px_rgba(75,115,155,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(35,65,95,0.25)] text-white',
+      titleColor: isLight ? 'text-[#233748]' : 'text-cyan-100',
+      subColor: isLight ? 'text-[#47647B]' : 'text-cyan-300/80',
+      ctaColor: isLight ? 'text-[#4B77A5]' : 'text-cyan-400',
       ctaText: 'Assign',
-      ctaColor: isLight ? 'text-[#0284C7]' : 'text-cyan-400',
       allowed: hasPermission('TASK_EDIT') || hasPermission('TASK_VIEW'),
     },
     {
       id: 'ADD_WISHLIST',
-      label: 'Family Wish List',
+      label: 'Wish List',
       description: 'Gifts, gadgets & dreams',
       category: 'FAMILY',
       categoryName: 'Wishes',
       icon: Gift,
-      color: isLight ? 'bg-[#CCFBF1] border-[#99F6E4] text-[#0F766E]' : 'bg-teal-500/20 border-teal-500/40 text-teal-300',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#FFF5E2] to-[#FCE8C5] border border-[#F7D8A2] shadow-[0_10px_22px_-4px_rgba(190,145,60,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(170,125,40,0.15)]'
+        : 'bg-gradient-to-br from-[#2B2314] to-[#1C160B] border border-amber-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#F7BA43] to-[#E5A224] shadow-[0_6px_14px_-2px_rgba(195,130,20,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(110,70,0,0.25)] text-white',
+      titleColor: isLight ? 'text-[#473418]' : 'text-amber-100',
+      subColor: isLight ? 'text-[#7A5B2D]' : 'text-amber-300/80',
+      ctaColor: isLight ? 'text-[#B87A14]' : 'text-amber-400',
       ctaText: 'Wish',
-      ctaColor: isLight ? 'text-[#0F766E]' : 'text-teal-300',
       allowed: hasPermission('TASK_EDIT') || hasPermission('TASK_VIEW'),
     },
     {
       id: 'ADD_MAINTENANCE',
-      label: 'Home Maintenance',
-      description: 'Repairs, servicing & care',
+      label: 'Maintenance',
+      description: 'Repairs, RO, AC & care',
       category: 'FAMILY',
       categoryName: 'Home',
       icon: Wrench,
-      color: isLight ? 'bg-[#F1F5F9] border-[#CBD5E1] text-[#475569]' : 'bg-slate-700/60 border-slate-600 text-slate-300',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#EDF4E7] to-[#DCE7D4] border border-[#D1DFC7] shadow-[0_10px_22px_-4px_rgba(110,135,95,0.28),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(100,120,85,0.15)]'
+        : 'bg-gradient-to-br from-[#1C281F] to-[#121B14] border border-slate-800/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#6BB7A3] to-[#54A08C] shadow-[0_6px_14px_-2px_rgba(65,130,110,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(30,70,60,0.25)] text-white',
+      titleColor: isLight ? 'text-[#2C3B27]' : 'text-slate-100',
+      subColor: isLight ? 'text-[#55694F]' : 'text-slate-400',
+      ctaColor: isLight ? 'text-[#3B7061]' : 'text-slate-300',
       ctaText: 'Service',
-      ctaColor: isLight ? 'text-[#475569]' : 'text-slate-300',
       allowed: hasPermission('TASK_EDIT') || hasPermission('TASK_VIEW'),
     },
     {
       id: 'ADD_VISITING_CARD',
       label: 'Visiting Cards',
-      description: 'Snap photo & save cards',
+      description: 'Snap & store contacts',
       category: 'VAULT',
       categoryName: 'Cards',
       icon: CreditCard,
-      color: isLight ? 'bg-[#E0E7FF] border-[#C7D2FE] text-[#4F46E5]' : 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#F3ECF9] to-[#E2D4F0] border border-[#D4C1E6] shadow-[0_10px_22px_-4px_rgba(140,110,170,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(110,80,140,0.15)]'
+        : 'bg-gradient-to-br from-[#231A2E] to-[#150F1E] border border-indigo-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#9F75C8] to-[#8655B2] shadow-[0_6px_14px_-2px_rgba(125,80,165,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(60,25,95,0.25)] text-white',
+      titleColor: isLight ? 'text-[#38224C]' : 'text-indigo-100',
+      subColor: isLight ? 'text-[#694887]' : 'text-indigo-300/80',
+      ctaColor: isLight ? 'text-[#7A4BA6]' : 'text-indigo-400',
       ctaText: 'Scan',
-      ctaColor: isLight ? 'text-[#4F46E5]' : 'text-indigo-400',
       allowed: hasPermission('DOCUMENT_UPLOAD') || hasPermission('DOCUMENT_VIEW'),
     },
     {
@@ -200,9 +260,14 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       category: 'VAULT',
       categoryName: 'Vault',
       icon: FileUp,
-      color: isLight ? 'bg-[#FEF3C7] border-[#FDE68A] text-[#B45309]' : 'bg-amber-500/20 border-amber-500/40 text-amber-300',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#EDF4E7] to-[#DCE7D4] border border-[#D1DFC7] shadow-[0_10px_22px_-4px_rgba(110,135,95,0.28),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(100,120,85,0.15)]'
+        : 'bg-gradient-to-br from-[#1C281F] to-[#121B14] border border-emerald-800/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#6BB7A3] to-[#54A08C] shadow-[0_6px_14px_-2px_rgba(65,130,110,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(30,70,60,0.25)] text-white',
+      titleColor: isLight ? 'text-[#2C3B27]' : 'text-emerald-100',
+      subColor: isLight ? 'text-[#55694F]' : 'text-emerald-400/80',
+      ctaColor: isLight ? 'text-[#3B7061]' : 'text-emerald-300',
       ctaText: 'Upload',
-      ctaColor: isLight ? 'text-[#B45309]' : 'text-amber-300',
       allowed: hasPermission('DOCUMENT_UPLOAD') || hasPermission('DOCUMENT_VIEW'),
     },
     {
@@ -212,33 +277,48 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
       category: 'VAULT',
       categoryName: 'Medical',
       icon: ShieldAlert,
-      color: isLight ? 'bg-[#FFE4E6] border-[#FECDD3] text-[#E11D48]' : 'bg-rose-500/20 border-rose-500/40 text-rose-400',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#FDECE5] to-[#F8D9CC] border border-[#F3C7B6] shadow-[0_10px_22px_-4px_rgba(200,110,90,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(180,90,70,0.15)]'
+        : 'bg-gradient-to-br from-[#2B1B17] to-[#1D110E] border border-rose-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#F37D63] to-[#E06145] shadow-[0_6px_14px_-2px_rgba(200,80,55,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(110,30,15,0.25)] text-white',
+      titleColor: isLight ? 'text-[#4A261D]' : 'text-rose-100',
+      subColor: isLight ? 'text-[#7E4C40]' : 'text-rose-300/80',
+      ctaColor: isLight ? 'text-[#D44D31]' : 'text-rose-400',
       ctaText: 'Access',
-      ctaColor: isLight ? 'text-[#E11D48]' : 'text-rose-400',
       allowed: hasPermission('EMERGENCY_EDIT') || hasPermission('EMERGENCY_VIEW'),
     },
     {
       id: 'ADD_MEMORY',
       label: 'Save Memory',
-      description: 'Family trips, photos, stories',
+      description: 'Family trips & photos',
       category: 'FAMILY',
       categoryName: 'Memories',
       icon: Camera,
-      color: isLight ? 'bg-[#FEF3C7] border-[#FDE68A] text-[#D97706]' : 'bg-yellow-500/20 border-yellow-500/40 text-yellow-300',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#FFF5E2] to-[#FCE8C5] border border-[#F7D8A2] shadow-[0_10px_22px_-4px_rgba(190,145,60,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(170,125,40,0.15)]'
+        : 'bg-gradient-to-br from-[#2B2314] to-[#1C160B] border border-amber-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#F7BA43] to-[#E5A224] shadow-[0_6px_14px_-2px_rgba(195,130,20,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(110,70,0,0.25)] text-white',
+      titleColor: isLight ? 'text-[#473418]' : 'text-amber-100',
+      subColor: isLight ? 'text-[#7A5B2D]' : 'text-amber-300/80',
+      ctaColor: isLight ? 'text-[#B87A14]' : 'text-amber-400',
       ctaText: 'Capture',
-      ctaColor: isLight ? 'text-[#D97706]' : 'text-yellow-300',
       allowed: hasPermission('MEMORY_UPLOAD') || hasPermission('MEMORY_VIEW'),
     },
     {
       id: 'ASK_AI',
       label: 'Ask Family AI',
-      description: 'Insights, plans & advice',
+      description: 'Insights & checklists',
       category: 'AI',
       categoryName: 'AI',
       icon: Sparkles,
-      color: isLight ? 'bg-[#F3E8FF] border-[#E9D5FF] text-[#9333EA]' : 'bg-purple-500/20 border-purple-500/40 text-purple-300',
+      cardBg: isLight
+        ? 'bg-gradient-to-br from-[#F3ECF9] to-[#E2D4F0] border border-[#D4C1E6] shadow-[0_10px_22px_-4px_rgba(140,110,170,0.25),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_4px_rgba(110,80,140,0.15)]'
+        : 'bg-gradient-to-br from-[#231A2E] to-[#150F1E] border border-purple-900/60 shadow-[0_10px_22px_-4px_rgba(0,0,0,0.5)]',
+      iconBg: 'bg-gradient-to-br from-[#9F75C8] to-[#8655B2] shadow-[0_6px_14px_-2px_rgba(125,80,165,0.45),inset_0_2px_2px_rgba(255,255,255,0.65),inset_0_-2px_3px_rgba(60,25,95,0.25)] text-white',
+      titleColor: isLight ? 'text-[#38224C]' : 'text-purple-100',
+      subColor: isLight ? 'text-[#694887]' : 'text-purple-300/80',
+      ctaColor: isLight ? 'text-[#7A4BA6]' : 'text-purple-400',
       ctaText: 'Ask AI',
-      ctaColor: isLight ? 'text-[#9333EA]' : 'text-purple-300',
       allowed: hasPermission('AI_USE'),
     },
   ];
@@ -259,47 +339,47 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
   });
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 ${isLight ? 'bg-black/60' : 'bg-black/80'} backdrop-blur-md animate-fade-in`}>
+    <div className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 ${isLight ? 'bg-black/60' : 'bg-black/85'} backdrop-blur-md animate-fade-in`}>
       <div
-        className={`w-full max-w-lg rounded-t-[32px] sm:rounded-[32px] p-5 pb-[max(env(safe-area-inset-bottom,0px),24px)] sm:pb-5 space-y-3.5 shadow-[0_25px_60px_-10px_rgba(42,27,20,0.45)] border ${
+        className={`w-full max-w-lg rounded-t-[36px] sm:rounded-[36px] p-5 pb-[max(env(safe-area-inset-bottom,0px),24px)] sm:pb-5 space-y-4 shadow-[0_30px_70px_-15px_rgba(25,18,12,0.45)] ${
           isLight
-            ? 'bg-gradient-to-b from-[#F9F3EA] to-[#F5ECE0] border-[#EADBCC] text-[#261C16]'
-            : 'bg-gradient-to-b from-[#101935] to-[#0A1024] border-slate-700/80 text-[#F4F8FF]'
+            ? 'bg-[#F7F2EB] border-t sm:border-2 border-[#E9DFC3] text-[#362A24]'
+            : 'bg-[#121829] border-t sm:border border-slate-700/80 text-[#F4F8FF]'
         }`}
       >
-        {/* Mobile Drag Sheet Handle */}
-        <div className={`w-12 h-1.5 rounded-full mx-auto -mt-1 mb-2 opacity-75 sm:hidden ${isLight ? 'bg-[#D4C3B2]' : 'bg-slate-600'}`} />
+        {/* Mobile Drag Handle */}
+        <div className={`w-12 h-1.5 rounded-full mx-auto -mt-1 mb-2 opacity-80 sm:hidden ${isLight ? 'bg-[#D7CAB9]' : 'bg-slate-600'}`} />
 
         {/* Header Section */}
-        <div className={`flex items-start justify-between pb-3 border-b ${isLight ? 'border-[#EADBCC]' : 'border-slate-800'}`}>
+        <div className={`flex items-start justify-between pb-3 border-b ${isLight ? 'border-[#E6DCCB]' : 'border-slate-800'}`}>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className={`text-lg sm:text-xl font-black tracking-tight ${isLight ? 'text-[#261C16]' : 'text-white'}`}>
+              <h3 className={`text-xl font-black tracking-tight ${isLight ? 'text-[#362A24]' : 'text-white'}`}>
                 Create & Record
               </h3>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                 isLight
-                  ? 'bg-[#E85A24]/12 text-[#D34C17] border-[#E85A24]/20'
+                  ? 'bg-[#F37D63]/15 text-[#D44D31] border-[#F37D63]/30'
                   : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
               }`}>
-                Famora Hub
+                Famora 3D
               </span>
             </div>
-            <p className={`text-xs mt-0.5 font-medium ${isLight ? 'text-[#7A665A]' : 'text-slate-400'}`}>
-              Quickly record or plan for your family in one place
+            <p className={`text-xs mt-0.5 font-semibold ${isLight ? 'text-[#7A665A]' : 'text-slate-400'}`}>
+              Tap any 3D action card to record or schedule
             </p>
           </div>
 
-          {/* Close Button Pill 3D */}
+          {/* Close Button Clay Squircle */}
           <button
             onClick={onClose}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-sm border cursor-pointer ${
+            className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
               isLight
-                ? 'bg-[#EFE3D5] hover:bg-[#E6D7C7] border-[#DFCEBD] text-[#5C483C] hover:text-[#261C16]'
-                : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300 hover:text-white'
+                ? 'bg-[#EFE8DF] border border-[#DFD3C4] text-[#6B5B52] hover:text-[#362A24] shadow-[0_4px_10px_rgba(0,0,0,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)]'
+                : 'bg-slate-800 border border-slate-700 text-slate-300 hover:text-white'
             }`}
           >
-            <X className="w-4 h-4 stroke-[2.5]" />
+            <X className="w-4 h-4 stroke-[3]" />
           </button>
         </div>
 
@@ -316,17 +396,17 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
               <button
                 key={pill.key}
                 onClick={() => setSelectedCategoryFilter(pill.key as any)}
-                className={`px-3 py-1.5 rounded-2xl text-[11px] font-extrabold whitespace-nowrap transition-all border flex items-center gap-1.5 cursor-pointer ${
+                className={`px-4 py-2 rounded-2xl text-[11px] font-extrabold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#E85A24] to-[#D34C17] text-white border-[#D34C17] shadow-[0_4px_12px_-1px_rgba(211,76,23,0.35)]'
+                    ? 'bg-gradient-to-r from-[#F37D63] to-[#E06145] text-white shadow-[0_6px_14px_-2px_rgba(200,80,55,0.45),inset_0_2px_2px_rgba(255,255,255,0.5)]'
                     : isLight
-                    ? 'bg-[#EFE4D6] border-[#E2D3C2] text-[#634E41] hover:bg-[#E8DCCF] hover:text-[#261C16]'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
+                    ? 'bg-[#EFE8DF] text-[#6B5B52] hover:bg-[#E7DFC5] border border-[#E2D6C7] shadow-[0_3px_8px_rgba(0,0,0,0.05),inset_0_1.5px_2px_rgba(255,255,255,0.8)]'
+                    : 'bg-slate-800/80 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
                 }`}
               >
                 <span>{pill.label}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                  isActive ? 'bg-white/25 text-white' : isLight ? 'bg-black/5 text-[#7A665A]' : 'bg-white/10 text-slate-300'
+                  isActive ? 'bg-white/30 text-white' : isLight ? 'bg-black/5 text-[#6B5B52]' : 'bg-white/10 text-slate-300'
                 }`}>
                   {pill.count}
                 </span>
@@ -335,8 +415,8 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
           })}
         </div>
 
-        {/* 2-Column Action Cards Grid */}
-        <div className="grid grid-cols-2 gap-2.5 max-h-[58vh] sm:max-h-[62vh] overflow-y-auto pr-1 scrollbar-thin">
+        {/* 2-Column Claymorphism Action Cards Grid */}
+        <div className="grid grid-cols-2 gap-3.5 max-h-[58vh] sm:max-h-[62vh] overflow-y-auto pr-1 scrollbar-thin">
           {filteredActions.map((act) => {
             const Icon = act.icon;
             return (
@@ -347,53 +427,36 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
                   onActionSelect(act.id);
                   onClose();
                 }}
-                className={`group flex flex-col justify-between text-left p-3.5 rounded-[22px] border transition-all ${
+                className={`group flex flex-col justify-between text-left p-4 rounded-[28px] transition-all ${act.cardBg} ${
                   act.allowed
-                    ? isLight
-                      ? 'bg-gradient-to-b from-[#FFFFFF] to-[#FAF3EA] border-[#EADBCC] shadow-[0_4px_12px_-2px_rgba(120,80,50,0.06),0_2px_4px_rgba(120,80,50,0.03)] hover:border-[#DDA380] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.985] cursor-pointer'
-                      : 'bg-gradient-to-b from-[#131D38] to-[#0D152D] border-slate-700/80 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-cyan-500/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.985] cursor-pointer'
-                    : isLight
-                    ? 'opacity-40 cursor-not-allowed bg-[#E8DDD0] border-[#DECFC0]'
-                    : 'opacity-40 cursor-not-allowed bg-[#070D1E] border-slate-800'
+                    ? 'hover:-translate-y-1 hover:scale-[1.015] active:translate-y-0.5 active:scale-[0.975] cursor-pointer'
+                    : 'opacity-40 cursor-not-allowed filter grayscale-[0.4]'
                 }`}
               >
                 <div>
-                  {/* Top Icon & Badge Row */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm ${act.color}`}>
-                      <Icon className="w-4 h-4 stroke-[2.2]" />
-                    </div>
-                    <span className={`text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${
-                      isLight ? 'bg-[#EFE3D5] text-[#7A665A] border-[#DECFC0]' : 'bg-slate-800/90 text-slate-400 border-slate-700'
-                    }`}>
-                      {act.categoryName}
-                    </span>
+                  {/* 3D Extruded Clay Icon Squircle */}
+                  <div className={`w-11 h-11 rounded-[20px] flex items-center justify-center mb-3 transition-transform group-hover:scale-105 ${act.iconBg}`}>
+                    <Icon className="w-6 h-6 stroke-[2.2] drop-shadow-[0_2px_1px_rgba(0,0,0,0.2)]" />
                   </div>
 
-                  {/* Title & Description */}
-                  <div className={`font-extrabold text-xs sm:text-[13px] leading-snug line-clamp-1 transition-colors ${
-                    isLight ? 'text-[#261C16] group-hover:text-[#D34C17]' : 'text-white group-hover:text-cyan-300'
-                  }`}>
+                  {/* Title & Subtext */}
+                  <div className={`font-extrabold text-sm sm:text-base leading-snug line-clamp-1 ${act.titleColor}`}>
                     {act.label}
                   </div>
-                  <div className={`text-[10px] line-clamp-1 mt-0.5 leading-normal font-medium ${
-                    isLight ? 'text-[#7A665A]' : 'text-slate-400'
-                  }`}>
+                  <div className={`text-[11px] font-semibold line-clamp-1 mt-0.5 ${act.subColor}`}>
                     {act.description}
                   </div>
                 </div>
 
-                {/* Footer Micro CTA Row */}
-                <div className={`mt-2 pt-1.5 border-t flex items-center justify-between text-[10px] font-bold ${
-                  isLight ? 'border-[#F0E4D6]' : 'border-slate-800/80'
-                }`}>
+                {/* Footer Action Tag */}
+                <div className={`mt-3 pt-2 border-t border-black/5 flex items-center justify-between text-[11px] font-black ${act.ctaColor}`}>
                   {act.allowed ? (
                     <>
-                      <span className={act.ctaColor}>{act.ctaText}</span>
-                      <span className={`transition-transform group-hover:translate-x-0.5 ${act.ctaColor}`}>→</span>
+                      <span>{act.ctaText}</span>
+                      <span className="transition-transform group-hover:translate-x-1">→</span>
                     </>
                   ) : (
-                    <span className={isLight ? 'text-rose-600' : 'text-rose-400'}>No Access</span>
+                    <span className="text-rose-600">No Access</span>
                   )}
                 </div>
               </button>
@@ -402,14 +465,11 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({ isOpen, onCl
         </div>
 
         {/* Bottom Hint Note */}
-        <div className={`pt-2.5 border-t flex items-center justify-between text-[11px] ${
-          isLight ? 'border-[#EADBCC] text-[#7A665A]' : 'border-slate-800 text-slate-400'
+        <div className={`pt-2.5 border-t flex items-center justify-between text-xs font-semibold ${
+          isLight ? 'border-[#E6DCCB] text-[#7A665A]' : 'border-slate-800 text-slate-400'
         }`}>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[#E85A24]">⚡</span>
-            <span>Instant sync across all family devices</span>
-          </div>
-          <span className={`font-bold ${isLight ? 'text-[#261C16]' : 'text-slate-200'}`}>Famora</span>
+          <span>⚡ Instant sync across all family devices</span>
+          <span className={`font-black ${isLight ? 'text-[#362A24]' : 'text-slate-200'}`}>Famora 3D</span>
         </div>
       </div>
     </div>
